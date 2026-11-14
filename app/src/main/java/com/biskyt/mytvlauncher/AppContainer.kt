@@ -1,6 +1,7 @@
 package com.biskyt.mytvlauncher
 
 import android.content.Context
+import android.net.Uri
 import android.os.SystemClock
 import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.keys.HomePress
@@ -9,6 +10,8 @@ import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.AppIcons
 import com.biskyt.mytvlauncher.data.AppRepository
+import com.biskyt.mytvlauncher.data.BackupFile
+import com.biskyt.mytvlauncher.data.BackupRepository
 import com.biskyt.mytvlauncher.data.ChannelRepository
 import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
@@ -51,6 +54,14 @@ class AppContainer(
     val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope, reads)
     val channels = ChannelRepository(db.channelItems(), db.hidden(), channelSource, settings, appScope, reads)
     val network = NetworkMonitor(context, appScope)
+    val backupFile = BackupFile(context)
+    val backup = BackupRepository(db, settings, apps)
+
+    /** Android 9: Backup & restore asked for the storage permission when it opened, once while the launcher runs. */
+    @Volatile var backupPermissionAsked = false
+
+    /** A backup file opened with MyTVLauncher from another app, until Backup & restore takes it. */
+    val openedFile = MutableStateFlow<Uri?>(null)
 
     /*
      * Read as the app starts, at the same time, so the first frame usually has them, and kept while the app runs, so

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+- Settings › Backup & restore saves your Home and choices to a file.
+- Restore from that file, or open one with the launcher from a file manager.
+
 ## 0.4.1
 - Settings › Home rows › Row order sets the order of Home's rows.
 - Every app's channels are listed in Settings › Home rows, grouped by app.
