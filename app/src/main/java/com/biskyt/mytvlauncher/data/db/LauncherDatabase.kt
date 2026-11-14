@@ -1,15 +1,18 @@
 package com.biskyt.mytvlauncher.data.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
+import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -41,9 +44,91 @@ interface AppPlaceDao {
     }
 }
 
-@Database(entities = [AppPlaceRow::class], version = 1, exportSchema = true)
+/**
+ * The last Watch Next items read from the TV, so that Home draws Continue watching at once, before the next read (see
+ * WatchNextRepository). The columns are core's WatchNextItem.
+ */
+@Entity(tableName = "watch_next_item")
+data class WatchNextRow(
+    @PrimaryKey val key: String,
+    val packageName: String,
+    val title: String,
+    val subtitle: String?,
+    val pictureUri: String?,
+    val shape: CardShape,
+    val progress: Float?,
+    val lastEngagementMs: Long,
+    val intentUri: String?
+)
+
+@Dao
+interface WatchNextDao {
+    @Query("SELECT * FROM watch_next_item")
+    fun observe(): Flow<List<WatchNextRow>>
+
+    @Query("SELECT * FROM watch_next_item")
+    suspend fun all(): List<WatchNextRow>
+
+    @Query("DELETE FROM watch_next_item")
+    suspend fun deleteAll()
+
+    @Insert
+    suspend fun insertAll(rows: List<WatchNextRow>)
+
+    /** Puts [rows] in place of every row, in one transaction, so Home never sees a half-written row. */
+    @Transaction
+    suspend fun replace(rows: List<WatchNextRow>) {
+        deleteAll()
+        insertAll(rows)
+    }
+}
+
+/**
+ * Something the user took off Home: [kind] says what ([HiddenKind]), and [key] which one (a package name, or a Watch
+ * Next item's key).
+ */
+@Entity(tableName = "hidden", primaryKeys = ["kind", "key"])
+data class HiddenRow(val kind: String, val key: String)
+
+/**
+ * The kinds of [HiddenRow]: saved by name, so never rename one. An app hidden from Home is not here: that is
+ * `app_place.hidden`, with the app's place.
+ */
+object HiddenKind {
+    /** All of an app's Watch Next items (Settings › Home rows). */
+    const val WATCH_NEXT_APP = "watch_next_app"
+
+    /** One Watch Next item (hold OK on it › Hide this item). */
+    const val WATCH_NEXT_ITEM = "watch_next_item"
+}
+
+@Dao
+interface HiddenDao {
+    @Query("SELECT `key` FROM hidden WHERE kind = :kind")
+    fun observe(kind: String): Flow<List<String>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun hide(row: HiddenRow)
+
+    @Query("DELETE FROM hidden WHERE kind = :kind AND `key` = :key")
+    suspend fun show(kind: String, key: String)
+
+    @Query("DELETE FROM hidden WHERE kind = :kind")
+    suspend fun showAll(kind: String)
+}
+
+@Database(
+    entities = [AppPlaceRow::class, WatchNextRow::class, HiddenRow::class],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)]
+)
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun appPlaces(): AppPlaceDao
+
+    abstract fun watchNext(): WatchNextDao
+
+    abstract fun hidden(): HiddenDao
 
     companion object {
         fun open(context: Context): LauncherDatabase =

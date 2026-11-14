@@ -3,7 +3,10 @@ package com.biskyt.mytvlauncher.testutil
 import android.os.SystemClock
 import com.biskyt.mytvlauncher.LauncherApp
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
+import com.biskyt.mytvlauncher.core.watchnext.CardShape
+import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.InstalledApps
+import com.biskyt.mytvlauncher.data.WatchNextSource
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.cancelAndJoin
@@ -20,6 +23,8 @@ class TestApp : LauncherApp() {
     }
 
     override fun installedApps(): InstalledApps = InstalledApps { FakeApps.list() }
+
+    override fun watchNextSource(): WatchNextSource = FakeWatchNext
 
     /**
      * Robolectric calls this after each test. Each test gets a new app, but the coroutine threads are shared by the
@@ -38,6 +43,7 @@ class TestApp : LauncherApp() {
             try {
                 runBlocking { container.settings.reset() }
                 FakeApps.reset()
+                FakeWatchNext.reset()
             } finally {
                 super.onTerminate()
             }
@@ -102,6 +108,60 @@ object FakeApps {
     fun reset() {
         release()
         apps = defaults
+    }
+}
+
+/**
+ * Other apps' Watch Next items, as a test's launcher reads them. [hold] makes a read wait until [release]; [reads]
+ * counts the reads, and [watching] says whether the launcher follows changes.
+ */
+object FakeWatchNext : WatchNextSource {
+    val film = WatchNextItem("com.example.videos/film", "com.example.videos", "Sintel", null, null, CardShape.POSTER, 0.5f, 3, null)
+    val episode =
+        WatchNextItem("com.example.music/ep", "com.example.music", "Tears of Steel", "Part 2", null, CardShape.WIDE, null, 2, null)
+
+    @Volatile var items: List<WatchNextItem> = listOf(film, episode)
+
+    @Volatile var allowed = true
+
+    @Volatile var reads = 0
+
+    @Volatile var watching = false
+
+    @Volatile private var held: CountDownLatch? = null
+
+    override fun allowed() = allowed
+
+    override fun read(): List<WatchNextItem> {
+        held?.await(UI_WAIT_MS, TimeUnit.MILLISECONDS)
+        reads++
+        return items
+    }
+
+    override fun watch(onChange: () -> Unit): Boolean {
+        watching = true
+        return true
+    }
+
+    override fun stopWatching() {
+        watching = false
+    }
+
+    fun hold() {
+        held = CountDownLatch(1)
+    }
+
+    fun release() {
+        held?.countDown()
+        held = null
+    }
+
+    fun reset() {
+        release()
+        items = listOf(film, episode)
+        allowed = true
+        reads = 0
+        watching = false
     }
 }
 

@@ -2,7 +2,7 @@
 
 MyTVLauncher is a light home screen (launcher) for Android TV and Google TV, with no ads, no tracking and no
 analytics. It is written in Kotlin with Compose for TV and Room.
-- Modules: `app` (Android) and `core` (pure Kotlin: app order, the Home press log, the accent palette).
+- Modules: `app` (Android) and `core` (pure Kotlin: app order, Watch Next rules, the Home press log, the accent palette).
 - The repo is `biskyt/MyTVLauncher` on GitHub.
 - **Its look comes from MyPlexPlayer** (`biskyt/MyPlexPlayer`, the owner, 2026-11-14), which has the newest style.
   The theme, `TvCard` and the other parts of `ui/common/Components.kt`, `Focus.kt`, `Touch.kt`, `Keys.kt`,
@@ -115,8 +115,10 @@ See also:
 - **Android 11 package visibility:** the launcher sees other apps only through the `<queries>` block in the manifest.
 - **The TV provider:** query `WatchNextPrograms` and `Channels` with no selection and no sort order. Android 9 refuses
   both from an app without `ACCESS_ALL_EPG_DATA` (system apps only). Filter and sort in core.
-- **Start-up:** Home draws its first frame from Room only (`AppRepository.shown`). Looks at the installed apps and the
-  TV provider run in the background (`HomeStartUiTest` holds the look to check this).
+- **Start-up:** Home draws its first frame from saved data only: Room (`AppRepository.shown`, the saved Watch Next
+  items) and the settings DataStore, which the accent colour needs first anyway. Reads of
+  the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).
+  `HomeStartUiTest` holds both reads to check this.
 - **Back:** the activity gives the remote's Back to `BackHandler` in `AppRoot`. In a Robolectric test, use the
   activity's `onBackPressedDispatcher`, not a key event to the Compose root.
 - **Robolectric UI tests:**
@@ -132,7 +134,8 @@ See also:
   - **Waits:** go through `waitAdvancingClock(stepMs)` in `testutil/UiWait.kt`, because the main looper is paused. Use step 0 to run due work, and a step greater than 0 when delayed work (debounces, timeouts) must happen.
   - **Settings start from defaults:** the settings DataStore is process-wide, so `TestApp` resets it (and `FakeApps`)
     when each test ends. A test sets only what differs from the defaults.
-  - **The installed apps in tests** come from `FakeApps` (testutil/TestApp.kt). `FakeApps.hold()` makes a look wait.
+  - **The installed apps in tests** come from `FakeApps`, and the Watch Next items from `FakeWatchNext` (both in
+    testutil/TestApp.kt). `hold()` makes a read wait. `FakeApps` includes an app named "Settings", as on a real TV.
   - **Thread dumps on timeout:** `otherThreads()` in UiWait.kt dumps the other threads when a wait times out.
   - **Images on two threads at once abort the test JVM** (exit 134, "JniConstants … Class not found: java/nio/…"):
     Robolectric's native graphics set themselves up unsafely. `TestApp` calls `lookUpNioClasses()`
@@ -154,6 +157,7 @@ See also:
   launcher. Settings › Home app opens Android's choice of home app.
 - **Accent colour:** MyPlexPlayer's presets, mint by default. No large text setting.
 - **All apps:** a grid of every app, hidden ones too, with no counts and no button to Android's app list.
-- **Remote shortcuts:** hold Home for All apps, press Home twice for recent apps, if the Home key test shows a way
-  (see ROADMAP.md).
+- **Remote shortcuts:** the Home key test on the Philips TV showed that a double Home press reaches the launcher and a
+  held one does not. Two presses within about 500 ms open the launcher's own recent apps panel. All apps opens from a
+  top bar button and a tile at the end of the apps row. No accessibility service (see ROADMAP.md).
 - **Backup** (0.5.0) as MyPlexPlayer's. **Speaker wake** (0.6.0) is low priority.

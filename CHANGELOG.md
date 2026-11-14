@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+- Home shows Continue watching: up to 20 items from your other apps, newest first.
+- Items with a poster show a poster card, and other items show a wide card.
+- Each card shows how far you got and the app it opens in.
+- Hold OK or press Menu on an item to open its app or hide it.
+- Settings › Home rows turns Continue watching on or off, and chooses its apps.
+- Settings › Watch Next check shows app channels and TV channels apart.
+
 ## 0.1.1
 - The top bar's settings button is now named "Launcher settings", apart from Android's Settings app.
 

@@ -12,16 +12,8 @@ import com.biskyt.mytvlauncher.core.apps.InstalledApp
 import com.biskyt.mytvlauncher.data.db.AppPlaceDao
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 /** Where the installed apps come from: the TV's package manager, or a fake one in tests. */
 fun interface InstalledApps {
@@ -41,39 +33,20 @@ class AppRepository(
 ) {
     val shown: Flow<List<InstalledApp>> = dao.observe().map { rows ->
         val labels = rows.associate { it.packageName to it.label }
-        AppOrder.shown(
-            rows.map {
-                AppPlace(it.packageName, it.position, it.hidden)
-            }
-        ).map { InstalledApp(it.packageName, labels.getValue(it.packageName)) }
+        AppOrder.shown(rows.map { AppPlace(it.packageName, it.position, it.hidden) })
+            .map { InstalledApp(it.packageName, labels.getValue(it.packageName)) }
     }
 
-    /**
-     * Requests for a look, each with how long to wait first. A request made while a look runs is taken once it ends.
-     * Requests that come together (one app update sends removed, added and changed) wait [SETTLE_MS] and make one look.
-     */
-    private val requests = Channel<Long>(Channel.CONFLATED)
+    /** Every app's name, hidden apps too (for Watch Next items and Settings › Home rows). */
+    val labels: Flow<Map<String, String>> = dao.observe().map { rows -> rows.associate { it.packageName to it.label } }
 
-    /** One look at a time, also for a direct call to [look]. */
-    private val looking = Mutex()
-
-    init {
-        scope.launch(Dispatchers.IO) {
-            requests.consumeEach { wait ->
-                delay(wait)
-                requests.tryReceive() // asked again while waiting: this look covers it
-                look()
-            }
-        }
-    }
+    private val looks = Refresher(scope, SETTLE_MS) { lookNow() }
 
     /** Asks for a look at the installed apps, in the background: now, or after a short wait for an app change. */
-    fun refresh(afterChange: Boolean = false) {
-        requests.trySend(if (afterChange) SETTLE_MS else 0L)
-    }
+    fun refresh(afterChange: Boolean = false) = looks.request(afterChange)
 
     /** Looks at the installed apps now, and saves the list if it changed. */
-    suspend fun look() = withContext(Dispatchers.IO) { looking.withLock { lookNow() } }
+    suspend fun look() = looks.now()
 
     private suspend fun lookNow() {
         val apps = installed.list()

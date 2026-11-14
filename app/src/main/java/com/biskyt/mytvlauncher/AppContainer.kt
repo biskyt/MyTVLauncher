@@ -5,11 +5,14 @@ import android.os.SystemClock
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
 import com.biskyt.mytvlauncher.core.keys.HomePress
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
+import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.AppIcons
 import com.biskyt.mytvlauncher.data.AppRepository
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.SettingsRepository
 import com.biskyt.mytvlauncher.data.TvListings
+import com.biskyt.mytvlauncher.data.WatchNextRepository
+import com.biskyt.mytvlauncher.data.WatchNextSource
 import com.biskyt.mytvlauncher.data.db.LauncherDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,13 +25,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /** The launcher's parts, made once for the app. */
-class AppContainer(context: Context, installed: InstalledApps) {
+class AppContainer(context: Context, installed: InstalledApps, watchNextSource: WatchNextSource) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val db = LauncherDatabase.open(context)
     val settings = SettingsRepository(context)
     val apps = AppRepository(db.appPlaces(), installed, appScope)
     val icons = AppIcons(context, iconPx(context))
     val listings = TvListings(context)
+    val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope)
 
     /*
      * Read as the app starts, at the same time, so the first frame usually has them, and kept while the app runs, so
@@ -40,6 +44,15 @@ class AppContainer(context: Context, installed: InstalledApps) {
 
     /** The apps on Home, from the saved list. */
     val shownApps: StateFlow<List<InstalledApp>?> = apps.shown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** Every installed app's name, by package name, hidden apps too. */
+    val appLabels: StateFlow<Map<String, String>> = apps.labels.stateIn(appScope, SharingStarted.Eagerly, emptyMap())
+
+    /** Whether Home shows Continue watching (Settings › Home rows). */
+    val watchNextShown: StateFlow<Boolean?> = settings.watchNextShown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** Continue watching, from the saved items (see WatchNextRepository). */
+    val watchNextItems: StateFlow<List<WatchNextItem>?> = watchNext.items.stateIn(appScope, SharingStarted.Eagerly, null)
 
     private val presses = MutableStateFlow<List<HomePress>>(emptyList())
 

@@ -66,7 +66,8 @@ fun CheckScreen() {
         }
         check?.let { c ->
             item { CountLine(R.string.check_watch_next, c.watchNext) }
-            item { CountLine(R.string.check_channels, c.channels) }
+            item { CountLine(R.string.check_channels, c.appChannels) }
+            item { CountLine(R.string.check_tv_channels, c.tvChannels) }
         }
         item { SettingRow(stringResource(R.string.check_read_again), null, { reads++ }) }
         item {

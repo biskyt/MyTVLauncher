@@ -14,8 +14,8 @@ android {
         applicationId = "com.biskyt.mytvlauncher"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -117,6 +117,9 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.datastore.preferences)
     implementation(libs.tvprovider)
+    // Pictures that other apps give to Watch Next (posters and thumbnails), loaded at card size with a disk cache.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
