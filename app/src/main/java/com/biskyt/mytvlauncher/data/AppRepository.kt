@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher.data
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.os.Handler
 import android.os.Looper
@@ -9,11 +10,16 @@ import android.os.UserHandle
 import com.biskyt.mytvlauncher.core.apps.AppOrder
 import com.biskyt.mytvlauncher.core.apps.AppPlace
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
+import com.biskyt.mytvlauncher.core.apps.LaunchEntries
+import com.biskyt.mytvlauncher.core.apps.LaunchEntry
 import com.biskyt.mytvlauncher.data.db.AppPlaceDao
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+/** An app in All apps: whether it is [hidden] from Home. */
+data class AppEntry(val packageName: String, val label: String, val hidden: Boolean)
 
 /** Where the installed apps come from: the TV's package manager, or a fake one in tests. */
 fun interface InstalledApps {
@@ -29,16 +35,11 @@ fun interface InstalledApps {
 class AppRepository(
     private val dao: AppPlaceDao,
     private val installed: InstalledApps,
+    private val settings: SettingsRepository,
     private val scope: CoroutineScope
 ) {
-    val shown: Flow<List<InstalledApp>> = dao.observe().map { rows ->
-        val labels = rows.associate { it.packageName to it.label }
-        AppOrder.shown(rows.map { AppPlace(it.packageName, it.position, it.hidden) })
-            .map { InstalledApp(it.packageName, labels.getValue(it.packageName)) }
-    }
-
-    /** Every app's name, hidden apps too (for Watch Next items and Settings › Home rows). */
-    val labels: Flow<Map<String, String>> = dao.observe().map { rows -> rows.associate { it.packageName to it.label } }
+    /** Every app, hidden apps too, in Home's order (All apps). */
+    val all: Flow<List<AppEntry>> = dao.observe().map { rows -> rows.map { AppEntry(it.packageName, it.label, it.hidden) } }
 
     private val looks = Refresher(scope, SETTLE_MS) { lookNow() }
 
@@ -48,13 +49,26 @@ class AppRepository(
     /** Looks at the installed apps now, and saves the list if it changed. */
     suspend fun look() = looks.now()
 
+    /** Hides [packageName] from Home, or shows it again; it stays in All apps either way. */
+    suspend fun setHidden(packageName: String, hidden: Boolean) = looks.exclusive { dao.setHidden(packageName, hidden) }
+
+    /** Saves the order the user moved the apps on Home into ([shownOrder]: package names, as Home shows them). */
+    suspend fun saveOrder(shownOrder: List<String>) = looks.exclusive {
+        val rows = dao.all().associateBy { it.packageName }
+        val places = AppOrder.reorder(rows.values.map { AppPlace(it.packageName, it.position, it.hidden) }, shownOrder)
+        dao.replace(places.map { rows.getValue(it.packageName).copy(position = it.position) })
+    }
+
     private suspend fun lookNow() {
         val apps = installed.list()
         val saved = dao.all()
         val labels = apps.associate { it.packageName to it.label }
-        val places = AppOrder.merge(apps, saved.map { AppPlace(it.packageName, it.position, it.hidden) })
+        // Once, for places saved before 0.3.0: the TV's system apps with only a phone entry go off Home.
+        val hideAgain = !settings.systemPhoneAppsHidden()
+        val places = AppOrder.merge(apps, saved.map { AppPlace(it.packageName, it.position, it.hidden) }, hideAgain)
         val rows = places.map { AppPlaceRow(it.packageName, labels.getValue(it.packageName), it.position, it.hidden) }
         if (rows != saved) dao.replace(rows)
+        if (hideAgain) settings.setSystemPhoneAppsHidden()
     }
 
     private companion object {
@@ -79,16 +93,17 @@ class AppRepository(
     }
 }
 
-/** The apps a launcher can open: TV apps first, then phone apps (for a phone or a TV app with no TV entry). */
+/** The apps a launcher can open: TV entries, and phone entries of apps that are not system apps (see LaunchEntries). */
 class PackageManagerApps(private val context: Context) : InstalledApps {
     override fun list(): List<InstalledApp> {
         val pm = context.packageManager
-        val own = context.packageName
-        fun query(category: String) = pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category), 0)
-        return (query(Intent.CATEGORY_LEANBACK_LAUNCHER) + query(Intent.CATEGORY_LAUNCHER))
-            .map { it.activityInfo.packageName to it }
-            .filter { (pkg, _) -> pkg != own }
-            .distinctBy { it.first }
-            .map { (pkg, info) -> InstalledApp(pkg, info.loadLabel(pm).toString()) }
+        fun query(category: String, tv: Boolean) = pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(category), 0).map {
+            val system = it.activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+            LaunchEntry(it.activityInfo.packageName, it.loadLabel(pm).toString(), tv, system)
+        }
+        return LaunchEntries.pick(
+            query(Intent.CATEGORY_LEANBACK_LAUNCHER, tv = true) + query(Intent.CATEGORY_LAUNCHER, tv = false),
+            context.packageName
+        )
     }
 }

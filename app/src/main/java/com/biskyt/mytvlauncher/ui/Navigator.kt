@@ -8,6 +8,8 @@ enum class Screen(val keptOnHome: Boolean = false) {
     SETTINGS,
     ACCENT,
     HOME_ROWS,
+    ALL_APPS,
+    RECENTS,
 
     /** The Home key test shows what each press sends. */
     CHECK(keptOnHome = true)
@@ -32,5 +34,12 @@ class Navigator {
     fun home() {
         if (top.keptOnHome) return
         while (stack.size > 1) stack.removeAt(stack.lastIndex)
+    }
+
+    /** Home was pressed twice: the recent apps over Home, unless the top screen is [Screen.keptOnHome]. */
+    fun recents() {
+        if (top.keptOnHome) return
+        home()
+        open(Screen.RECENTS)
     }
 }

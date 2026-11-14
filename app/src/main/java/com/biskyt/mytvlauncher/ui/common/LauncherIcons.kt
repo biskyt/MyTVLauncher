@@ -54,4 +54,20 @@ object LauncherIcons {
         arcTo(2f, 2f, 0f, true, true, 6f, 17f)
         arcTo(2f, 2f, 0f, true, true, 10f, 17f)
     }
+
+    /** All apps: four rounded squares. */
+    val Grid = icon("grid") {
+        listOf(3f to 3f, 14f to 3f, 3f to 14f, 14f to 14f).forEach { (x, y) ->
+            moveTo(x + 1.5f, y)
+            horizontalLineTo(x + 5.5f)
+            arcTo(1.5f, 1.5f, 0f, false, true, x + 7f, y + 1.5f)
+            verticalLineTo(y + 5.5f)
+            arcTo(1.5f, 1.5f, 0f, false, true, x + 5.5f, y + 7f)
+            horizontalLineTo(x + 1.5f)
+            arcTo(1.5f, 1.5f, 0f, false, true, x, y + 5.5f)
+            verticalLineTo(y + 1.5f)
+            arcTo(1.5f, 1.5f, 0f, false, true, x + 1.5f, y)
+            close()
+        }
+    }
 }

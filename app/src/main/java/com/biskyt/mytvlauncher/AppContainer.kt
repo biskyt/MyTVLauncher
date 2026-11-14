@@ -2,13 +2,14 @@ package com.biskyt.mytvlauncher
 
 import android.content.Context
 import android.os.SystemClock
-import com.biskyt.mytvlauncher.core.apps.InstalledApp
 import com.biskyt.mytvlauncher.core.keys.HomePress
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.AppIcons
 import com.biskyt.mytvlauncher.data.AppRepository
 import com.biskyt.mytvlauncher.data.InstalledApps
+import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SettingsRepository
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.data.WatchNextRepository
@@ -21,15 +22,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /** The launcher's parts, made once for the app. */
-class AppContainer(context: Context, installed: InstalledApps, watchNextSource: WatchNextSource) {
+class AppContainer(context: Context, installed: InstalledApps, watchNextSource: WatchNextSource, val recents: RecentsSource) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val db = LauncherDatabase.open(context)
     val settings = SettingsRepository(context)
-    val apps = AppRepository(db.appPlaces(), installed, appScope)
+    val apps = AppRepository(db.appPlaces(), installed, settings, appScope)
     val icons = AppIcons(context, iconPx(context))
     val listings = TvListings(context)
     val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope)
@@ -42,11 +44,17 @@ class AppContainer(context: Context, installed: InstalledApps, watchNextSource: 
     /** The accent colour. */
     val accent: StateFlow<Int?> = settings.accent.stateIn(appScope, SharingStarted.Eagerly, null)
 
-    /** The apps on Home, from the saved list. */
-    val shownApps: StateFlow<List<InstalledApp>?> = apps.shown.stateIn(appScope, SharingStarted.Eagerly, null)
+    /** Every app, hidden ones too (All apps). */
+    val allApps: StateFlow<List<AppEntry>?> = apps.all.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** The apps on Home, from the saved list: the apps that are not hidden, in Home's order (from [allApps]). */
+    val shownApps: StateFlow<List<AppEntry>?> = allApps.map { all ->
+        all?.filter { !it.hidden }
+    }.stateIn(appScope, SharingStarted.Eagerly, null)
 
     /** Every installed app's name, by package name, hidden apps too. */
-    val appLabels: StateFlow<Map<String, String>> = apps.labels.stateIn(appScope, SharingStarted.Eagerly, emptyMap())
+    val appLabels: StateFlow<Map<String, String>> = allApps.map { all -> all.orEmpty().associate { it.packageName to it.label } }
+        .stateIn(appScope, SharingStarted.Eagerly, emptyMap())
 
     /** Whether Home shows Continue watching (Settings › Home rows). */
     val watchNextShown: StateFlow<Boolean?> = settings.watchNextShown.stateIn(appScope, SharingStarted.Eagerly, null)

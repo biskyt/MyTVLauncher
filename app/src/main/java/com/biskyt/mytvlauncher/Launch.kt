@@ -3,6 +3,7 @@ package com.biskyt.mytvlauncher
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
@@ -53,6 +54,13 @@ fun Context.openWatchNext(item: WatchNextItem): Boolean {
 
 private const val GRANT_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
     Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
+
+/** Opens Android's page for [packageName] (App info); false if the TV has no screen for it. */
+fun Context.openAppInfo(packageName: String): Boolean =
+    tryStart(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+
+/** Opens Android's usage access settings (for recent apps); false if the TV has no screen for it. */
+fun Context.openUsageAccess(): Boolean = tryStart(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
 
 /** Opens Android's own settings; false if the TV has no screen for it. */
 fun Context.openAndroidSettings(): Boolean = tryStart(Intent(Settings.ACTION_SETTINGS))

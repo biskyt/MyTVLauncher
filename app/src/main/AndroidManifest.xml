@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Only for pictures that other apps give to Watch Next and their channels. No analytics, ads or tracking. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -7,6 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Other apps' Watch Next items and home screen channels (a runtime permission, asked for in Settings). -->
     <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
+    <!-- The recent apps panel (a double Home press): usage access, given once in Android settings or with adb. -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />

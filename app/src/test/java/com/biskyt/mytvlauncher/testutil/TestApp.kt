@@ -3,9 +3,11 @@ package com.biskyt.mytvlauncher.testutil
 import android.os.SystemClock
 import com.biskyt.mytvlauncher.LauncherApp
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
+import com.biskyt.mytvlauncher.core.recents.AppUse
 import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.InstalledApps
+import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.WatchNextSource
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -26,6 +28,8 @@ class TestApp : LauncherApp() {
 
     override fun watchNextSource(): WatchNextSource = FakeWatchNext
 
+    override fun recentsSource(): RecentsSource = FakeRecents
+
     /**
      * Robolectric calls this after each test. Each test gets a new app, but the coroutine threads are shared by the
      * whole run: work left running would hold up the next test. Then the settings go back to their defaults, as the
@@ -44,6 +48,7 @@ class TestApp : LauncherApp() {
                 runBlocking { container.settings.reset() }
                 FakeApps.reset()
                 FakeWatchNext.reset()
+                FakeRecents.reset()
             } finally {
                 super.onTerminate()
             }
@@ -162,6 +167,19 @@ object FakeWatchNext : WatchNextSource {
         allowed = true
         reads = 0
         watching = false
+    }
+}
+
+/** The recent apps a test's launcher reads: Music, then Videos, with usage access given unless [allowed] is false. */
+object FakeRecents : RecentsSource {
+    @Volatile var allowed = true
+
+    override fun allowed() = allowed
+
+    override fun uses() = listOf(AppUse(FakeApps.videos.packageName, 1), AppUse(FakeApps.music.packageName, 2))
+
+    fun reset() {
+        allowed = true
     }
 }
 

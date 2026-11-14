@@ -18,12 +18,12 @@ class AppRepositoryTest {
     @Test
     fun `a look saves the apps, a new app goes at the end, and a removed one goes`() = runBlocking {
         container.apps.look()
-        assertEquals(listOf("Browser", "Music", "Settings", "Videos"), container.apps.shown.first().map { it.label })
+        assertEquals(listOf("Browser", "Music", "Settings", "Videos"), container.apps.all.first().filter { !it.hidden }.map { it.label })
 
         val radio = InstalledApp("com.example.radio", "Radio")
         FakeApps.apps = listOf(FakeApps.videos, radio, FakeApps.browser)
         container.apps.look()
-        assertEquals(listOf("Browser", "Videos", "Radio"), container.apps.shown.first().map { it.label })
+        assertEquals(listOf("Browser", "Videos", "Radio"), container.apps.all.first().filter { !it.hidden }.map { it.label })
     }
 
     @Test

@@ -12,7 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.ui.common.KeepsFocus
+import com.biskyt.mytvlauncher.ui.home.AllAppsScreen
 import com.biskyt.mytvlauncher.ui.home.HomeScreen
+import com.biskyt.mytvlauncher.ui.home.RecentsScreen
 import com.biskyt.mytvlauncher.ui.settings.AccentScreen
 import com.biskyt.mytvlauncher.ui.settings.CheckScreen
 import com.biskyt.mytvlauncher.ui.settings.HomeRowsScreen
@@ -39,6 +41,8 @@ fun AppRoot(nav: Navigator) {
                         Screen.SETTINGS -> SettingsScreen(nav)
                         Screen.ACCENT -> AccentScreen()
                         Screen.HOME_ROWS -> HomeRowsScreen()
+                        Screen.ALL_APPS -> AllAppsScreen()
+                        Screen.RECENTS -> RecentsScreen()
                         Screen.CHECK -> CheckScreen()
                     }
                 }

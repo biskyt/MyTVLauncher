@@ -2,7 +2,6 @@
 <resources>
     <string name="home_title">Inicio</string>
     <string name="home_apps">Aplicaciones</string>
-    <string name="home_no_apps">No se han encontrado aplicaciones.</string>
     <string name="home_app_not_opened">%1$s no se ha abierto.</string>
     <string name="home_settings">Ajustes del launcher</string>
     <string name="home_android_settings">Ajustes de Android</string>
@@ -62,4 +61,22 @@
     <string name="rows_hidden_items_help">Selecciona para volver a mostrarlos todos</string>
     <string name="check_tv_channels">Canales de TV</string>
     <string name="home_allow_refused">No permitido. Ajustes › Comprobación de Seguir viendo tiene el comando adb.</string>
+
+    <string name="home_all_apps">Todas las aplicaciones</string>
+    <string name="app_move">Mover</string>
+    <string name="app_move_help">Izquierda y derecha la mueven en Inicio</string>
+    <string name="app_move_hint">Izquierda y derecha mueven %1$s. OK o Atrás termina.</string>
+    <string name="app_hide">Ocultar de Inicio</string>
+    <string name="app_hide_help">Sigue en Todas las aplicaciones</string>
+    <string name="app_show">Mostrar en Inicio</string>
+    <string name="app_info">Información de la aplicación</string>
+    <string name="app_info_help">La página de Android de esta aplicación</string>
+    <string name="app_info_missing">Este televisor no tiene una página de información de aplicaciones que el launcher pueda abrir.</string>
+    <string name="all_apps_hidden">Oculta de Inicio</string>
+    <string name="recents_title">Aplicaciones recientes</string>
+    <string name="recents_none">Aún no hay aplicaciones recientes.</string>
+    <string name="recents_access">Permitir acceso de uso</string>
+    <string name="recents_access_help">Las aplicaciones recientes necesitan el acceso de uso de Android para MyTVLauncher. Selecciona para abrirlo.</string>
+    <string name="recents_access_missing">Este televisor no tiene una pantalla de acceso de uso. Usa el comando adb de abajo.</string>
+    <string name="recents_adb">Si el televisor no tiene pantalla para ello, da el acceso de uso desde un ordenador con este comando:</string>
 </resources>

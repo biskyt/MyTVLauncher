@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+- Hold OK on an app to move it, hide it or open App info.
+- All apps shows every app, from the top bar or the apps row.
+- Press Home twice to see your recent apps.
+- The TV's own set-up screens are now in All apps only.
+
 ## 0.2.0
 - Home shows Continue watching: up to 20 items from your other apps, newest first.
 - Items with a poster show a poster card, and other items show a wide card.

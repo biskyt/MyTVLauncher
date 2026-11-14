@@ -33,6 +33,9 @@ interface AppPlaceDao {
     @Query("DELETE FROM app_place")
     suspend fun deleteAll()
 
+    @Query("UPDATE app_place SET hidden = :hidden WHERE packageName = :packageName")
+    suspend fun setHidden(packageName: String, hidden: Boolean)
+
     @Insert
     suspend fun insertAll(rows: List<AppPlaceRow>)
 

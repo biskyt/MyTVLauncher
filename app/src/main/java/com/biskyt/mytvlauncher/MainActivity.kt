@@ -13,6 +13,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import com.biskyt.mytvlauncher.core.keys.HomePressLog
 import com.biskyt.mytvlauncher.ui.AppRoot
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.common.hasTouchScreen
@@ -79,7 +80,8 @@ class MainActivity : ComponentActivity() {
     internal fun takeIntent(intent: Intent) {
         if (!intent.hasCategory(Intent.CATEGORY_HOME)) return
         container.homePressed(inFront = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
-        nav.home()
+        // Two presses within half a second: the recent apps (the owner's test: a double press reaches the launcher).
+        if (HomePressLog.isDouble(container.homePresses.value)) nav.recents() else nav.home()
     }
 }
 

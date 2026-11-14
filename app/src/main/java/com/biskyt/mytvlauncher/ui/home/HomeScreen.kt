@@ -1,9 +1,9 @@
 package com.biskyt.mytvlauncher.ui.home
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,20 +44,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
-import com.biskyt.mytvlauncher.core.apps.InstalledApp
+import com.biskyt.mytvlauncher.core.apps.AppOrder
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.openAndroidSettings
-import com.biskyt.mytvlauncher.openApp
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.Screen
@@ -70,6 +68,7 @@ import com.biskyt.mytvlauncher.ui.common.cardColor
 import com.biskyt.mytvlauncher.ui.common.settleFor
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import com.biskyt.mytvlauncher.ui.theme.Palette
+import kotlinx.coroutines.launch
 
 /**
  * Home: layout B of the approved mockup (the owner, 2026-11-14). The top bar, then the rows: Continue watching, then
@@ -100,75 +99,91 @@ fun HomeScreen(nav: Navigator) {
     val watchRow = on == true && allowed && !watch.isNullOrEmpty()
     // Focus starts on the top row's first card, once a visit: never again while the remote moves along the rows.
     val first = rememberOnceFocus(ready)
-    val toApps = !askFirst && !watchRow && !appList.isNullOrEmpty()
+    val toApps = !askFirst && !watchRow
     Column(Modifier.fillMaxSize()) {
-        TopBar(nav, firstFocus = if (ready && !askFirst && !watchRow && !toApps) first else null)
+        TopBar(nav)
         if (!ready) return@Column
         LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
             if (askFirst) item(key = "allow") { AllowRow(first) { ask.launch(TvListings.PERMISSION) } }
             if (watchRow) item(key = "watch") { ContinueWatchingRow(watch.orEmpty(), if (watchRow) first else null) { options = it } }
-            item(key = "apps") { AppsRow(appList.orEmpty(), if (toApps) first else null) }
+            item(key = "apps") { AppsRow(appList.orEmpty(), if (toApps) first else null) { nav.open(Screen.ALL_APPS) } }
         }
     }
     options?.let { ItemOptions(it) { options = null } }
 }
 
-/** The apps row: every app on Home, as square icons with their names. */
+/**
+ * The apps row: every app on Home, as square icons with their names, then the All apps tile. Holding OK (or Menu) on
+ * an app opens its options; Move lifts it, and Left and Right move it until OK or Back, when the order is saved.
+ */
 @Composable
-private fun AppsRow(apps: List<InstalledApp>, firstFocus: FocusRequester?) {
+private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps: () -> Unit) {
+    val container = LocalContext.current.container
+    var options by remember { mutableStateOf<AppEntry?>(null) }
+    var moving by remember { mutableStateOf<String?>(null) }
+    var order by remember { mutableStateOf(emptyList<String>()) }
+    // A moved order being saved: shown until the saved list comes back, so that the row does not flick back meanwhile.
+    var saving by remember { mutableStateOf(false) }
+    LaunchedEffect(apps) { saving = false }
+    val byName = remember(apps) { apps.associateBy { it.packageName } }
+    val listState = rememberLazyListState()
+    fun endMove() {
+        val moved = order
+        moving = null
+        saving = true
+        container.appScope.launch { container.apps.saveOrder(moved) }
+    }
+    BackHandler(enabled = moving != null) { endMove() }
     Column {
         SectionTitle(stringResource(R.string.home_apps), Modifier.padding(horizontal = ROW_PAD))
-        if (apps.isEmpty()) {
-            Muted(stringResource(R.string.home_no_apps), Modifier.padding(horizontal = ROW_PAD))
-        } else {
-            LazyRow(contentPadding = PaddingValues(horizontal = ROW_PAD), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                itemsIndexed(apps, key = { _, app -> app.packageName }) { i, app ->
-                    AppTile(app, if (i == 0) Modifier.focusOn(firstFocus) else Modifier)
-                }
-            }
+        moving?.let { name ->
+            Muted(stringResource(R.string.app_move_hint, byName[name]?.label ?: name), Modifier.padding(start = ROW_PAD, bottom = 10.dp))
         }
+        LazyRow(
+            state = listState,
+            contentPadding = PaddingValues(horizontal = ROW_PAD),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            val shown = if (moving != null || saving) order.mapNotNull { byName[it] } else apps
+            itemsIndexed(shown, key = { _, app -> app.packageName }) { i, app ->
+                val isMoving = moving == app.packageName
+                AppTile(
+                    app.packageName,
+                    app.label,
+                    modifier = tileModifier(i == 0, firstFocus, isMoving) { step ->
+                        // The row stays where it is (a keyed row would follow the first app shown as it moves).
+                        listState.requestScrollToItem(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+                        order = AppOrder.move(order, app.packageName, step)
+                    },
+                    moving = isMoving,
+                    onClick = if (isMoving) ::endMove else null,
+                    onOptions = if (moving == null) ({ options = app }) else null
+                )
+            }
+            val allAppsFocus = if (apps.isEmpty()) firstFocus else null
+            if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, Modifier.focusOn(allAppsFocus)) }
+        }
+    }
+    options?.let { app ->
+        AppOptions(app, onMove = {
+            order = apps.map { it.packageName }
+            moving = app.packageName
+        }) { options = null }
     }
 }
 
-/** An app: its icon on a square card, and its name under it. OK opens it. */
-@Composable
-private fun AppTile(app: InstalledApp, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val icon = rememberAppIcon(app.packageName)
-    val notOpened = stringResource(R.string.home_app_not_opened, app.label)
-    Column(Modifier.width(TILE + 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        TvCard(
-            onClick = { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(app.packageName) } },
-            modifier = modifier.size(TILE).semantics { contentDescription = app.label },
-            shape = RoundedCornerShape(18.dp)
-        ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (icon != null) {
-                    Image(icon, contentDescription = null, modifier = Modifier.size(ICON))
-                } else {
-                    Text(app.label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
-                }
-            }
-        }
-        Text(
-            app.label,
-            style = MaterialTheme.typography.labelMedium,
-            color = Palette.textDim,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-        )
-    }
+/** An app tile's modifier on Home: the first focus on the first tile, and move mode's keys on the app being moved. */
+private fun tileModifier(first: Boolean, firstFocus: FocusRequester?, moving: Boolean, onStep: (Int) -> Unit): Modifier {
+    val focus = if (first) Modifier.focusOn(firstFocus) else Modifier
+    return if (moving) focus.moveKeys(onStep) else focus
 }
 
 /**
- * The top bar: "Home", then the launcher's settings and Android settings. The first is named "Launcher settings":
- * Android's own Settings app is on Home too, and a second "Settings" there would be unclear. With [takeFocus] (no apps to give it to),
- * Settings takes focus.
+ * The top bar: "Home", then All apps, the launcher's settings and Android settings. The launcher's is named "Launcher
+ * settings": Android's own Settings app is on Home too, and a second "Settings" there would be unclear.
  */
 @Composable
-private fun TopBar(nav: Navigator, firstFocus: FocusRequester?) {
+private fun TopBar(nav: Navigator) {
     val context = LocalContext.current
     val screen = LocalScreenFocus.current
     val missing = stringResource(R.string.home_android_settings_missing)
@@ -181,7 +196,8 @@ private fun TopBar(nav: Navigator, firstFocus: FocusRequester?) {
     ) {
         HomeLabel(stringResource(R.string.home_title))
         Box(Modifier.weight(1f))
-        BarItem({ nav.open(Screen.SETTINGS) }, LauncherIcons.Tune, stringResource(R.string.home_settings), firstFocus)
+        BarItem({ nav.open(Screen.ALL_APPS) }, LauncherIcons.Grid, stringResource(R.string.home_all_apps))
+        BarItem({ nav.open(Screen.SETTINGS) }, LauncherIcons.Tune, stringResource(R.string.home_settings))
         BarItem({
             context.openOrSay(missing) { openAndroidSettings() }
         }, LauncherIcons.Settings, stringResource(R.string.home_android_settings))
@@ -205,10 +221,9 @@ private fun HomeLabel(name: String) {
 
 /** A top bar button: drawn on nothing; with focus, a pill filled with the accent colour (as MyPlexPlayer's). */
 @Composable
-private fun BarItem(onClick: () -> Unit, icon: ImageVector, label: String, firstFocus: FocusRequester? = null) {
+private fun BarItem(onClick: () -> Unit, icon: ImageVector, label: String) {
     TvCard(
         onClick = onClick,
-        modifier = Modifier.focusOn(firstFocus),
         shape = RoundedCornerShape(50),
         color = Color.Transparent,
         fill = true
@@ -253,6 +268,4 @@ fun rememberAppIcon(packageName: String): ImageBitmap? {
     return icon
 }
 
-private val TILE = 84.dp
-private val ICON = 56.dp
 private val BAR_PAD = 10.dp

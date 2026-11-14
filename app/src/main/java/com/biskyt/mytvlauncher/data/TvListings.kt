@@ -19,7 +19,7 @@ data class ListingsCheck(val allowed: Boolean, val watchNext: TableCount, val ap
 
 /**
  * The Watch Next check in Settings: whether the launcher may read other apps' Watch Next items and home screen
- * channels, and how many it can read. Some TVs need the permission given with adb (see [ADB_GRANT]). Reads run in the
+ * channels, and how many it can read. Some TVs need the permission given with adb (see [adbGrant]). Reads run in the
  * background and ask only for row ids, never in a way that holds up Home.
  */
 class TvListings(private val context: Context) {
@@ -59,7 +59,7 @@ class TvListings(private val context: Context) {
         const val PERMISSION = "android.permission.READ_TV_LISTINGS"
 
         /** The command that gives the permission, for TVs that do not ask. */
-        const val ADB_GRANT = "adb shell pm grant com.biskyt.mytvlauncher $PERMISSION"
+        fun adbGrant(packageName: String) = "adb shell pm grant $packageName $PERMISSION"
     }
 }
 

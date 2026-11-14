@@ -113,9 +113,15 @@ See also:
   (`MainActivity.onNewIntent`). A held press and a double press are set by the TV maker. The Home key test in
   Settings › Watch Next check logs what each TV sends.
 - **Android 11 package visibility:** the launcher sees other apps only through the `<queries>` block in the manifest.
+- **Which apps show** (`core/apps/LaunchEntries`): every app is in All apps. A system app with only a phone entry
+  (`LAUNCHER`, no `LEANBACK_LAUNCHER`) is hidden from Home when first found, and once for places saved before 0.3.0
+  (the setting `system_phone_apps_hidden`). The Philips TV has system set-up screens with phone entries that its own
+  launcher does not show (the owner, 2026-11-14).
+- **Recent apps** (a double Home press) need usage access (`PACKAGE_USAGE_STATS`, an app op). TVs often have no screen
+  for it: `adb shell appops set com.biskyt.mytvlauncher GET_USAGE_STATS allow`.
 - **The TV provider:** query `WatchNextPrograms` and `Channels` with no selection and no sort order. Android 9 refuses
   both from an app without `ACCESS_ALL_EPG_DATA` (system apps only). Filter and sort in core.
-- **Start-up:** Home draws its first frame from saved data only: Room (`AppRepository.shown`, the saved Watch Next
+- **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).
   `HomeStartUiTest` holds both reads to check this.
@@ -134,8 +140,11 @@ See also:
   - **Waits:** go through `waitAdvancingClock(stepMs)` in `testutil/UiWait.kt`, because the main looper is paused. Use step 0 to run due work, and a step greater than 0 when delayed work (debounces, timeouts) must happen.
   - **Settings start from defaults:** the settings DataStore is process-wide, so `TestApp` resets it (and `FakeApps`)
     when each test ends. A test sets only what differs from the defaults.
-  - **The installed apps in tests** come from `FakeApps`, and the Watch Next items from `FakeWatchNext` (both in
-    testutil/TestApp.kt). `hold()` makes a read wait. `FakeApps` includes an app named "Settings", as on a real TV.
+  - **The installed apps in tests** come from `FakeApps`, the Watch Next items from `FakeWatchNext` and the recent apps
+    from `FakeRecents` (all in testutil/TestApp.kt). `hold()` makes a read wait. `FakeApps` includes an app named
+    "Settings", as on a real TV.
+  - **A read that a test calls straight after the app starts** must not depend on a flag that a coroutine sets later:
+    the Watch Next read checks the saved setting itself (a flaky `WatchNextSafetyTest`, fixed in 0.2.0).
   - **Thread dumps on timeout:** `otherThreads()` in UiWait.kt dumps the other threads when a wait times out.
   - **Images on two threads at once abort the test JVM** (exit 134, "JniConstants … Class not found: java/nio/…"):
     Robolectric's native graphics set themselves up unsafely. `TestApp` calls `lookUpNioClasses()`
