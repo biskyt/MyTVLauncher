@@ -29,9 +29,10 @@ class HomeUiTest {
     @Test
     fun `Home shows the installed apps in A to Z order, and the first one has focus`() {
         rule.waitAdvancingClock { shown(FakeApps.videos.label) }
-        val labels = rule.onAllNodes(hasText(FakeApps.browser.label) or hasText(FakeApps.music.label) or hasText(FakeApps.videos.label))
+        val names = FakeApps.apps.map { it.label }
+        val labels = rule.onAllNodes(names.map { hasText(it) }.reduce { a, b -> a or b })
             .fetchSemanticsNodes().map { it.config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString() }
-        assertEquals(listOf("Browser", "Music", "Videos"), labels)
+        assertEquals(listOf("Browser", "Music", "Settings", "Videos"), labels)
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Browser").assertIsFocused() }.isSuccess }
     }
 
@@ -41,7 +42,7 @@ class HomeUiTest {
         pressBack()
         assertTrue(shown("Browser"))
 
-        rule.onNodeWithContentDescription("Settings").performClick()
+        rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.waitForText("Accent colour")
         pressBack()
         rule.waitAdvancingClock { shown("Browser") }
@@ -50,7 +51,7 @@ class HomeUiTest {
     @Test
     fun `Home pressed goes back to Home, and is logged`() {
         rule.waitAdvancingClock { shown("Browser") }
-        rule.onNodeWithContentDescription("Settings").performClick()
+        rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.waitForText("Accent colour")
         pressHome()
         rule.waitAdvancingClock { shown("Browser") }
@@ -60,7 +61,7 @@ class HomeUiTest {
     @Test
     fun `the Home key test stays open when Home is pressed, and lists each press`() {
         rule.waitAdvancingClock { shown("Browser") }
-        rule.onNodeWithContentDescription("Settings").performClick()
+        rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.waitForText("Watch Next check")
         rule.onNode(hasText("Watch Next check")).performClick()
         rule.waitForText("No Home signals yet.")

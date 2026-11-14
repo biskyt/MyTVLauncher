@@ -76,7 +76,12 @@ object FakeApps {
     val music = InstalledApp("com.example.music", "Music")
     val browser = InstalledApp("com.example.browser", "Browser")
 
-    @Volatile var apps: List<InstalledApp> = listOf(videos, music, browser)
+    /** As on a real TV: Android's own Settings app is on Home too, beside the launcher's own settings button. */
+    val androidSettings = InstalledApp("com.android.tv.settings", "Settings")
+
+    private val defaults = listOf(videos, music, browser, androidSettings)
+
+    @Volatile var apps: List<InstalledApp> = defaults
 
     @Volatile private var held: CountDownLatch? = null
 
@@ -96,7 +101,7 @@ object FakeApps {
 
     fun reset() {
         release()
-        apps = listOf(videos, music, browser)
+        apps = defaults
     }
 }
 

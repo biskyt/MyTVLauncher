@@ -4,7 +4,7 @@
     <string name="home_apps">Aplicaciones</string>
     <string name="home_no_apps">No se han encontrado aplicaciones.</string>
     <string name="home_app_not_opened">%1$s no se ha abierto.</string>
-    <string name="home_settings">Ajustes</string>
+    <string name="home_settings">Ajustes del launcher</string>
     <string name="home_android_settings">Ajustes de Android</string>
     <string name="home_android_settings_missing">Este televisor no tiene una pantalla de ajustes de Android que el launcher pueda abrir.</string>
 

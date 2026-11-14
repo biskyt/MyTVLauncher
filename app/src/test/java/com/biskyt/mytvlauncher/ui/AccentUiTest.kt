@@ -27,7 +27,7 @@ class AccentUiTest {
         assertEquals(AccentPalette.DEFAULT, container.accent.value)
 
         rule.waitAdvancingClock { rule.onAllNodes(hasText("Home")).fetchSemanticsNodes().isNotEmpty() }
-        rule.onNodeWithContentDescription("Settings").performClick()
+        rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.waitForText("Accent colour")
         rule.onNode(hasText("Accent colour")).performClick()
         rule.waitForText("Yellow")

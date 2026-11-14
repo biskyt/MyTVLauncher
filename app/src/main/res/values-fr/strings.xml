@@ -4,7 +4,7 @@
     <string name="home_apps">Applications</string>
     <string name="home_no_apps">Aucune application trouvée.</string>
     <string name="home_app_not_opened">%1$s ne s’est pas ouvert.</string>
-    <string name="home_settings">Paramètres</string>
+    <string name="home_settings">Paramètres du lanceur</string>
     <string name="home_android_settings">Paramètres Android</string>
     <string name="home_android_settings_missing">Ce téléviseur n’a pas d’écran de paramètres Android que le lanceur peut ouvrir.</string>
 
