@@ -84,4 +84,15 @@
     <string name="recents_access_help">Recent apps need Android’s usage access for MyTVLauncher. Select to open it.</string>
     <string name="recents_access_missing">This TV has no usage access screen. Use the adb command below.</string>
     <string name="recents_adb">If the TV has no screen for it, give usage access from a computer with this command:</string>
+
+    <string name="rows_channels">App channels</string>
+    <string name="rows_channels_help">Rows that apps put on the home screen. When it is off, the launcher reads none.</string>
+    <string name="rows_no_channels">No app has channels yet.</string>
+    <string name="item_hide_channel">Hide this channel</string>
+    <string name="item_hide_channel_help">Settings › Home rows shows it again</string>
+    <string name="network_wifi">Wi-Fi</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_other">Connected</string>
+    <string name="network_none">No network</string>
+    <string name="network_vpn">VPN</string>
 </resources>

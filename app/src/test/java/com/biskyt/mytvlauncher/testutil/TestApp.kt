@@ -3,9 +3,11 @@ package com.biskyt.mytvlauncher.testutil
 import android.os.SystemClock
 import com.biskyt.mytvlauncher.LauncherApp
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
+import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.recents.AppUse
 import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.WatchNextSource
@@ -30,6 +32,8 @@ class TestApp : LauncherApp() {
 
     override fun recentsSource(): RecentsSource = FakeRecents
 
+    override fun channelSource(): ChannelSource = FakeChannels
+
     /**
      * Robolectric calls this after each test. Each test gets a new app, but the coroutine threads are shared by the
      * whole run: work left running would hold up the next test. Then the settings go back to their defaults, as the
@@ -49,6 +53,7 @@ class TestApp : LauncherApp() {
                 FakeApps.reset()
                 FakeWatchNext.reset()
                 FakeRecents.reset()
+                FakeChannels.reset()
             } finally {
                 super.onTerminate()
             }
@@ -167,6 +172,36 @@ object FakeWatchNext : WatchNextSource {
         allowed = true
         reads = 0
         watching = false
+    }
+}
+
+/** The apps' channels a test's launcher reads: Videos' "Free films" with one film. [reads] counts the reads. */
+object FakeChannels : ChannelSource {
+    val films = AppChannel(
+        7,
+        FakeApps.videos.packageName,
+        "Free films",
+        listOf(WatchNextItem("free/1", FakeApps.videos.packageName, "Big Buck Bunny", null, null, CardShape.POSTER, null, 1, null))
+    )
+
+    @Volatile var channels: List<AppChannel> = listOf(films)
+
+    @Volatile var reads = 0
+
+    override fun allowed() = FakeWatchNext.allowed
+
+    override fun read(): List<AppChannel> {
+        reads++
+        return channels
+    }
+
+    override fun watch(onChange: () -> Unit) = true
+
+    override fun stopWatching() = Unit
+
+    fun reset() {
+        channels = listOf(films)
+        reads = 0
     }
 }
 

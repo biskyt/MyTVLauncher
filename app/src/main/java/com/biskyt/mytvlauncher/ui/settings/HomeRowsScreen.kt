@@ -1,6 +1,7 @@
 package com.biskyt.mytvlauncher.ui.settings
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,17 +22,21 @@ import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
 import kotlinx.coroutines.launch
 
 /**
- * Settings › Home rows (the owner, 2026-11-14): Continue watching on or off (off: the launcher reads nothing from the
- * TV provider), each app that has items with its own switch, and the items hidden one by one, to show again.
+ * Settings › Home rows (the owner, 2026-11-14). Continue watching on or off, each app that has items with its own
+ * switch, and the items hidden one by one, to show again. Then the apps' channel rows on or off, and each channel's
+ * switch. When a row is off, the launcher reads nothing for it from the TV provider.
  */
 @Composable
 fun HomeRowsScreen() {
     val container = LocalContext.current.container
     val watchNext = container.watchNext
-    val on by container.watchNextShown.collectAsState()
-    val switches by remember { watchNext.appSwitches(container.appLabels) }.collectAsState(initial = emptyList())
+    val watchOn by container.watchNextShown.collectAsState()
+    val appSwitches by remember { watchNext.appSwitches(container.appLabels) }.collectAsState(initial = emptyList())
     val hiddenItems by watchNext.hiddenItems.collectAsState(initial = 0)
-    val shown = on ?: return
+    val channelsOn by container.channelsShown.collectAsState()
+    val channelSwitches by remember { container.channels.switches(container.appLabels) }.collectAsState(initial = emptyList())
+    val watch = watchOn ?: return
+    val channels = channelsOn ?: return
     fun later(block: suspend () -> Unit) {
         container.appScope.launch { block() }
     }
@@ -40,26 +45,45 @@ fun HomeRowsScreen() {
             SettingRow(
                 stringResource(R.string.home_continue_watching),
                 stringResource(R.string.rows_continue_watching_help),
-                { later { container.settings.setWatchNextShown(!shown) } },
+                { later { container.settings.setWatchNextShown(!watch) } },
                 rememberFirstFocus(once = true)
-            ) { Toggle(shown) }
+            ) { Toggle(watch) }
         }
-        if (!shown) return@SettingsPage
+        if (watch) {
+            heading(R.string.rows_apps)
+            if (appSwitches.isEmpty()) item { Muted(stringResource(R.string.rows_no_apps)) }
+            items(appSwitches, key = { "app-${it.packageName}" }) { app ->
+                SettingRow(app.label, null, { later { watchNext.setAppShown(app.packageName, !app.on) } }) { Toggle(app.on) }
+            }
+            if (hiddenItems > 0) {
+                item {
+                    SettingRow(
+                        stringResource(R.string.rows_hidden_items, hiddenItems),
+                        stringResource(R.string.rows_hidden_items_help),
+                        { later { watchNext.showAllItems() } }
+                    )
+                }
+            }
+        }
         item {
-            Text(stringResource(R.string.rows_apps), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))
+            SettingRow(
+                stringResource(R.string.rows_channels),
+                stringResource(R.string.rows_channels_help),
+                { later { container.settings.setChannelsShown(!channels) } },
+                Modifier.padding(top = 12.dp)
+            ) { Toggle(channels) }
         }
-        if (switches.isEmpty()) item { Muted(stringResource(R.string.rows_no_apps)) }
-        items(switches, key = { it.packageName }) { app ->
-            SettingRow(app.label, null, { later { watchNext.setAppShown(app.packageName, !app.on) } }) { Toggle(app.on) }
-        }
-        if (hiddenItems > 0) {
-            item {
-                SettingRow(
-                    stringResource(R.string.rows_hidden_items, hiddenItems),
-                    stringResource(R.string.rows_hidden_items_help),
-                    { later { watchNext.showAllItems() } }
-                )
+        if (channels) {
+            if (channelSwitches.isEmpty()) item { Muted(stringResource(R.string.rows_no_channels)) }
+            items(channelSwitches, key = { "channel-${it.id}" }) { channel ->
+                SettingRow(channel.name, channel.app, { later { container.channels.setChannelShown(channel.id, !channel.on) } }) {
+                    Toggle(channel.on)
+                }
             }
         }
     }
+}
+
+private fun LazyListScope.heading(text: Int) = item {
+    Text(stringResource(text), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 12.dp))
 }

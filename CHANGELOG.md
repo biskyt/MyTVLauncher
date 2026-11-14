@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+- Apps' home screen channels show as rows below your apps.
+- Settings › Home rows turns channel rows on or off, one by one.
+- The top bar shows the time, the network and a VPN badge.
+
 ## 0.3.0
 - Hold OK on an app to move it, hide it or open App info.
 - All apps shows every app, from the top bar or the apps row.

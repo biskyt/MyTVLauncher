@@ -35,10 +35,12 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         container.apps.refresh()
         container.watchNext.cameToFront()
+        container.channels.cameToFront()
     }
 
     override fun onStop() {
         container.watchNext.wentToBack()
+        container.channels.wentToBack()
         super.onStop()
     }
 

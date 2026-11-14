@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,6 +40,7 @@ import coil3.request.ImageRequest
 import coil3.request.allowRgb565
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.openApp
@@ -62,9 +64,38 @@ import kotlinx.coroutines.launch
  * Menu) opens its options. The first card has focus first.
  */
 @Composable
-fun ContinueWatchingRow(items: List<WatchNextItem>, firstFocus: FocusRequester?, onOptions: (WatchNextItem) -> Unit) {
+fun ContinueWatchingRow(items: List<WatchNextItem>, firstFocus: FocusRequester?, onOptions: (WatchNextItem) -> Unit) =
+    CardRow(stringResource(R.string.home_continue_watching), null, items, firstFocus, onOptions)
+
+/** An app's channel row (the owner, 2026-11-14): its items as Continue watching shows them, under its name and app's. */
+@Composable
+fun ChannelRow(channel: AppChannel, onOptions: (WatchNextItem) -> Unit) {
+    val labels by LocalContext.current.container.appLabels.collectAsState()
+    CardRow(channel.name, labels[channel.packageName] ?: channel.packageName, channel.items, null, onOptions)
+}
+
+/** A titled row of item cards ([subtitle]: the app, for a channel). */
+@Composable
+private fun CardRow(
+    title: String,
+    subtitle: String?,
+    items: List<WatchNextItem>,
+    firstFocus: FocusRequester?,
+    onOptions: (WatchNextItem) -> Unit
+) {
     Column {
-        SectionTitle(stringResource(R.string.home_continue_watching), Modifier.padding(horizontal = ROW_PAD))
+        if (subtitle == null) {
+            SectionTitle(title, Modifier.padding(horizontal = ROW_PAD))
+        } else {
+            Row(
+                Modifier.padding(horizontal = ROW_PAD),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SectionTitle(title)
+                Muted(subtitle, Modifier.padding(bottom = 14.dp))
+            }
+        }
         LazyRow(contentPadding = PaddingValues(horizontal = ROW_PAD), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             itemsIndexed(items, key = { _, item -> item.key }) { i, item ->
                 WatchNextCard(item, { onOptions(item) }, if (i == 0) Modifier.focusOn(firstFocus) else Modifier)
@@ -155,9 +186,16 @@ private fun AppBadge(packageName: String, modifier: Modifier) {
     icon?.let { Image(it, contentDescription = null, modifier = modifier.size(24.dp).clip(RoundedCornerShape(6.dp))) }
 }
 
-/** An item's options: open its app, hide the item, or hide all of its app's items (Settings › Home rows undoes it). */
+/** An item that the remote held OK on: a Continue watching item, or an item of the channel [channelId]. */
+data class ItemChoice(val item: WatchNextItem, val channelId: Long? = null)
+
+/**
+ * An item's options: open its app, then for Continue watching hide the item or all of its app's items, and for a
+ * channel hide the channel's row (Settings › Home rows undoes each).
+ */
 @Composable
-fun ItemOptions(item: WatchNextItem, onDismiss: () -> Unit) {
+fun ItemOptions(choice: ItemChoice, onDismiss: () -> Unit) {
+    val item = choice.item
     val context = LocalContext.current
     val container = context.container
     val labels by container.appLabels.collectAsState()
@@ -169,6 +207,14 @@ fun ItemOptions(item: WatchNextItem, onDismiss: () -> Unit) {
         BoardOption(stringResource(R.string.item_open_app, app), modifier = rememberFirstFocus()) {
             onDismiss()
             context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(item.packageName) }
+        }
+        val channel = choice.channelId
+        if (channel != null) {
+            BoardOption(stringResource(R.string.item_hide_channel), stringResource(R.string.item_hide_channel_help)) {
+                onDismiss()
+                container.appScope.launch { container.channels.setChannelShown(channel, false) }
+            }
+            return@BoardPanel
         }
         BoardOption(stringResource(R.string.item_hide)) {
             onDismiss()

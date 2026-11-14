@@ -17,6 +17,7 @@ import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
 
 /** An app in All apps: whether it is [hidden] from Home. */
 data class AppEntry(val packageName: String, val label: String, val hidden: Boolean)
@@ -36,12 +37,13 @@ class AppRepository(
     private val dao: AppPlaceDao,
     private val installed: InstalledApps,
     private val settings: SettingsRepository,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    reads: Mutex
 ) {
     /** Every app, hidden apps too, in Home's order (All apps). */
     val all: Flow<List<AppEntry>> = dao.observe().map { rows -> rows.map { AppEntry(it.packageName, it.label, it.hidden) } }
 
-    private val looks = Refresher(scope, SETTLE_MS) { lookNow() }
+    private val looks = Refresher(scope, SETTLE_MS, reads) { lookNow() }
 
     /** Asks for a look at the installed apps, in the background: now, or after a short wait for an app change. */
     fun refresh(afterChange: Boolean = false) = looks.request(afterChange)

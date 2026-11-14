@@ -31,6 +31,13 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[ACCENT] = argb }
     }
 
+    /** Whether Home shows the apps' channel rows (Settings › Home rows). On by default. */
+    val channelsShown: Flow<Boolean> = context.dataStore.data.map { it[CHANNELS_SHOWN] ?: true }.distinctUntilChanged()
+
+    suspend fun setChannelsShown(on: Boolean) {
+        context.dataStore.edit { it[CHANNELS_SHOWN] = on }
+    }
+
     suspend fun setWatchNextShown(on: Boolean) {
         context.dataStore.edit { it[WATCH_NEXT_SHOWN] = on }
     }
@@ -43,6 +50,7 @@ class SettingsRepository(private val context: Context) {
     private companion object {
         val ACCENT = intPreferencesKey("accent")
         val WATCH_NEXT_SHOWN = booleanPreferencesKey("watch_next_shown")
+        val CHANNELS_SHOWN = booleanPreferencesKey("channels_shown")
         val SYSTEM_PHONE_APPS_HIDDEN = booleanPreferencesKey("system_phone_apps_hidden")
     }
 }

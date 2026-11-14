@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.ContentObserver
 import android.database.Cursor
 import android.media.tv.TvContract.WatchNextPrograms
+import android.net.Uri
 import android.provider.BaseColumns
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
@@ -14,29 +15,18 @@ import com.biskyt.mytvlauncher.data.db.HiddenKind
 import com.biskyt.mytvlauncher.data.db.HiddenRow
 import com.biskyt.mytvlauncher.data.db.WatchNextDao
 import com.biskyt.mytvlauncher.data.db.WatchNextRow
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 
 /** Where other apps' Watch Next items come from: the TV provider, or a fake one in tests. */
-interface WatchNextSource {
-    /** Whether the launcher may read them (the READ_TV_LISTINGS permission). */
-    fun allowed(): Boolean
-
+interface WatchNextSource : ProviderSource {
     /** Every item now. Called in the background only. */
     fun read(): List<WatchNextItem>
-
-    /** Calls [onChange] whenever an item changes, until [stopWatching]; false if it cannot follow changes. */
-    fun watch(onChange: () -> Unit): Boolean
-
-    fun stopWatching()
 }
 
 /** An app in Settings › Home rows: its name, and whether its items are in the row. */
@@ -54,22 +44,18 @@ class WatchNextRepository(
     private val hidden: HiddenDao,
     private val source: WatchNextSource,
     private val settings: SettingsRepository,
-    private val scope: CoroutineScope
+    scope: CoroutineScope,
+    reads: Mutex
 ) {
-    private val reads = Refresher(scope, SETTLE_MS) { readNow() }
+    private val follower = ProviderFollower(source, settings.watchNextShown, scope, reads, clear = { dao.deleteAll() }) {
+        // An app can write two rows with one id of its own (an episode both to carry on with and next): one is kept.
+        val rows = source.read().map { it.toRow() }.distinctBy { it.key }
+        // Still on: the row may have been turned off while the read went.
+        if (settings.watchNextShown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
+    }
 
-    @Volatile private var shown = false
-
-    /** Whether Home is in front: changes made meanwhile are read when it comes back (see [changed]). */
-    @Volatile private var inFront = false
-
-    /** An app changed its items while Home was not in front, or the launcher cannot follow changes. */
-    private val changed = AtomicBoolean(true)
-
-    private val allowedNow = MutableStateFlow(source.allowed())
-
-    /** Whether the launcher may read the items: checked again at each refresh (a grant from adb or Android settings). */
-    val allowed: StateFlow<Boolean> = allowedNow.asStateFlow()
+    /** Whether the launcher may read the items (see [ProviderFollower.allowed]). */
+    val allowed: StateFlow<Boolean> get() = follower.allowed
 
     private val rows = dao.observe()
     private val hiddenApps = hidden.observe(HiddenKind.WATCH_NEXT_APP)
@@ -97,60 +83,17 @@ class WatchNextRepository(
     /** How many items the user hid one by one. */
     val hiddenItems: Flow<Int> = hiddenKeys.map { it.size }
 
-    /** Starts following the row's setting: watching and reading while it is on. */
-    fun start() {
-        scope.launch {
-            settings.watchNextShown.collect { on ->
-                shown = on
-                if (on) {
-                    changed.set(!source.watch(::onChange))
-                    reads.request()
-                } else {
-                    source.stopWatching()
-                    // After any read that goes, so that it cannot write the items back.
-                    reads.exclusive { dao.deleteAll() }
-                }
-            }
-        }
-    }
+    /** See [ProviderFollower]: following the row's setting, Home's comings and goings, and the permission. */
+    fun start() = follower.start()
 
-    /** An app changed its items: read now if Home is in front, else when it comes back. */
-    private fun onChange() {
-        if (inFront) reads.request(afterChange = true) else changed.set(true)
-    }
+    fun cameToFront() = follower.cameToFront()
 
-    /** Home came to the front: read if anything changed meanwhile. */
-    fun cameToFront() {
-        inFront = true
-        allowedNow.value = source.allowed()
-        if (shown && changed.getAndSet(false)) reads.request()
-    }
+    fun wentToBack() = follower.wentToBack()
 
-    fun wentToBack() {
-        inFront = false
-    }
-
-    /** Asks for a read in the background (the permission was given). */
-    fun refresh() {
-        allowedNow.value = source.allowed()
-        if (shown) reads.request()
-    }
+    fun refresh() = follower.refresh()
 
     /** Reads now: for tests. */
-    suspend fun read() = reads.now()
-
-    private suspend fun readNow() {
-        // The saved setting itself, not [shown]: that is set by the collector in start(), which may not have run yet.
-        if (!settings.watchNextShown.first()) return
-        if (!source.allowed()) {
-            // The permission was taken away: other apps' items are not kept either.
-            dao.deleteAll()
-            return
-        }
-        // An app can write two rows with one id of its own (an episode both to carry on with and next): one is kept.
-        val rows = source.read().map { it.toRow() }.distinctBy { it.key }
-        if (settings.watchNextShown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
-    }
+    suspend fun read() = follower.readNow()
 
     suspend fun hideItem(key: String) = hidden.hide(HiddenRow(HiddenKind.WATCH_NEXT_ITEM, key))
 
@@ -158,10 +101,6 @@ class WatchNextRepository(
 
     suspend fun setAppShown(packageName: String, on: Boolean) {
         if (on) hidden.show(HiddenKind.WATCH_NEXT_APP, packageName) else hidden.hide(HiddenRow(HiddenKind.WATCH_NEXT_APP, packageName))
-    }
-
-    private companion object {
-        const val SETTLE_MS = 500L
     }
 }
 
@@ -173,7 +112,7 @@ private fun WatchNextItem.toRow() =
 
 /** The TV provider's Watch Next table (Android's own TvContract names: some of tvprovider's are restricted). */
 class ProviderWatchNext(private val context: Context) : WatchNextSource {
-    private var observer: ContentObserver? = null
+    private val watcher = ProviderWatcher(context, WatchNextPrograms.CONTENT_URI)
 
     override fun allowed(): Boolean = context.mayReadTvListings()
 
@@ -191,32 +130,45 @@ class ProviderWatchNext(private val context: Context) : WatchNextSource {
         emptyList()
     }
 
-    override fun watch(onChange: () -> Unit): Boolean {
+    override fun watch(onChange: () -> Unit) = watcher.watch(onChange)
+
+    override fun stopWatching() = watcher.stop()
+}
+
+/** Follows changes to [uris] of the TV provider, on a binder thread (not the main one). */
+class ProviderWatcher(private val context: Context, private vararg val uris: Uri) {
+    private var observer: ContentObserver? = null
+
+    fun watch(onChange: () -> Unit): Boolean {
         if (observer != null) return true
-        // No handler: notices come on a binder thread, not the main one.
         val o = object : ContentObserver(null) {
             override fun onChange(selfChange: Boolean) = onChange()
         }
         return try {
-            context.contentResolver.registerContentObserver(WatchNextPrograms.CONTENT_URI, true, o)
+            uris.forEach { context.contentResolver.registerContentObserver(it, true, o) }
             observer = o
             true
         } catch (_: SecurityException) {
+            context.contentResolver.unregisterContentObserver(o)
             false
         }
     }
 
-    override fun stopWatching() {
+    fun stop() {
         observer?.let { context.contentResolver.unregisterContentObserver(it) }
         observer = null
     }
 }
 
-private fun Cursor.string(column: String): String? = getColumnIndex(column).takeIf { it >= 0 }?.let(::getStringOrNull)
-private fun Cursor.long(column: String): Long? = getColumnIndex(column).takeIf { it >= 0 }?.let(::getLongOrNull)
+internal fun Cursor.string(column: String): String? = getColumnIndex(column).takeIf { it >= 0 }?.let(::getStringOrNull)
+internal fun Cursor.long(column: String): Long? = getColumnIndex(column).takeIf { it >= 0 }?.let(::getLongOrNull)
 
-/** A Watch Next row as core's item; null for a row the TV does not show (not browsable) or with no title. */
-private fun Cursor.toItem(): WatchNextItem? {
+/**
+ * A Watch Next or preview program row as core's item; null for a row the TV does not show (not browsable) or with no
+ * title. The two tables share these columns. [sortColumn] fills `lastEngagementMs`, which orders the items (Watch
+ * Next: when last watched; a channel: the app's weight).
+ */
+internal fun Cursor.toItem(sortColumn: String = WatchNextPrograms.COLUMN_LAST_ENGAGEMENT_TIME_UTC_MILLIS): WatchNextItem? {
     if (long(WatchNextPrograms.COLUMN_BROWSABLE) == 0L) return null
     val packageName = string(WatchNextPrograms.COLUMN_PACKAGE_NAME) ?: return null
     val title = string(WatchNextPrograms.COLUMN_TITLE)?.takeIf { it.isNotBlank() } ?: return null
@@ -236,7 +188,7 @@ private fun Cursor.toItem(): WatchNextItem? {
             long(WatchNextPrograms.COLUMN_LAST_PLAYBACK_POSITION_MILLIS),
             long(WatchNextPrograms.COLUMN_DURATION_MILLIS)
         ),
-        lastEngagementMs = long(WatchNextPrograms.COLUMN_LAST_ENGAGEMENT_TIME_UTC_MILLIS) ?: 0,
+        lastEngagementMs = long(sortColumn) ?: 0,
         intentUri = string(WatchNextPrograms.COLUMN_INTENT_URI)
     )
 }

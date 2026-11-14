@@ -70,4 +70,56 @@ object LauncherIcons {
             close()
         }
     }
+
+    /** Wi-Fi: three arcs and a dot. */
+    val Wifi = icon("wifi") {
+        moveTo(2f, 8.5f)
+        arcTo(15f, 15f, 0f, false, true, 22f, 8.5f)
+        moveTo(5f, 12f)
+        arcTo(10f, 10f, 0f, false, true, 19f, 12f)
+        moveTo(8.5f, 15.5f)
+        arcTo(5f, 5f, 0f, false, true, 15.5f, 15.5f)
+        moveTo(12f, 19f)
+        lineTo(12f, 19.01f)
+    }
+
+    /** Ethernet: a plug with its pins. */
+    val Ethernet = icon("ethernet") {
+        moveTo(5f, 9f)
+        horizontalLineTo(19f)
+        verticalLineTo(17f)
+        horizontalLineTo(15f)
+        verticalLineTo(20f)
+        horizontalLineTo(9f)
+        verticalLineTo(17f)
+        horizontalLineTo(5f)
+        close()
+        moveTo(9f, 9f)
+        verticalLineTo(12f)
+        moveTo(12f, 9f)
+        verticalLineTo(12f)
+        moveTo(15f, 9f)
+        verticalLineTo(12f)
+    }
+
+    /** No network: Wi-Fi crossed out. */
+    val NoNetwork = icon("no-network") {
+        moveTo(2f, 8.5f)
+        arcTo(15f, 15f, 0f, false, true, 22f, 8.5f)
+        moveTo(8.5f, 15.5f)
+        arcTo(5f, 5f, 0f, false, true, 15.5f, 15.5f)
+        moveTo(3f, 3f)
+        lineTo(21f, 21f)
+    }
+
+    /** VPN: MyPlexPlayer's shield. */
+    val Shield = icon("shield") {
+        moveTo(12f, 3f)
+        lineTo(19f, 6f)
+        verticalLineTo(11f)
+        curveTo(19f, 15.5f, 16f, 19f, 12f, 21f)
+        curveTo(8f, 19f, 5f, 15.5f, 5f, 11f)
+        verticalLineTo(6f)
+        close()
+    }
 }

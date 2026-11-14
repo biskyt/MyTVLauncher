@@ -2,13 +2,17 @@ package com.biskyt.mytvlauncher
 
 import android.content.Context
 import android.os.SystemClock
+import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.keys.HomePress
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.AppIcons
 import com.biskyt.mytvlauncher.data.AppRepository
+import com.biskyt.mytvlauncher.data.ChannelRepository
+import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
+import com.biskyt.mytvlauncher.data.NetworkMonitor
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SettingsRepository
 import com.biskyt.mytvlauncher.data.TvListings
@@ -25,16 +29,28 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
 
 /** The launcher's parts, made once for the app. */
-class AppContainer(context: Context, installed: InstalledApps, watchNextSource: WatchNextSource, val recents: RecentsSource) {
+class AppContainer(
+    context: Context,
+    installed: InstalledApps,
+    watchNextSource: WatchNextSource,
+    channelSource: ChannelSource,
+    val recents: RecentsSource
+) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val db = LauncherDatabase.open(context)
     val settings = SettingsRepository(context)
-    val apps = AppRepository(db.appPlaces(), installed, settings, appScope)
+
+    /** The background reads of the installed apps and the TV provider run one at a time. */
+    private val reads = Mutex()
+    val apps = AppRepository(db.appPlaces(), installed, settings, appScope, reads)
     val icons = AppIcons(context, iconPx(context))
     val listings = TvListings(context)
-    val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope)
+    val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope, reads)
+    val channels = ChannelRepository(db.channelItems(), db.hidden(), channelSource, settings, appScope, reads)
+    val network = NetworkMonitor(context, appScope)
 
     /*
      * Read as the app starts, at the same time, so the first frame usually has them, and kept while the app runs, so
@@ -58,6 +74,12 @@ class AppContainer(context: Context, installed: InstalledApps, watchNextSource: 
 
     /** Whether Home shows Continue watching (Settings › Home rows). */
     val watchNextShown: StateFlow<Boolean?> = settings.watchNextShown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** Whether Home shows the apps' channel rows (Settings › Home rows). */
+    val channelsShown: StateFlow<Boolean?> = settings.channelsShown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** The apps' channel rows, from the saved items (see ChannelRepository). */
+    val channelRows: StateFlow<List<AppChannel>?> = channels.channels.stateIn(appScope, SharingStarted.Eagerly, null)
 
     /** Continue watching, from the saved items (see WatchNextRepository). */
     val watchNextItems: StateFlow<List<WatchNextItem>?> = watchNext.items.stateIn(appScope, SharingStarted.Eagerly, null)

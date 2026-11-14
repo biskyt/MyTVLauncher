@@ -104,4 +104,18 @@ class ContinueWatchingUiTest {
         assertFalse(shown(FakeWatchNext.film.title))
         rule.topRoot()
     }
+
+    @Test
+    fun `a permission given outside the launcher is read on the return to Home`() {
+        waitShown(FakeWatchNext.film.title)
+        FakeWatchNext.allowed = false
+        // A read without the permission deletes the saved items.
+        runBlocking { rule.activity.container.watchNext.read() }
+        rule.activityRule.scenario.recreate()
+        rule.waitForText("Allow Continue watching")
+        // Given with adb or in Android settings, then back to Home: the items are read again.
+        FakeWatchNext.allowed = true
+        rule.activityRule.scenario.recreate()
+        waitShown(FakeWatchNext.film.title)
+    }
 }

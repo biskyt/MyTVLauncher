@@ -79,4 +79,15 @@
     <string name="recents_access_help">Os apps recentes precisam do acesso de uso do Android para o MyTVLauncher. Selecione para abrir.</string>
     <string name="recents_access_missing">Esta TV não tem uma tela de acesso de uso. Use o comando adb abaixo.</string>
     <string name="recents_adb">Se a TV não tiver tela para isso, dê o acesso de uso a partir de um computador com este comando:</string>
+
+    <string name="rows_channels">Canais de apps</string>
+    <string name="rows_channels_help">Linhas que os apps colocam na tela inicial. Desativado, o launcher não lê nenhuma.</string>
+    <string name="rows_no_channels">Nenhum app tem canais ainda.</string>
+    <string name="item_hide_channel">Ocultar este canal</string>
+    <string name="item_hide_channel_help">Configurações › Linhas do início mostra de novo</string>
+    <string name="network_wifi">Wi-Fi</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_other">Conectado</string>
+    <string name="network_none">Sem rede</string>
+    <string name="network_vpn">VPN</string>
 </resources>

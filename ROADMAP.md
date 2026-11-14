@@ -20,7 +20,7 @@ owner approved the plan and the mockups on 2026-11-14 (https://claude.ai/artifac
      debounced (500 ms), one at a time; pictures load at card size, only for cards on screen.
 3. **0.3.0 (done):** hide, show and move apps (hold OK on an app: Move, Hide from Home, App info), the All apps screen (a
    top bar button and a tile at the end of the apps row), and the recent apps panel on a double Home press.
-4. **0.4.0:** app channel rows (with their switches), the clock, and the network icon with the VPN badge.
+4. **0.4.0 (done):** app channel rows (with their switches), the clock, and the network icon with the VPN badge.
 5. **0.5.0:** backup and restore, as MyPlexPlayer's: one plain JSON file with a fixed name, permissions only when
    used, also accepted by Open with / Share.
 6. **0.6.0, low priority:** wake the speaker when the TV leaves standby, with about 1 s of silent sound, once for
