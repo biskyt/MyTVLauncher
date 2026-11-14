@@ -1,10 +1,9 @@
 name: CI
 
-# Once per commit: pull requests (their own branches' pushes would only repeat the PR's run) and main after a merge
-# (which keeps the Gradle cache that the PR runs read). Also by hand from the Actions tab.
+# On pull requests only, not on main after a merge (the owner, 2026-11-14): a merge commit has the code that its PR
+# tested, and the Release run after each merge tests it again. Branch pushes without a PR run nothing. Also by hand from
+# the Actions tab. The Release runs on main keep the Gradle and Robolectric caches that these runs read.
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -13,7 +12,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # A newer push to a PR replaces its run; runs on main all finish, since they save the cache.
+  # A newer push to a PR replaces its run; a run started by hand on main finishes, since it saves the cache.
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

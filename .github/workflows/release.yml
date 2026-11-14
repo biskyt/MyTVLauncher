@@ -65,12 +65,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
-      # Robolectric's Android images, from CI's cache.
+      # Robolectric's Android images (about 250 MB, fetched into ~/.m2 on first use). Release runs on main keep the cache
+      # that CI's pull request runs read: CI no longer runs on main (setup-gradle saves the Gradle cache here the same way).
       - name: Robolectric cache key
         id: robolectric
         run: echo "key=$(.github/scripts/robolectric-cache-key.sh)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/restore@v4
+        id: robolectric-cache
         with:
           path: ~/.m2/repository/org/robolectric
           key: ${{ steps.robolectric.outputs.key }}
@@ -106,6 +108,12 @@ jobs:
 
       - name: Test
         run: ./gradlew :core:test :app:testDebugUnitTest
+
+      - uses: actions/cache/save@v4
+        if: steps.robolectric-cache.outputs.cache-hit != 'true'
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: ${{ steps.robolectric.outputs.key }}
 
       - name: Build APK and app bundle
         run: ./gradlew :app:assembleRelease :app:bundleRelease
