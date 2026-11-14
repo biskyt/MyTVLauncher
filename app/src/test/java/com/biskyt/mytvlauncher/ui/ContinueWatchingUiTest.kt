@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -92,7 +93,8 @@ class ContinueWatchingUiTest {
         rule.waitForText("Home rows")
         rule.onNode(hasText("Home rows")).performClick()
         rule.waitForText("Music")
-        rule.onNode(hasText("Music")).performClick()
+        // The first "Music": Continue watching's switch (the second heads Music's channels).
+        rule.onAllNodes(hasText("Music")).onFirst().performClick()
         rule.waitAdvancingClock { runBlocking { container.watchNextItems.value?.map { it.title } } == listOf(FakeWatchNext.film.title) }
     }
 

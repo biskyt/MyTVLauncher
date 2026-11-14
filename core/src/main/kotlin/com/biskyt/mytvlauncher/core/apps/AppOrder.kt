@@ -48,14 +48,25 @@ object AppOrder {
     }
 
     /**
-     * [order] (package names, as Home shows them) with [packageName] moved [step] places (-1 left, 1 right). It stays
-     * put at either end.
+     * [order] (package names, as Home shows them, or other keys) with [packageName] moved [step] places (-1 left, 1
+     * right, or a grid row). A step past either end goes to that end, so that Down in All apps reaches a short last row.
      */
     fun move(order: List<String>, packageName: String, step: Int): List<String> {
         val from = order.indexOf(packageName)
-        val to = from + step
-        if (from < 0 || to !in order.indices) return order
+        if (from < 0) return order
+        val to = (from + step).coerceIn(order.indices)
+        if (to == from) return order
         return order.toMutableList().apply { add(to, removeAt(from)) }
+    }
+
+    /**
+     * The places after the user moved an app in All apps: every app, hidden ones too, in [order]. An app not in [order]
+     * (it changed meanwhile) keeps its order, after the others.
+     */
+    fun reorderAll(places: List<AppPlace>, order: List<String>): List<AppPlace> {
+        val rank = order.withIndex().associate { (i, name) -> name to i }
+        return places.sortedWith(compareBy({ rank[it.packageName] ?: Int.MAX_VALUE }, { it.position }))
+            .mapIndexed { i, place -> place.copy(position = i) }
     }
 
     /**

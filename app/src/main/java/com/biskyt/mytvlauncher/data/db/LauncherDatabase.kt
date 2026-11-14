@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher.data.db
 
 import android.content.Context
 import androidx.room.AutoMigration
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -103,7 +104,9 @@ data class ChannelItemRow(
     val shape: CardShape,
     val progress: Float?,
     val position: Int,
-    val intentUri: String?
+    val intentUri: String?,
+    /** Whether the TV shows the item's channel on its own home screen (see AppChannel.browsable). */
+    @ColumnInfo(defaultValue = "1") val channelBrowsable: Boolean = true
 )
 
 @Dao
@@ -148,12 +151,18 @@ object HiddenKind {
 
     /** An app channel's row, by the channel's id (Settings › Home rows, or hold OK on an item › Hide this channel). */
     const val CHANNEL = "channel"
+
+    /** Not hidden: an app channel the TV does not show that the user turned on (Settings › Home rows). */
+    const val CHANNEL_ON = "channel_on"
 }
 
 @Dao
 interface HiddenDao {
     @Query("SELECT `key` FROM hidden WHERE kind = :kind")
     fun observe(kind: String): Flow<List<String>>
+
+    @Query("SELECT * FROM hidden WHERE kind IN (:kinds)")
+    fun observeKinds(kinds: List<String>): Flow<List<HiddenRow>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun hide(row: HiddenRow)
@@ -167,9 +176,9 @@ interface HiddenDao {
 
 @Database(
     entities = [AppPlaceRow::class, WatchNextRow::class, HiddenRow::class, ChannelItemRow::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)]
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)]
 )
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun appPlaces(): AppPlaceDao

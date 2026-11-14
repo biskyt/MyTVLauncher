@@ -55,9 +55,15 @@ class AppRepository(
     suspend fun setHidden(packageName: String, hidden: Boolean) = looks.exclusive { dao.setHidden(packageName, hidden) }
 
     /** Saves the order the user moved the apps on Home into ([shownOrder]: package names, as Home shows them). */
-    suspend fun saveOrder(shownOrder: List<String>) = looks.exclusive {
+    suspend fun saveOrder(shownOrder: List<String>) = saveWith { AppOrder.reorder(it, shownOrder) }
+
+    /** Saves the order the user moved the apps into in All apps ([order]: every app's package name, hidden ones too). */
+    suspend fun saveAllOrder(order: List<String>) = saveWith { AppOrder.reorderAll(it, order) }
+
+    /** Saves the places that [reorder] makes of the saved ones, after any look at the apps that goes. */
+    private suspend fun saveWith(reorder: (List<AppPlace>) -> List<AppPlace>) = looks.exclusive {
         val rows = dao.all().associateBy { it.packageName }
-        val places = AppOrder.reorder(rows.values.map { AppPlace(it.packageName, it.position, it.hidden) }, shownOrder)
+        val places = reorder(rows.values.map { AppPlace(it.packageName, it.position, it.hidden) })
         dao.replace(places.map { rows.getValue(it.packageName).copy(position = it.position) })
     }
 

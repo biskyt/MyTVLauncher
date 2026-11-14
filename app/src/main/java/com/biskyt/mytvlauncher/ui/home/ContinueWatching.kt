@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,6 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -65,13 +67,16 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun ContinueWatchingRow(items: List<WatchNextItem>, firstFocus: FocusRequester?, onOptions: (WatchNextItem) -> Unit) =
-    CardRow(stringResource(R.string.home_continue_watching), null, items, firstFocus, onOptions)
+    CardRow(stringResource(R.string.home_continue_watching), null, items, firstFocus, CardSize.FULL, onOptions)
 
-/** An app's channel row (the owner, 2026-11-14): its items as Continue watching shows them, under its name and app's. */
+/**
+ * An app's channel row (the owner, 2026-11-14): its items as Continue watching shows them, at half the size (the owner,
+ * 2026-11-14), under its name and its app's name.
+ */
 @Composable
-fun ChannelRow(channel: AppChannel, onOptions: (WatchNextItem) -> Unit) {
+fun ChannelRow(channel: AppChannel, firstFocus: FocusRequester?, onOptions: (WatchNextItem) -> Unit) {
     val labels by LocalContext.current.container.appLabels.collectAsState()
-    CardRow(channel.name, labels[channel.packageName] ?: channel.packageName, channel.items, null, onOptions)
+    CardRow(channel.name, labels[channel.packageName] ?: channel.packageName, channel.items, firstFocus, CardSize.HALF, onOptions)
 }
 
 /** A titled row of item cards ([subtitle]: the app, for a channel). */
@@ -81,6 +86,7 @@ private fun CardRow(
     subtitle: String?,
     items: List<WatchNextItem>,
     firstFocus: FocusRequester?,
+    size: CardSize,
     onOptions: (WatchNextItem) -> Unit
 ) {
     Column {
@@ -96,9 +102,16 @@ private fun CardRow(
                 Muted(subtitle, Modifier.padding(bottom = 14.dp))
             }
         }
-        LazyRow(contentPadding = PaddingValues(horizontal = ROW_PAD), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        val list = rememberLazyListState()
+        val back = rememberRowBack(list)
+        LazyRow(
+            back.row,
+            state = list,
+            contentPadding = PaddingValues(horizontal = ROW_PAD),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             itemsIndexed(items, key = { _, item -> item.key }) { i, item ->
-                WatchNextCard(item, { onOptions(item) }, if (i == 0) Modifier.focusOn(firstFocus) else Modifier)
+                WatchNextCard(item, size, { onOptions(item) }, back.item(i, if (i == 0) Modifier.focusOn(firstFocus) else Modifier))
             }
         }
     }
@@ -119,38 +132,57 @@ fun AllowRow(firstFocus: FocusRequester?, onAsk: () -> Unit) {
 }
 
 @Composable
-private fun WatchNextCard(item: WatchNextItem, onOptions: () -> Unit, modifier: Modifier = Modifier) {
+private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val width = if (item.shape == CardShape.POSTER) POSTER else WIDE
+    val width = (if (item.shape == CardShape.POSTER) POSTER else WIDE) * size.scale
+    val height = HEIGHT * size.scale
+    val textStyle = size.titleStyle()
     val notOpened = stringResource(R.string.home_app_not_opened, item.title)
     Column(Modifier.width(width)) {
         TvCard(
             onClick = { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openWatchNext(item) } },
             onLongClick = onOptions,
-            modifier = modifier.size(width, HEIGHT).semantics { contentDescription = item.title },
+            modifier = modifier.size(width, height).semantics { contentDescription = item.title },
             shape = RoundedCornerShape(10.dp)
         ) {
             Box(Modifier.fillMaxSize()) {
-                Picture(item.pictureUri, width) {
+                Picture(item.pictureUri, width, height) {
                     Text(
                         item.title,
-                        style = MaterialTheme.typography.titleSmall,
+                        style = textStyle,
                         color = Palette.textDim,
                         modifier = Modifier.padding(10.dp)
                     )
                 }
-                AppBadge(item.packageName, Modifier.align(Alignment.BottomStart).padding(start = 8.dp, bottom = 12.dp))
+                AppBadge(
+                    item.packageName,
+                    Modifier.align(Alignment.BottomStart).padding(start = 8.dp * size.scale, bottom = 12.dp * size.scale).size(
+                        24.dp * size.scale
+                    )
+                )
                 item.progress?.let { ProgressLine(it, Modifier.align(Alignment.BottomCenter), height = 4.dp) }
             }
         }
         Text(
             item.title,
-            style = MaterialTheme.typography.titleSmall,
+            style = textStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 6.dp)
         )
-        item.subtitle?.let { Muted(it) }
+        item.subtitle?.let {
+            if (size == CardSize.FULL) {
+                Muted(it)
+            } else {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Palette.textMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -159,15 +191,15 @@ private fun WatchNextCard(item: WatchNextItem, onOptions: () -> Unit, modifier: 
  * until it loads, or if it has none or fails (as MyPlexPlayer's ImageWithInitials).
  */
 @Composable
-private fun Picture(uri: String?, width: Dp, placeholder: @Composable () -> Unit) {
+private fun Picture(uri: String?, width: Dp, height: Dp, placeholder: @Composable () -> Unit) {
     var loaded by remember(uri) { mutableStateOf(false) }
     if (!loaded) placeholder()
     if (uri == null) return
     val context = LocalContext.current
     val density = LocalDensity.current
-    val request = remember(uri, width) {
+    val request = remember(uri, width, height) {
         with(density) {
-            ImageRequest.Builder(context).data(uri).size(width.roundToPx(), HEIGHT.roundToPx()).allowRgb565(true).build()
+            ImageRequest.Builder(context).data(uri).size(width.roundToPx(), height.roundToPx()).allowRgb565(true).build()
         }
     }
     AsyncImage(
@@ -183,7 +215,7 @@ private fun Picture(uri: String?, width: Dp, placeholder: @Composable () -> Unit
 @Composable
 private fun AppBadge(packageName: String, modifier: Modifier) {
     val icon = rememberAppIcon(packageName)
-    icon?.let { Image(it, contentDescription = null, modifier = modifier.size(24.dp).clip(RoundedCornerShape(6.dp))) }
+    icon?.let { Image(it, contentDescription = null, modifier = modifier.clip(RoundedCornerShape(6.dp))) }
 }
 
 /** An item that the remote held OK on: a Continue watching item, or an item of the channel [channelId]. */
@@ -225,6 +257,15 @@ fun ItemOptions(choice: ItemChoice, onDismiss: () -> Unit) {
             container.appScope.launch { container.watchNext.setAppShown(item.packageName, false) }
         }
     }
+}
+
+/** The cards' size: Continue watching's, or the channel rows' half size, with smaller text. */
+private enum class CardSize(val scale: Float) {
+    FULL(1f),
+    HALF(0.5f);
+
+    @Composable
+    fun titleStyle(): TextStyle = if (this == FULL) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall
 }
 
 private val POSTER = 124.dp

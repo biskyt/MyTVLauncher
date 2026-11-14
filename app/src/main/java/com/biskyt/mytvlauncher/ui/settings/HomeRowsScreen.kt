@@ -15,19 +15,22 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.ui.Navigator
+import com.biskyt.mytvlauncher.ui.Screen
 import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SettingRow
 import com.biskyt.mytvlauncher.ui.common.Toggle
 import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
+import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
 
 /**
- * Settings › Home rows (the owner, 2026-11-14). Continue watching on or off, each app that has items with its own
+ * Settings › Home rows (the owner, 2026-11-14). Row order first, then Continue watching on or off, each app that has items with its own
  * switch, and the items hidden one by one, to show again. Then the apps' channel rows on or off, and each channel's
  * switch. When a row is off, the launcher reads nothing for it from the TV provider.
  */
 @Composable
-fun HomeRowsScreen() {
+fun HomeRowsScreen(nav: Navigator) {
     val container = LocalContext.current.container
     val watchNext = container.watchNext
     val watchOn by container.watchNextShown.collectAsState()
@@ -43,10 +46,18 @@ fun HomeRowsScreen() {
     SettingsPage(R.string.settings_home_rows) {
         item {
             SettingRow(
+                stringResource(R.string.rows_order),
+                stringResource(R.string.rows_order_help),
+                { nav.open(Screen.ROW_ORDER) },
+                rememberFirstFocus(once = true)
+            )
+        }
+        item {
+            SettingRow(
                 stringResource(R.string.home_continue_watching),
                 stringResource(R.string.rows_continue_watching_help),
                 { later { container.settings.setWatchNextShown(!watch) } },
-                rememberFirstFocus(once = true)
+                Modifier.padding(top = 12.dp)
             ) { Toggle(watch) }
         }
         if (watch) {
@@ -75,9 +86,19 @@ fun HomeRowsScreen() {
         }
         if (channels) {
             if (channelSwitches.isEmpty()) item { Muted(stringResource(R.string.rows_no_channels)) }
-            items(channelSwitches, key = { "channel-${it.id}" }) { channel ->
-                SettingRow(channel.name, channel.app, { later { container.channels.setChannelShown(channel.id, !channel.on) } }) {
-                    Toggle(channel.on)
+            channelSwitches.forEach { app ->
+                item(key = "channels-of-${app.packageName}") {
+                    Text(
+                        app.app,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Palette.textDim,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+                items(app.channels, key = { "channel-${it.id}" }) { channel ->
+                    SettingRow(channel.name, null, { later { container.channels.setChannelShown(channel.id, !channel.on) } }) {
+                        Toggle(channel.on)
+                    }
                 }
             }
         }

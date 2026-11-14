@@ -52,4 +52,21 @@ class HomeStartUiTest {
         rule.waitAdvancingClock { rule.onAllNodes(hasContentDescription("Saved app")).fetchSemanticsNodes().isNotEmpty() }
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Saved item").assertIsFocused() }.isSuccess }
     }
+
+    @Test
+    fun `Continue watching read after Home shows takes the first focus, before any key is pressed`() {
+        runBlocking {
+            app.container.apps.look()
+            app.container.watchNext.read()
+            app.container.db.watchNext().deleteAll()
+        }
+        // Home shows with the apps only: the first app has focus.
+        FakeWatchNext.hold()
+        app.container.watchNext.refresh()
+        rule.setContent { AppRoot(Navigator()) }
+        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Browser").assertIsFocused() }.isSuccess }
+        // The row comes in above the apps: its first card takes the focus.
+        FakeWatchNext.release()
+        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription(FakeWatchNext.film.title).assertIsFocused() }.isSuccess }
+    }
 }

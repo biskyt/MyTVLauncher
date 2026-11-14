@@ -66,6 +66,8 @@
     <string name="app_move">Mover</string>
     <string name="app_move_help">Esquerda e direita o movem no início</string>
     <string name="app_move_hint">Esquerda e direita movem %1$s. OK ou Voltar termina.</string>
+    <string name="app_move_all_help">As setas o movem, também no início</string>
+    <string name="app_move_all_hint">As setas movem %1$s. OK ou Voltar termina.</string>
     <string name="app_hide">Ocultar do início</string>
     <string name="app_hide_help">Continua em Todos os apps</string>
     <string name="app_show">Mostrar no início</string>
@@ -90,4 +92,9 @@
     <string name="network_other">Conectado</string>
     <string name="network_none">Sem rede</string>
     <string name="network_vpn">VPN</string>
+    <string name="rows_order">Ordem das linhas</string>
+    <string name="rows_order_help">A ordem das linhas no início</string>
+    <string name="rows_order_intro">OK em uma linha a pega. Cima e baixo a movem, e OK ou Voltar a solta.</string>
+    <string name="rows_order_moving">Cima e baixo movem %1$s. OK ou Voltar termina.</string>
+    <string name="rows_order_lifted">Movendo</string>
 </resources>

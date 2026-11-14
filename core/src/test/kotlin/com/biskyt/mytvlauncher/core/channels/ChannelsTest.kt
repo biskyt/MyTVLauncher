@@ -16,7 +16,7 @@ class ChannelsTest {
                 AppChannel(1, "b", "News", emptyList()),
                 AppChannel(2, "c", "Top", listOf(item("y", 1)))
             )
-        assertEquals(listOf(2L), Channels.select(channels, hiddenIds = setOf(3L)).map { it.id })
+        assertEquals(listOf(2L), Channels.select(channels, offIds = setOf(3L)).map { it.id })
     }
 
     @Test
@@ -33,5 +33,14 @@ class ChannelsTest {
         val ordered = Channels.order(items)
         assertEquals(30, ordered.size)
         assertEquals(30, ordered.map { it.key }.distinct().size)
+    }
+
+    @Test
+    fun `a channel the TV does not show is on Home only once the user turns it on, and the user can turn any off`() {
+        val shown = AppChannel(1, "a", "Top", listOf(item("x", 1)))
+        val extra = AppChannel(2, "a", "More", listOf(item("y", 1)), browsable = false)
+        assertEquals(listOf(1L), Channels.select(listOf(shown, extra), offIds = emptySet()).map { it.id })
+        assertEquals(listOf(1L, 2L), Channels.select(listOf(shown, extra), offIds = emptySet(), onIds = setOf(2L)).map { it.id })
+        assertEquals(listOf(2L), Channels.select(listOf(shown, extra), offIds = setOf(1L), onIds = setOf(2L)).map { it.id })
     }
 }

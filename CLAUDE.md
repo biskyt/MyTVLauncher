@@ -125,10 +125,20 @@ See also:
 - **TV provider rows** (Continue watching, app channels) follow `data/ProviderFollower.kt`: the row's setting, the
   permission, change notices, and reads only when Home is in front after a change. Its `Refresher` work must not take
   the `Refresher`'s own lock again (`exclusive`): the lock is not re-entrant, and a 0.4.0 draft hung every read.
+- **App channels:** an app can have many preview channels, and the TV marks as browsable only those that its own
+  launcher shows (one for each app at first). The launcher reads them all: a browsable channel is on until the user
+  turns it off, another is off until the user turns it on (`HiddenKind.CHANNEL` and `CHANNEL_ON`, `Channels.shown`).
+- **Scrolling:** on a TV, Compose keeps the item with focus about a third of the way across a list. `KeepInViewSpec`
+  (ui/home/RowScroll.kt, set in `AppRoot`) scrolls only as far as needed, so Up and Down between rows do not make
+  them jump (the owner, 2026-11-14). Move mode keeps the moved item in view itself (`AppMove`, `keepInView`).
+- **Home's row order** is a list of keys in the settings (`RowOrder`, Settings › Home rows › Row order). A row not
+  in the list keeps its usual place after the saved ones.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).
-  `HomeStartUiTest` holds both reads to check this.
+  `HomeStartUiTest` holds both reads to check this. A row that comes in on top before the user presses a key takes
+  the first focus (`FocusNewTop`): without this, a test that expects focus on Continue watching failed now and then,
+  when the Watch Next read ended after Home's first frame.
 - **Back:** the activity gives the remote's Back to `BackHandler` in `AppRoot`. In a Robolectric test, use the
   activity's `onBackPressedDispatcher`, not a key event to the Compose root.
 - **Robolectric UI tests:**
@@ -145,7 +155,8 @@ See also:
   - **Settings start from defaults:** the settings DataStore is process-wide, so `TestApp` resets it (and `FakeApps`)
     when each test ends. A test sets only what differs from the defaults.
   - **The installed apps in tests** come from `FakeApps`, the Watch Next items from `FakeWatchNext` and the recent apps
-    from `FakeRecents`, and the channels from `FakeChannels` (all in testutil/TestApp.kt). `hold()` on `FakeApps` or `FakeWatchNext` makes a read wait. `FakeApps` includes an app named
+    from `FakeRecents`, and the channels from `FakeChannels` (all in testutil/TestApp.kt; its `extra` channel is one
+    the TV does not show, so Settings › Home rows lists "Music" twice). `hold()` on `FakeApps` or `FakeWatchNext` makes a read wait. `FakeApps` includes an app named
     "Settings", as on a real TV.
   - **A read that a test calls straight after the app starts** must not depend on a flag that a coroutine sets later:
     the Watch Next read checks the saved setting itself (a flaky `WatchNextSafetyTest`, fixed in 0.2.0).
