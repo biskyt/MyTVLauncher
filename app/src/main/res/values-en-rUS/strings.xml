@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- US English overrides: only strings whose wording differs from the UK source in values/. -->
+<resources>
+    <string name="settings_accent">Accent color</string>
+    <string name="settings_accent_help">The color of the item that has focus</string>
+</resources>

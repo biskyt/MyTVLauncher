@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_title">Accueil</string>
+    <string name="home_apps">Applications</string>
+    <string name="home_no_apps">Aucune application trouvée.</string>
+    <string name="home_app_not_opened">%1$s ne s’est pas ouvert.</string>
+    <string name="home_settings">Paramètres</string>
+    <string name="home_android_settings">Paramètres Android</string>
+    <string name="home_android_settings_missing">Ce téléviseur n’a pas d’écran de paramètres Android que le lanceur peut ouvrir.</string>
+
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_accent">Couleur d’accent</string>
+    <string name="settings_accent_help">La couleur de l’élément sélectionné</string>
+    <string name="settings_check">Vérification de « À suivre »</string>
+    <string name="settings_check_help">Ce que le lanceur peut lire des autres applications, et le test du bouton Accueil</string>
+    <string name="settings_android_help">Réseau, affichage, son et plus</string>
+    <string name="settings_home_app">Application d’accueil</string>
+    <string name="settings_home_app_help">Choisissez le lanceur qu’ouvre le bouton Accueil</string>
+    <string name="settings_home_app_missing">Ce téléviseur n’a pas d’écran pour choisir l’application d’accueil. Utilisez les paramètres Android ou adb pour la changer.</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_no_tracking">Sans publicité, sans suivi et sans statistiques.</string>
+
+    <string name="accent_mint">Menthe</string>
+    <string name="accent_yellow">Jaune</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_sky">Ciel</string>
+    <string name="accent_coral">Corail</string>
+    <string name="accent_lime">Citron vert</string>
+    <string name="accent_pink">Rose</string>
+    <string name="accent_silver">Argent</string>
+
+    <string name="check_permission">Autorisation de lire les programmes TV</string>
+    <string name="check_allowed">Autorisée</string>
+    <string name="check_not_allowed">Non autorisée. Sélectionnez pour la demander.</string>
+    <string name="check_adb">Si le téléviseur ne la demande pas, donnez l’autorisation depuis un ordinateur avec cette commande :</string>
+    <string name="check_read_again">Lire à nouveau</string>
+    <string name="check_watch_next">Éléments « À suivre »</string>
+    <string name="check_channels">Chaînes des applications</string>
+    <string name="check_count">%1$s : %2$d</string>
+    <string name="check_no_table">%1$s : cet appareil n’en a pas</string>
+    <string name="check_refused">%1$s : refusé (%2$s)</string>
+    <string name="check_home_title">Test du bouton Accueil</string>
+    <string name="check_home_help">Appuyez sur Accueil, maintenez Accueil, puis appuyez deux fois sur Accueil. Chaque signal Accueil qui arrive au lanceur s’affiche ici.</string>
+    <string name="check_home_none">Aucun signal Accueil pour l’instant.</string>
+    <string name="check_home_gap">%1$d ms après le précédent</string>
+    <string name="check_home_in_front">le lanceur était au premier plan</string>
+    <string name="check_home_other_app">une autre application était au premier plan</string>
+</resources>

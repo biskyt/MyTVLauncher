@@ -1,0 +1,157 @@
+# CLAUDE.md: working on MyTVLauncher
+
+MyTVLauncher is a light home screen (launcher) for Android TV and Google TV, with no ads, no tracking and no
+analytics. It is written in Kotlin with Compose for TV and Room.
+- Modules: `app` (Android) and `core` (pure Kotlin: app order, the Home press log, the accent palette).
+- The repo is `biskyt/MyTVLauncher` on GitHub.
+- **Its look comes from MyPlexPlayer** (`biskyt/MyPlexPlayer`, the owner, 2026-11-14), which has the newest style.
+  The theme, `TvCard` and the other parts of `ui/common/Components.kt`, `Focus.kt`, `Touch.kt`, `Keys.kt`,
+  the icons' style and the test helpers in `testutil/` are copies of MyPlexPlayer's, with the package renamed.
+  - Keep them as MyPlexPlayer has them, so a later style change ports across by hand. Put launcher-only parts in
+    files of their own.
+  - Tighter links with MyTVPlayer and MyPlexPlayer come later (see ROADMAP.md): for example, their Watch Next items
+    with posters.
+
+See also:
+- `ROADMAP.md`: what's planned, release by release.
+- `RELEASING.md`: signing, releases, and how to make MyTVLauncher the TV's home app.
+- `CHANGELOG.md`: what changed in each version.
+
+## Standing instructions from the owner
+- **Write in plain English.** Use the `plain-english` skill (`.claude/skills/plain-english/SKILL.md`) for all
+  documentation, code comments that explain behaviour, commit messages, PR descriptions and release notes.
+- **Run `/simplify` and `/code-review` before every commit.**
+  - Apply their findings, or note why one is skipped.
+  - Never commit first and review afterwards.
+- **No test APKs unless asked.** CI builds no APK on pushes; APKs are built only for release tags. Build a debug APK
+  only when the owner asks for one.
+- **Steer clear of any reference to, or hint of, piracy.** This applies to code, docs, store text, changelog and commit messages.
+- **Keep overhead and risk low.** Prefer small, well-tested changes, and don't widen a release on your own initiative.
+- **Flaky tests must be root-caused and fixed.**
+  - Don't re-run CI hoping for green.
+  - Never skip, disable or quarantine a test.
+  - Don't just raise timeouts.
+- **Long waits (CI, test loops, agents) go in the background**, so the conversation isn't blocked.
+- **Answer the owner's questions straight away** (the owner, 2026-10-25): when they ask something, pause the work,
+  answer first, then carry on. Leaving a question waiting behind other work reads as ignoring them.
+- **Release every merged app change** (as in the sister apps): once an app PR is merged, start `release.yml` (step 8)
+  and give the owner the release link.
+- **When the owner says "don't release until X", don't merge or release** until they confirm.
+- **Only the app's own text is translated**: see **Languages** below.
+- **Release notes are English only**, on GitHub and in Play's "What's new" (translated Play notes: not worth the work).
+- **Release notes are short** (the owner, 2026-10-27, again 2026-11-14): a bullet list, one brief sentence per change
+  (about 12 words at most), no bold lead-ins, explanations or "so that" clauses.
+
+## Process for each change or release
+1. Make the change with tests. Check that a new test fails without the fix.
+2. Run the CI checks locally:
+   - `./gradlew ktlintCheck detekt lintDebug`
+   - `./gradlew :core:test :app:testDebugUnitTest`
+   - `./gradlew ktlintFormat` fixes most style issues. Rerun `ktlintCheck` afterwards, because the format task itself exits non-zero when it changed something.
+3. Run `/simplify`, then `/code-review`, then apply their fixes.
+4. Bump `versionCode` (+1) and `versionName` in `app/build.gradle.kts`, for every PR that changes the app, released or
+   not: the patch number for fixes and small changes, the minor for a notable feature (1.1.0: languages).
+5. Add a `## x.y.z` section at the top of `CHANGELOG.md`, written for people using the app.
+   - A release's notes are its section plus those of any unreleased versions since the last release
+     (`.github/scripts/release-notes.sh`). For Play's "What's new" (500 characters), `play-notes.py` keeps the whole
+     bullets that fit in about 420 and adds a link to the full notes, so put the change users notice most first.
+   - Fix a published GitHub release's notes with the **Release notes** workflow (`release-notes.yml`, input `tag`),
+     which rewrites them from CHANGELOG.md without rebuilding. It doesn't touch Play: change Play's notes in Play
+     Console.
+6. Commit with the session's attribution trailers, then push to the working branch and open a PR to `main`.
+7. When CI and the emulator runs (if the PR has them; see below) are green, merge the PR (merge commit).
+   - CI runs once per commit: on pull requests and on `main` after a merge (or by hand). A push to a branch without a
+     PR runs nothing, so open the PR to get CI.
+   - CI runs `:core:test :app:recordRoborazziDebug` (the unit tests, recording screenshots to `app/screenshots/`; don't
+     commit those unless meant to). The emulator runs are on PRs (or started by hand), and skipped when every
+     changed file is one that can't reach the app: `.md`, `docs/`, `store/`, JVM tests and screenshots, or the other
+     workflows and their scripts (the list is `paths-ignore` in `emulator.yml`).
+8. Releases are built only for a tag, never for a plain merge to `main`. After each merged app change (see the
+   standing instructions), start `release.yml` for `v<versionName>` on `main`. It re-tests, signs and publishes the GitHub release with the APK and SHA256SUMS.
+   - **From a Claude session, run the workflow by hand:** tag pushes from a cloud session have failed with HTTP 403
+     (with either repo name as the remote), while pushes to the working branch work. Use the GitHub MCP tool
+     `actions_run_trigger` with method `run_workflow`, `workflow_id` `release.yml` and ref `main`. It tags
+     `v<versionName>` itself.
+   - **Check first** that the version bump is merged to `main`. The workflow itself refuses a run from another branch,
+     or one for a version that already has a release, or (started by hand) a tag: a tag left by a failed run must be
+     deleted first.
+   - From a normal checkout, pushing the tag also works: `git tag v1.0.2 && git push origin v1.0.2`.
+   - A change with no app changes (CI, tests, docs) is merged without a version bump, changelog entry or release.
+   - The signed Play bundle (`.aab`) goes to Play's closed testing track, and is a run artifact called
+     `MyTVLauncher-<version>-play-bundle`, kept 90 days.
+   - If only the Play upload failed (the GitHub release is out), run `play-upload.yml` on `main` with input `tag`
+     (for example `v0.1.0`): it uploads that release's bundle again. Don't re-run the release.
+   - Versions `0.x` (or dev-key signed builds) are pre-releases. `1.x` and later are full releases.
+9. Confirm the release exists (`get_release_by_tag`), then give the owner the release link and the `.aab` artifact link
+   (`actions_list` with method `list_workflow_run_artifacts` and the release run's id). For when testers see it, see
+   RELEASING.md › Google Play.
+
+## Working from a Claude Code cloud session
+- **GitHub tools:** use owner `biskyt`, repo `MyTVLauncher`.
+- **CI results:** for each PR, call `subscribe_pr_activity` (repo `MyTVLauncher`) so its CI results wake the session.
+  - Each run (CI, the emulators) reports on its own: check them all with `pull_request_read` (`get_check_runs`).
+  - Keep one `send_later` check as a safety net (CI and the emulator runs take about 5 minutes). Use it alone for runs
+    outside a PR (a release, about 6 minutes; release notes) or if another agent already watches the PR.
+- `merge_pull_request`'s `expectedHeadSha` needs the full 40-character SHA.
+- Work on the session's designated branch. Once its PR is merged, restart the branch from `origin/main` for any
+  follow-up (`git checkout -B <branch> origin/main`); never stack new work on merged history.
+- The local `main` can be stale: compare with `origin/main` after `git fetch origin main`.
+
+## Languages
+- UK English is the default in `values/`, with es, pt-BR and fr. The launcher follows the device's language (no
+  language setting).
+  - Every new string needs es, pt-BR and fr translations (`StringsTest` checks this). If the US wording differs, it
+    also needs entries in `values-en-rUS` and `values-en-rGB` (see the comment there).
+  - A new language needs a `values-<qualifier>` folder and an entry in `androidResources.localeFilters` in
+    `app/build.gradle.kts`.
+- Text from other apps (app names, Watch Next titles) is shown as it is.
+
+## Gotchas learned the hard way
+- **Android never gives the Home key to an app.** A launcher only gets the HOME intent for a short press
+  (`MainActivity.onNewIntent`). A held press and a double press are set by the TV maker. The Home key test in
+  Settings › Watch Next check logs what each TV sends.
+- **Android 11 package visibility:** the launcher sees other apps only through the `<queries>` block in the manifest.
+- **The TV provider:** query `WatchNextPrograms` and `Channels` with no selection and no sort order. Android 9 refuses
+  both from an app without `ACCESS_ALL_EPG_DATA` (system apps only). Filter and sort in core.
+- **Start-up:** Home draws its first frame from Room only (`AppRepository.shown`). Looks at the installed apps and the
+  TV provider run in the background (`HomeStartUiTest` holds the look to check this).
+- **Back:** the activity gives the remote's Back to `BackHandler` in `AppRoot`. In a Robolectric test, use the
+  activity's `onBackPressedDispatcher`, not a key event to the Compose root.
+- **Robolectric UI tests:**
+  - **Compose rules:** use `createUiComposeRule()` / `createUiComposeRule<Activity>()` from `testutil/ComposeRules.kt`, not `createComposeRule()`.
+    - The plain rule runs effects on an unconfined dispatcher. Room flows collected with `collectAsState` then resume on Room's `arch_disk_io` threads and race the main thread's recomposition, so updates get lost now and then.
+    - That caused long-running flakes in MyPlexPlayer. The real app is unaffected.
+  - `TestApp.onTerminate` runs the main looper down before Robolectric resets it: Compose's `AndroidUiDispatcher.Main`
+    is a process-wide lazy, and if Robolectric drops its posted run it never posts again (in MyPlexPlayer, every later
+    test's paged lists stayed empty).
+  - `createUiComposeRule` reads kotlinx-coroutines-test's private `dispatchEvents` by reflection (no public hook in
+    1.10.2; an IdlingResource isn't consulted by performScrollToNode, which then loops until out of memory). A
+    coroutines upgrade that renames it fails every UI test at once.
+  - **Waits:** go through `waitAdvancingClock(stepMs)` in `testutil/UiWait.kt`, because the main looper is paused. Use step 0 to run due work, and a step greater than 0 when delayed work (debounces, timeouts) must happen.
+  - **Settings start from defaults:** the settings DataStore is process-wide, so `TestApp` resets it (and `FakeApps`)
+    when each test ends. A test sets only what differs from the defaults.
+  - **The installed apps in tests** come from `FakeApps` (testutil/TestApp.kt). `FakeApps.hold()` makes a look wait.
+  - **Thread dumps on timeout:** `otherThreads()` in UiWait.kt dumps the other threads when a wait times out.
+  - **Images on two threads at once abort the test JVM** (exit 134, "JniConstants … Class not found: java/nio/…"):
+    Robolectric's native graphics set themselves up unsafely. `TestApp` calls `lookUpNioClasses()`
+    (testutil/NativeGraphics.kt) first, so a new test application class must call it too.
+- **Never run `pkill -f <pattern>`** where the pattern also appears in your own command line, because it kills your own shell. Kill background loops by PID.
+
+## The owner's setup
+- **Main device:** a Philips 48OLED806, Android TV 11 (API 30). **Second device:** a Chromecast with Google TV.
+- The emulator smoke tests use Android TV 11 and Google TV 14 to match them (`.github/workflows/emulator.yml`).
+
+## Product decisions from the owner (2026-11-14)
+- **No ads, no tracking, no analytics.** The only network use is pictures that other apps give to Watch Next.
+- **Layout B** of the mockups: Continue watching first, then the apps as square icons with names, then channel rows.
+  No hero area.
+- **Watch Next:** up to 20 items. A poster card for a 2:3 picture, else a wide 16:9 card. Settings turn the row off
+  (then nothing is read) and choose its apps. The same for app channels.
+- **No effect on start-up time** from Watch Next or channels.
+- **Always a way out:** every app and Android settings open from MyTVLauncher, so the owner can change back to another
+  launcher. Settings › Home app opens Android's choice of home app.
+- **Accent colour:** MyPlexPlayer's presets, mint by default. No large text setting.
+- **All apps:** a grid of every app, hidden ones too, with no counts and no button to Android's app list.
+- **Remote shortcuts:** hold Home for All apps, press Home twice for recent apps, if the Home key test shows a way
+  (see ROADMAP.md).
+- **Backup** (0.5.0) as MyPlexPlayer's. **Speaker wake** (0.6.0) is low priority.
