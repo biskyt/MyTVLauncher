@@ -35,8 +35,8 @@ class SmokeTest {
     fun homeShowsTheTvsAppsAndOpensSettings() {
         // The emulator's own apps (its settings, at least) are on Home: the manifest's <queries> lets the launcher see them.
         rule.waitUntil(WAIT_MS) { runBlocking { context.container.db.appPlaces().all() }.isNotEmpty() }
-        rule.waitUntilAtLeastOneExists(hasContentDescription("Settings"), WAIT_MS)
-        rule.onNode(hasContentDescription("Settings")).performClick()
+        rule.waitUntilAtLeastOneExists(hasContentDescription("Launcher settings"), WAIT_MS)
+        rule.onNode(hasContentDescription("Launcher settings")).performClick()
         rule.waitUntilAtLeastOneExists(hasText("Watch Next check"), WAIT_MS)
     }
 

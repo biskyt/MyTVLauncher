@@ -118,7 +118,8 @@ private fun AppTile(app: InstalledApp, modifier: Modifier = Modifier) {
 }
 
 /**
- * The top bar: "Home", then the launcher's Settings and Android settings. With [takeFocus] (no apps to give it to),
+ * The top bar: "Home", then the launcher's settings and Android settings. The first is named "Launcher settings":
+ * Android's own Settings app is on Home too, and a second "Settings" there would be unclear. With [takeFocus] (no apps to give it to),
  * Settings takes focus.
  */
 @Composable

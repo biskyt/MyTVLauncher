@@ -42,11 +42,11 @@ jobs:
             api-level: 30
             target: android-tv
             arch: x86
-          # The owner's Chromecast with Google TV (Google TV, Android 14).
+          # The owner's Chromecast with Google TV (Google TV, Android 14); its images are x86 only.
           - name: Google TV 14
             api-level: 34
             target: google-tv
-            arch: x86_64
+            arch: x86
     steps:
       - uses: actions/checkout@v5
 
