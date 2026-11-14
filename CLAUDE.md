@@ -2,7 +2,8 @@
 
 MyTVLauncher is a light home screen (launcher) for Android TV and Google TV, with no ads, no tracking and no
 analytics. It is written in Kotlin with Compose for TV and Room.
-- Modules: `app` (Android) and `core` (pure Kotlin: app order, Watch Next rules, the Home press log, the accent palette).
+- Modules: `app` (Android) and `core` (pure Kotlin: app order, Watch Next and channel rules, recent apps, the Home press
+  log, the accent palette).
 - The repo is `biskyt/MyTVLauncher` on GitHub.
 - **Its look comes from MyPlexPlayer** (`biskyt/MyPlexPlayer`, the owner, 2026-11-14), which has the newest style.
   The theme, `TvCard` and the other parts of `ui/common/Components.kt`, `Focus.kt`, `Touch.kt`, `Keys.kt`,
@@ -121,6 +122,9 @@ See also:
   for it: `adb shell appops set com.biskyt.mytvlauncher GET_USAGE_STATS allow`.
 - **The TV provider:** query `WatchNextPrograms` and `Channels` with no selection and no sort order. Android 9 refuses
   both from an app without `ACCESS_ALL_EPG_DATA` (system apps only). Filter and sort in core.
+- **TV provider rows** (Continue watching, app channels) follow `data/ProviderFollower.kt`: the row's setting, the
+  permission, change notices, and reads only when Home is in front after a change. Its `Refresher` work must not take
+  the `Refresher`'s own lock again (`exclusive`): the lock is not re-entrant, and a 0.4.0 draft hung every read.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).
@@ -141,7 +145,7 @@ See also:
   - **Settings start from defaults:** the settings DataStore is process-wide, so `TestApp` resets it (and `FakeApps`)
     when each test ends. A test sets only what differs from the defaults.
   - **The installed apps in tests** come from `FakeApps`, the Watch Next items from `FakeWatchNext` and the recent apps
-    from `FakeRecents` (all in testutil/TestApp.kt). `hold()` makes a read wait. `FakeApps` includes an app named
+    from `FakeRecents`, and the channels from `FakeChannels` (all in testutil/TestApp.kt). `hold()` on `FakeApps` or `FakeWatchNext` makes a read wait. `FakeApps` includes an app named
     "Settings", as on a real TV.
   - **A read that a test calls straight after the app starts** must not depend on a flag that a coroutine sets later:
     the Watch Next read checks the saved setting itself (a flaky `WatchNextSafetyTest`, fixed in 0.2.0).

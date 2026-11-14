@@ -79,4 +79,15 @@
     <string name="recents_access_help">Les applications récentes ont besoin de l’accès aux données d’utilisation d’Android pour MyTVLauncher. Sélectionnez pour l’ouvrir.</string>
     <string name="recents_access_missing">Ce téléviseur n’a pas d’écran d’accès aux données d’utilisation. Utilisez la commande adb ci-dessous.</string>
     <string name="recents_adb">Si le téléviseur n’a pas d’écran pour cela, donnez l’accès depuis un ordinateur avec cette commande :</string>
+
+    <string name="rows_channels">Chaînes des applications</string>
+    <string name="rows_channels_help">Les rangées que les applications mettent sur l’écran d’accueil. Désactivé, le lanceur n’en lit aucune.</string>
+    <string name="rows_no_channels">Aucune application n’a encore de chaîne.</string>
+    <string name="item_hide_channel">Masquer cette chaîne</string>
+    <string name="item_hide_channel_help">Paramètres › Rangées de l’accueil l’affiche à nouveau</string>
+    <string name="network_wifi">Wi-Fi</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_other">Connecté</string>
+    <string name="network_none">Pas de réseau</string>
+    <string name="network_vpn">VPN</string>
 </resources>

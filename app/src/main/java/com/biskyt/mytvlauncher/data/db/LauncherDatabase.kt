@@ -87,6 +87,48 @@ interface WatchNextDao {
 }
 
 /**
+ * The last app channels read from the TV, one row per item, so that Home draws them at once (see ChannelRepository).
+ * [channelPosition] keeps the TV's order of the channels, [position] each channel's order of its items.
+ */
+@Entity(tableName = "channel_item")
+data class ChannelItemRow(
+    @PrimaryKey val key: String,
+    val channelId: Long,
+    val channelName: String,
+    val channelPosition: Int,
+    val packageName: String,
+    val title: String,
+    val subtitle: String?,
+    val pictureUri: String?,
+    val shape: CardShape,
+    val progress: Float?,
+    val position: Int,
+    val intentUri: String?
+)
+
+@Dao
+interface ChannelItemDao {
+    @Query("SELECT * FROM channel_item ORDER BY channelPosition, position")
+    fun observe(): Flow<List<ChannelItemRow>>
+
+    @Query("SELECT * FROM channel_item ORDER BY channelPosition, position")
+    suspend fun all(): List<ChannelItemRow>
+
+    @Query("DELETE FROM channel_item")
+    suspend fun deleteAll()
+
+    @Insert
+    suspend fun insertAll(rows: List<ChannelItemRow>)
+
+    /** Puts [rows] in place of every row, in one transaction, so Home never sees half-written rows. */
+    @Transaction
+    suspend fun replace(rows: List<ChannelItemRow>) {
+        deleteAll()
+        insertAll(rows)
+    }
+}
+
+/**
  * Something the user took off Home: [kind] says what ([HiddenKind]), and [key] which one (a package name, or a Watch
  * Next item's key).
  */
@@ -103,6 +145,9 @@ object HiddenKind {
 
     /** One Watch Next item (hold OK on it › Hide this item). */
     const val WATCH_NEXT_ITEM = "watch_next_item"
+
+    /** An app channel's row, by the channel's id (Settings › Home rows, or hold OK on an item › Hide this channel). */
+    const val CHANNEL = "channel"
 }
 
 @Dao
@@ -121,10 +166,10 @@ interface HiddenDao {
 }
 
 @Database(
-    entities = [AppPlaceRow::class, WatchNextRow::class, HiddenRow::class],
-    version = 2,
+    entities = [AppPlaceRow::class, WatchNextRow::class, HiddenRow::class, ChannelItemRow::class],
+    version = 3,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2)]
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)]
 )
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun appPlaces(): AppPlaceDao
@@ -132,6 +177,8 @@ abstract class LauncherDatabase : RoomDatabase() {
     abstract fun watchNext(): WatchNextDao
 
     abstract fun hidden(): HiddenDao
+
+    abstract fun channelItems(): ChannelItemDao
 
     companion object {
         fun open(context: Context): LauncherDatabase =

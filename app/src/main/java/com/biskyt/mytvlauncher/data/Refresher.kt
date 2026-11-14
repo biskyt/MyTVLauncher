@@ -15,13 +15,18 @@ import kotlinx.coroutines.withContext
 /**
  * Runs [work] in the background when asked, one run at a time, never on the main thread. A request made while a run
  * goes is taken once it ends, not run alongside it. Requests that come together wait [settleMs] and make one run
- * (an app update sends removed, added and changed; a Watch Next change sends several notices).
+ * (an app update sends removed, added and changed; a Watch Next change sends several notices). Every Refresher that
+ * shares a [lock] runs one at a time: the launcher's reads of the installed apps and of the TV provider share one.
  */
 // A TV's provider or package manager can throw anything: a failed run is logged, and the next request runs.
 @Suppress("TooGenericExceptionCaught")
-class Refresher(scope: CoroutineScope, private val settleMs: Long, private val work: suspend () -> Unit) {
+class Refresher(
+    scope: CoroutineScope,
+    private val settleMs: Long,
+    private val lock: Mutex,
+    private val work: suspend () -> Unit
+) {
     private val requests = Channel<Long>(Channel.CONFLATED)
-    private val running = Mutex()
 
     init {
         scope.launch(Dispatchers.IO) {
@@ -50,7 +55,7 @@ class Refresher(scope: CoroutineScope, private val settleMs: Long, private val w
     suspend fun now() = exclusive { work() }
 
     /** Runs [block] with no run going alongside it (a delete that a run must not write over). */
-    suspend fun exclusive(block: suspend () -> Unit) = withContext(Dispatchers.IO) { running.withLock { block() } }
+    suspend fun exclusive(block: suspend () -> Unit) = withContext(Dispatchers.IO) { lock.withLock { block() } }
 
     private companion object {
         const val TAG = "MyTVLauncher"

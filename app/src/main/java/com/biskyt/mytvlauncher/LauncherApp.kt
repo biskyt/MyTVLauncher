@@ -4,8 +4,10 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.os.LocaleList
+import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.PackageManagerApps
+import com.biskyt.mytvlauncher.data.ProviderChannels
 import com.biskyt.mytvlauncher.data.ProviderWatchNext
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.UsageStatsRecents
@@ -17,12 +19,13 @@ open class LauncherApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this, installedApps(), watchNextSource(), recentsSource())
+        container = AppContainer(this, installedApps(), watchNextSource(), channelSource(), recentsSource())
         // A look at the installed apps as the launcher starts, then one for each change (see AppRepository).
         locales = resources.configuration.locales
         container.apps.watch(this)
         container.apps.refresh()
         container.watchNext.start()
+        container.channels.start()
     }
 
     private var locales: LocaleList? = null
@@ -40,6 +43,9 @@ open class LauncherApp : Application() {
 
     /** Where Watch Next items come from: the TV provider (a fake one in tests). */
     protected open fun watchNextSource(): WatchNextSource = ProviderWatchNext(this)
+
+    /** Where the apps' channels come from: the TV provider (a fake one in tests). */
+    protected open fun channelSource(): ChannelSource = ProviderChannels(this)
 
     /** Where the recent apps come from: Android's usage stats (a fake in tests). */
     protected open fun recentsSource(): RecentsSource = UsageStatsRecents(this)

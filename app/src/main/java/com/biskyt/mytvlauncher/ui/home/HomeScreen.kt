@@ -51,7 +51,6 @@ import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.core.apps.AppOrder
-import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.openAndroidSettings
@@ -81,21 +80,26 @@ fun HomeScreen(nav: Navigator) {
     val apps by container.shownApps.collectAsState()
     val items by container.watchNextItems.collectAsState()
     val rowOn by container.watchNextShown.collectAsState()
+    val channelsOn by container.channelsShown.collectAsState()
+    val channels by container.channelRows.collectAsState()
     val allowed by container.watchNext.allowed.collectAsState()
+    val channelsAllowed by container.channels.allowed.collectAsState()
     val context = LocalContext.current
     val refused = stringResource(R.string.home_allow_refused)
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         container.watchNext.refresh()
+        container.channels.refresh()
         // Refused (or a TV with no question for it): the way that is left is adb (Settings › Watch Next check).
         if (!it) Toast.makeText(context, refused, Toast.LENGTH_LONG).show()
     }
-    var options by remember { mutableStateOf<WatchNextItem?>(null) }
+    var options by remember { mutableStateOf<ItemChoice?>(null) }
     // Drawn once every saved list is read (from Room, and the settings that the accent colour waits for already).
     val appList = apps
     val watch = items
     val on = rowOn
-    val ready = appList != null && watch != null && on != null
-    val askFirst = on == true && !allowed
+    val ready = appList != null && watch != null && on != null && channelRowsRead(channelsOn, channels)
+    // The permission is asked for while either row that needs it is on.
+    val askFirst = (on == true || channelsOn == true) && !allowed
     val watchRow = on == true && allowed && !watch.isNullOrEmpty()
     // Focus starts on the top row's first card, once a visit: never again while the remote moves along the rows.
     val first = rememberOnceFocus(ready)
@@ -105,8 +109,18 @@ fun HomeScreen(nav: Navigator) {
         if (!ready) return@Column
         LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
             if (askFirst) item(key = "allow") { AllowRow(first) { ask.launch(TvListings.PERMISSION) } }
-            if (watchRow) item(key = "watch") { ContinueWatchingRow(watch.orEmpty(), if (watchRow) first else null) { options = it } }
+            if (watchRow) {
+                item(key = "watch") {
+                    ContinueWatchingRow(watch.orEmpty(), first) { options = ItemChoice(it) }
+                }
+            }
             item(key = "apps") { AppsRow(appList.orEmpty(), if (toApps) first else null) { nav.open(Screen.ALL_APPS) } }
+            // Below the apps (layout B), while the setting is on; they arrive from the saved rows as Room reads them.
+            if (channelsOn == true && channelsAllowed) {
+                channels.orEmpty().forEach { channel ->
+                    item(key = "channel-${channel.id}") { ChannelRow(channel) { options = ItemChoice(it, channel.id) } }
+                }
+            }
         }
     }
     options?.let { ItemOptions(it) { options = null } }
@@ -196,6 +210,8 @@ private fun TopBar(nav: Navigator) {
     ) {
         HomeLabel(stringResource(R.string.home_title))
         Box(Modifier.weight(1f))
+        NetworkStatus()
+        Clock()
         BarItem({ nav.open(Screen.ALL_APPS) }, LauncherIcons.Grid, stringResource(R.string.home_all_apps))
         BarItem({ nav.open(Screen.SETTINGS) }, LauncherIcons.Tune, stringResource(R.string.home_settings))
         BarItem({
@@ -269,3 +285,6 @@ fun rememberAppIcon(packageName: String): ImageBitmap? {
 }
 
 private val BAR_PAD = 10.dp
+
+/** Whether the saved channel rows are read: the setting, and the rows while it is on. */
+private fun channelRowsRead(on: Boolean?, rows: List<*>?) = on == false || (on == true && rows != null)
