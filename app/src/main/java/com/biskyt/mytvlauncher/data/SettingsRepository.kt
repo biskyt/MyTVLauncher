@@ -8,11 +8,15 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore("settings")
+
+/** The settings that a backup holds (see BackupRepository). */
+data class SavedSettings(val accent: Int, val watchNextShown: Boolean, val channelsShown: Boolean, val rowOrder: List<String>)
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
 class SettingsRepository(private val context: Context) {
@@ -50,6 +54,23 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setRowOrder(keys: List<String>) {
         context.dataStore.edit { it[ROW_ORDER] = keys.joinToString(",") }
+    }
+
+    /** The settings a backup holds: from the same flows as the screens, with their defaults. */
+    suspend fun saved(): SavedSettings = combine(accent, watchNextShown, channelsShown, rowOrder, ::SavedSettings).first()
+
+    /**
+     * Restores a backup's settings in one change. The TV's system phone apps count as hidden once already: the
+     * backup's app places say which apps are on Home.
+     */
+    suspend fun restore(saved: SavedSettings) {
+        context.dataStore.edit {
+            it[ACCENT] = saved.accent
+            it[WATCH_NEXT_SHOWN] = saved.watchNextShown
+            it[CHANNELS_SHOWN] = saved.channelsShown
+            it[ROW_ORDER] = saved.rowOrder.joinToString(",")
+            it[SYSTEM_PHONE_APPS_HIDDEN] = true
+        }
     }
 
     /** Back to the defaults: for tests (the settings file outlives each test's app). */

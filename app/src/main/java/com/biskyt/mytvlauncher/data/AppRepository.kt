@@ -60,6 +60,9 @@ class AppRepository(
     /** Saves the order the user moved the apps into in All apps ([order]: every app's package name, hidden ones too). */
     suspend fun saveAllOrder(order: List<String>) = saveWith { AppOrder.reorderAll(it, order) }
 
+    /** Runs [block] with no look at the apps alongside it (a restore from a backup). */
+    suspend fun whileIdle(block: suspend () -> Unit) = looks.exclusive(block)
+
     /** Saves the places that [reorder] makes of the saved ones, after any look at the apps that goes. */
     private suspend fun saveWith(reorder: (List<AppPlace>) -> List<AppPlace>) = looks.exclusive {
         val rows = dao.all().associateBy { it.packageName }

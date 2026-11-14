@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.Window
@@ -9,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.input.key.Key
+import androidx.core.content.IntentCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null && intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0) takeOpenedFile(intent)
         setContent { AppRoot(nav) }
     }
 
@@ -80,11 +83,24 @@ class MainActivity : ComponentActivity() {
 
     @VisibleForTesting
     internal fun takeIntent(intent: Intent) {
+        takeOpenedFile(intent)
         if (!intent.hasCategory(Intent.CATEGORY_HOME)) return
         container.homePressed(inFront = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
         // Two presses within half a second: the recent apps (the owner's test: a double press reaches the launcher).
         if (HomePressLog.isDouble(container.homePresses.value)) nav.recents() else nav.home()
     }
+}
+
+/** A backup file opened with MyTVLauncher from another app (Open with, or Share), for Backup & restore to offer. */
+private fun MainActivity.takeOpenedFile(intent: Intent) {
+    intent.openedFile()?.let { container.openedFile.value = it }
+}
+
+/** The file that a file manager opened with MyTVLauncher (as MyPlexPlayer's). */
+fun Intent.openedFile(): Uri? = when (action) {
+    Intent.ACTION_VIEW -> data
+    Intent.ACTION_SEND -> IntentCompat.getParcelableExtra(this, Intent.EXTRA_STREAM, Uri::class.java)
+    else -> null
 }
 
 /**

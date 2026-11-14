@@ -172,6 +172,22 @@ interface HiddenDao {
 
     @Query("DELETE FROM hidden WHERE kind = :kind")
     suspend fun showAll(kind: String)
+
+    @Query("SELECT * FROM hidden")
+    suspend fun all(): List<HiddenRow>
+
+    /** Replaces every row: a restore from a backup. */
+    @Transaction
+    suspend fun replace(rows: List<HiddenRow>) {
+        deleteAll()
+        insertAll(rows)
+    }
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(rows: List<HiddenRow>)
+
+    @Query("DELETE FROM hidden")
+    suspend fun deleteAll()
 }
 
 @Database(

@@ -133,6 +133,11 @@ See also:
   them jump (the owner, 2026-11-14). Move mode keeps the moved item in view itself (`AppMove`, `keepInView`).
 - **Home's row order** is a list of keys in the settings (`RowOrder`, Settings › Home rows › Row order). A row not
   in the list keeps its usual place after the saved ones.
+- **Backup** (0.5.0, as MyPlexPlayer's): `data/BackupFile.kt` is MyPlexPlayer's file code (Download/MyTVLauncher,
+  MediaStore, or a direct write with the storage permission on Android 9 only). The JSON is Android's own `org.json`
+  (`Backup.toJson` and `Backup.parse`), not a new library. It holds the settings, the app places and the `hidden` rows,
+  not other apps' items. A file opened with the launcher (Open with, Share) goes to `AppContainer.openedFile`, and
+  `AppRoot` opens Backup & restore for it.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).

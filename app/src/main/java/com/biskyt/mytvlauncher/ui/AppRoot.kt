@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import com.biskyt.mytvlauncher.ui.home.KeepInViewSpec
 import com.biskyt.mytvlauncher.ui.home.RecentsScreen
 import com.biskyt.mytvlauncher.ui.home.rememberRowPadPx
 import com.biskyt.mytvlauncher.ui.settings.AccentScreen
+import com.biskyt.mytvlauncher.ui.settings.BackupScreen
 import com.biskyt.mytvlauncher.ui.settings.CheckScreen
 import com.biskyt.mytvlauncher.ui.settings.HomeRowsScreen
 import com.biskyt.mytvlauncher.ui.settings.RowOrderScreen
@@ -43,6 +45,9 @@ fun AppRoot(nav: Navigator) {
             val spec = remember(margin) { KeepInViewSpec(margin) }
             @OptIn(ExperimentalFoundationApi::class)
             CompositionLocalProvider(LocalBringIntoViewSpec provides spec) { Screens(nav) }
+            // A backup file opened with the launcher from another app: Backup & restore offers it.
+            val opened by LocalContext.current.container.openedFile.collectAsState()
+            LaunchedEffect(opened) { if (opened != null && nav.top != Screen.BACKUP) nav.open(Screen.BACKUP) }
         }
     }
 }
@@ -60,6 +65,7 @@ private fun Screens(nav: Navigator) {
                 Screen.ACCENT -> AccentScreen()
                 Screen.HOME_ROWS -> HomeRowsScreen(nav)
                 Screen.ROW_ORDER -> RowOrderScreen()
+                Screen.BACKUP -> BackupScreen()
                 Screen.ALL_APPS -> AllAppsScreen()
                 Screen.RECENTS -> RecentsScreen()
                 Screen.CHECK -> CheckScreen()
