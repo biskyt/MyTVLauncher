@@ -62,8 +62,8 @@ See also:
      Console.
 6. Commit with the session's attribution trailers, then push to the working branch and open a PR to `main`.
 7. When CI and the emulator runs (if the PR has them; see below) are green, merge the PR (merge commit).
-   - CI runs once per commit: on pull requests and on `main` after a merge (or by hand). A push to a branch without a
-     PR runs nothing, so open the PR to get CI.
+   - CI runs on pull requests only (or by hand), not on `main` after a merge (the owner, 2026-11-14). A push to a
+     branch without a PR runs nothing, so open the PR to get CI. The Release run after each merge keeps the caches.
    - CI runs `:core:test :app:recordRoborazziDebug` (the unit tests, recording screenshots to `app/screenshots/`; don't
      commit those unless meant to). The emulator runs are on PRs (or started by hand), and skipped when every
      changed file is one that can't reach the app: `.md`, `docs/`, `store/`, JVM tests and screenshots, or the other
