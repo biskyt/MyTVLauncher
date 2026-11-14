@@ -5,7 +5,6 @@
     <!-- Home -->
     <string name="home_title">Home</string>
     <string name="home_apps">Apps</string>
-    <string name="home_no_apps">No apps found.</string>
     <string name="home_app_not_opened">%1$s did not open.</string>
     <string name="home_settings">Launcher settings</string>
     <string name="home_android_settings">Android settings</string>
@@ -67,4 +66,22 @@
     <string name="rows_hidden_items_help">Select to show them all again</string>
     <string name="check_tv_channels">TV channels</string>
     <string name="home_allow_refused">Not allowed. Settings › Watch Next check has the adb command.</string>
+
+    <string name="home_all_apps">All apps</string>
+    <string name="app_move">Move</string>
+    <string name="app_move_help">Left and Right move it on Home</string>
+    <string name="app_move_hint">Left and Right move %1$s. OK or Back ends.</string>
+    <string name="app_hide">Hide from Home</string>
+    <string name="app_hide_help">It stays in All apps</string>
+    <string name="app_show">Show on Home</string>
+    <string name="app_info">App info</string>
+    <string name="app_info_help">Android’s page for this app</string>
+    <string name="app_info_missing">This TV has no App info page that the launcher can open.</string>
+    <string name="all_apps_hidden">Hidden from Home</string>
+    <string name="recents_title">Recent apps</string>
+    <string name="recents_none">No recent apps yet.</string>
+    <string name="recents_access">Allow usage access</string>
+    <string name="recents_access_help">Recent apps need Android’s usage access for MyTVLauncher. Select to open it.</string>
+    <string name="recents_access_missing">This TV has no usage access screen. Use the adb command below.</string>
+    <string name="recents_adb">If the TV has no screen for it, give usage access from a computer with this command:</string>
 </resources>

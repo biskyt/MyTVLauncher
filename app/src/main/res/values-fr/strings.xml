@@ -2,7 +2,6 @@
 <resources>
     <string name="home_title">Accueil</string>
     <string name="home_apps">Applications</string>
-    <string name="home_no_apps">Aucune application trouvée.</string>
     <string name="home_app_not_opened">%1$s ne s’est pas ouvert.</string>
     <string name="home_settings">Paramètres du lanceur</string>
     <string name="home_android_settings">Paramètres Android</string>
@@ -62,4 +61,22 @@
     <string name="rows_hidden_items_help">Sélectionnez pour tous les afficher à nouveau</string>
     <string name="check_tv_channels">Chaînes TV</string>
     <string name="home_allow_refused">Non autorisé. Paramètres › Vérification de « À suivre » donne la commande adb.</string>
+
+    <string name="home_all_apps">Toutes les applications</string>
+    <string name="app_move">Déplacer</string>
+    <string name="app_move_help">Gauche et droite la déplacent sur l’accueil</string>
+    <string name="app_move_hint">Gauche et droite déplacent %1$s. OK ou Retour termine.</string>
+    <string name="app_hide">Masquer de l’accueil</string>
+    <string name="app_hide_help">Elle reste dans Toutes les applications</string>
+    <string name="app_show">Afficher sur l’accueil</string>
+    <string name="app_info">Infos sur l’application</string>
+    <string name="app_info_help">La page Android de cette application</string>
+    <string name="app_info_missing">Ce téléviseur n’a pas de page d’infos sur l’application que le lanceur peut ouvrir.</string>
+    <string name="all_apps_hidden">Masquée de l’accueil</string>
+    <string name="recents_title">Applications récentes</string>
+    <string name="recents_none">Aucune application récente pour l’instant.</string>
+    <string name="recents_access">Autoriser l’accès aux données d’utilisation</string>
+    <string name="recents_access_help">Les applications récentes ont besoin de l’accès aux données d’utilisation d’Android pour MyTVLauncher. Sélectionnez pour l’ouvrir.</string>
+    <string name="recents_access_missing">Ce téléviseur n’a pas d’écran d’accès aux données d’utilisation. Utilisez la commande adb ci-dessous.</string>
+    <string name="recents_adb">Si le téléviseur n’a pas d’écran pour cela, donnez l’accès depuis un ordinateur avec cette commande :</string>
 </resources>

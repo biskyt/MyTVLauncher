@@ -61,7 +61,11 @@ fun CheckScreen() {
         item {
             Column {
                 Muted(stringResource(R.string.check_adb), maxLines = 2)
-                Text(TvListings.ADB_GRANT, style = MaterialTheme.typography.bodyMedium, color = LocalAccent.current.soft)
+                Text(
+                    TvListings.adbGrant(LocalContext.current.packageName),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = LocalAccent.current.soft
+                )
             }
         }
         check?.let { c ->
