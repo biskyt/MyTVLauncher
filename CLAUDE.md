@@ -32,6 +32,8 @@ See also:
   - Never skip, disable or quarantine a test.
   - Don't just raise timeouts.
 - **Long waits (CI, test loops, agents) go in the background**, so the conversation isn't blocked.
+- **Do not ask the owner to approve the plan again for each step** (the owner, 2026-11-14). Carry on with the
+  approved plan. Ask only for a significant change: a new or dropped feature, or a different approach.
 - **Answer the owner's questions straight away** (the owner, 2026-10-25): when they ask something, pause the work,
   answer first, then carry on. Leaving a question waiting behind other work reads as ignoring them.
 - **Release every merged app change** (as in the sister apps): once an app PR is merged, start `release.yml` (step 8)
