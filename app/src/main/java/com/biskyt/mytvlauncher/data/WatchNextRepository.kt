@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -139,7 +140,8 @@ class WatchNextRepository(
     suspend fun read() = reads.now()
 
     private suspend fun readNow() {
-        if (!shown) return
+        // The saved setting itself, not [shown]: that is set by the collector in start(), which may not have run yet.
+        if (!settings.watchNextShown.first()) return
         if (!source.allowed()) {
             // The permission was taken away: other apps' items are not kept either.
             dao.deleteAll()
@@ -147,7 +149,7 @@ class WatchNextRepository(
         }
         // An app can write two rows with one id of its own (an episode both to carry on with and next): one is kept.
         val rows = source.read().map { it.toRow() }.distinctBy { it.key }
-        if (shown && rows.toSet() != dao.all().toSet()) dao.replace(rows)
+        if (settings.watchNextShown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
     }
 
     suspend fun hideItem(key: String) = hidden.hide(HiddenRow(HiddenKind.WATCH_NEXT_ITEM, key))

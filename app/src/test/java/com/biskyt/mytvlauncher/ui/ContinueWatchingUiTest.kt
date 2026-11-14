@@ -1,6 +1,7 @@
 package com.biskyt.mytvlauncher.ui
 
 import android.view.KeyEvent
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
@@ -11,6 +12,8 @@ import com.biskyt.mytvlauncher.MainActivity
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.testutil.FakeWatchNext
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
+import com.biskyt.mytvlauncher.testutil.otherThreads
+import com.biskyt.mytvlauncher.testutil.screen
 import com.biskyt.mytvlauncher.testutil.sendKey
 import com.biskyt.mytvlauncher.testutil.topRoot
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
@@ -29,11 +32,27 @@ class ContinueWatchingUiTest {
 
     private fun shown(description: String) = rule.onAllNodes(hasContentDescription(description)).fetchSemanticsNodes().isNotEmpty()
 
+    /**
+     * Waits for [description] on screen; on a timeout, says what Home had: the screen, the row's setting, the
+     * permission, the saved and shown items, the reads and the other threads.
+     */
+    private fun waitShown(description: String) = try {
+        rule.waitAdvancingClock { shown(description) }
+    } catch (e: ComposeTimeoutException) {
+        val c = rule.activity.container
+        val state = "shown setting=${c.watchNextShown.value} allowed=${c.watchNext.allowed.value} " +
+            "fake allowed=${FakeWatchNext.allowed} reads=${FakeWatchNext.reads} watching=${FakeWatchNext.watching} " +
+            "saved=${runBlocking { c.db.watchNext().all() }.map { it.title }} shown items=${c.watchNextItems.value?.map { it.title }} " +
+            "apps=${c.shownApps.value?.size}"
+        throw AssertionError("'$description' not shown. $state\nScreen:\n${rule.screen()}\nThreads:\n${otherThreads()}", e)
+    }
+
     private fun width(description: String) = rule.onNodeWithContentDescription(description).fetchSemanticsNode().size.width
 
     @Test
     fun `the row shows the items newest first, as poster and wide cards, and the first has focus`() {
-        rule.waitAdvancingClock { shown(FakeWatchNext.film.title) && shown(FakeWatchNext.episode.title) }
+        waitShown(FakeWatchNext.film.title)
+        waitShown(FakeWatchNext.episode.title)
         rule.waitForText("Continue watching")
         // A poster is 124 wide, a wide card 331: the wide card is more than twice as wide.
         assertTrue(width(FakeWatchNext.episode.title) > 2 * width(FakeWatchNext.film.title))
@@ -54,7 +73,7 @@ class ContinueWatchingUiTest {
     @Test
     fun `with the row off in Settings, Home has no row and nothing is read or watched`() {
         val container = rule.activity.container
-        rule.waitAdvancingClock { shown(FakeWatchNext.film.title) }
+        waitShown(FakeWatchNext.film.title)
         runBlocking { container.settings.setWatchNextShown(false) }
         rule.waitAdvancingClock { !shown(FakeWatchNext.film.title) }
         assertFalse(FakeWatchNext.watching)
@@ -68,7 +87,7 @@ class ContinueWatchingUiTest {
     @Test
     fun `an app turned off in Home rows takes its items off the row`() {
         val container = rule.activity.container
-        rule.waitAdvancingClock { shown(FakeWatchNext.episode.title) }
+        waitShown(FakeWatchNext.episode.title)
         rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.waitForText("Home rows")
         rule.onNode(hasText("Home rows")).performClick()
