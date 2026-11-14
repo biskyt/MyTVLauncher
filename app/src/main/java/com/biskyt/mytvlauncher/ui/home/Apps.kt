@@ -113,12 +113,16 @@ private fun TileLabel(text: String) = Text(
     modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
 )
 
-/** Move mode's keys on the app being moved: Left and Right move it ([onStep] gets -1 or 1); Up and Down are kept. */
-fun Modifier.moveKeys(onStep: (Int) -> Unit): Modifier = onPreviewKeyEvent { e ->
+/**
+ * Move mode's keys on the app being moved: Left and Right move it one place ([onStep] gets -1 or 1), and Up and Down
+ * move it [rowStep] places (a grid row in All apps). On a row (a step of 0), Up and Down are kept.
+ */
+fun Modifier.moveKeys(rowStep: () -> Int = { 0 }, onStep: (Int) -> Unit): Modifier = onPreviewKeyEvent { e ->
     val step = when (e.key) {
         Key.DirectionLeft -> -1
         Key.DirectionRight -> 1
-        Key.DirectionUp, Key.DirectionDown -> 0
+        Key.DirectionUp -> -rowStep()
+        Key.DirectionDown -> rowStep()
         else -> return@onPreviewKeyEvent false
     }
     if (e.type == KeyEventType.KeyDown && step != 0) onStep(step)
@@ -126,18 +130,18 @@ fun Modifier.moveKeys(onStep: (Int) -> Unit): Modifier = onPreviewKeyEvent { e -
 }
 
 /**
- * An app's options: Move (on Home, when [onMove] is given), Hide from Home or Show on Home, and App info (Android's page
- * for it).
+ * An app's options: Move (when [onMove] is given), Hide from Home or Show on Home, and App info (Android's page for
+ * it).
  */
 @Composable
-fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, onDismiss: () -> Unit) {
+fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.app_move_help, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val container = context.container
     val noInfo = stringResource(R.string.app_info_missing)
     BoardPanel(onDismiss) {
         BoardPanelTitle(app.label)
         if (onMove != null) {
-            BoardOption(stringResource(R.string.app_move), stringResource(R.string.app_move_help), rememberFirstFocus()) {
+            BoardOption(stringResource(R.string.app_move), stringResource(moveHelp), rememberFirstFocus()) {
                 onDismiss()
                 onMove()
             }

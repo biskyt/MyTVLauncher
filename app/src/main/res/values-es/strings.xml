@@ -66,6 +66,8 @@
     <string name="app_move">Mover</string>
     <string name="app_move_help">Izquierda y derecha la mueven en Inicio</string>
     <string name="app_move_hint">Izquierda y derecha mueven %1$s. OK o Atrás termina.</string>
+    <string name="app_move_all_help">Las flechas la mueven, también en Inicio</string>
+    <string name="app_move_all_hint">Las flechas mueven %1$s. OK o Atrás termina.</string>
     <string name="app_hide">Ocultar de Inicio</string>
     <string name="app_hide_help">Sigue en Todas las aplicaciones</string>
     <string name="app_show">Mostrar en Inicio</string>
@@ -90,4 +92,9 @@
     <string name="network_other">Conectado</string>
     <string name="network_none">Sin red</string>
     <string name="network_vpn">VPN</string>
+    <string name="rows_order">Orden de las filas</string>
+    <string name="rows_order_help">El orden de las filas en Inicio</string>
+    <string name="rows_order_intro">OK en una fila la toma. Arriba y abajo la mueven, y OK o Atrás la dejan.</string>
+    <string name="rows_order_moving">Arriba y abajo mueven %1$s. OK o Atrás termina.</string>
+    <string name="rows_order_lifted">Moviendo</string>
 </resources>

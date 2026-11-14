@@ -17,18 +17,22 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 
 /** Where the apps' home screen channels come from: the TV provider, or a fake one in tests. */
 interface ChannelSource : ProviderSource {
-    /** Every browsable preview channel with its browsable items, in the TV's order. Called in the background only. */
+    /** Every preview channel with its browsable items, in the TV's order. Called in the background only. */
     fun read(): List<AppChannel>
 }
 
-/** A channel in Settings › Home rows: its name, its app's name, and whether its row is on Home. */
-data class ChannelSwitch(val id: Long, val name: String, val app: String, val on: Boolean)
+/** A channel in Settings › Home rows: its name, and whether its row is on Home. */
+data class ChannelSwitch(val id: Long, val name: String, val on: Boolean)
+
+/** An app's channels in Settings › Home rows: many apps have several (the owner, 2026-11-14). */
+data class AppChannels(val packageName: String, val app: String, val channels: List<ChannelSwitch>)
 
 /**
  * The apps' channel rows (the owner, 2026-11-14), below the apps. Read as Continue watching is (see
@@ -51,16 +55,25 @@ class ChannelRepository(
     val allowed: StateFlow<Boolean> get() = follower.allowed
 
     private val saved: Flow<List<AppChannel>> = dao.observe().map { it.toChannels() }
-    private val hiddenIds = hidden.observe(HiddenKind.CHANNEL)
+
+    /** The user's choices: the channels turned off, and those turned on (one query for both). */
+    private val choices: Flow<ChannelChoices> = hidden.observeKinds(listOf(HiddenKind.CHANNEL, HiddenKind.CHANNEL_ON))
+        .map { rows -> rows.partition { it.kind == HiddenKind.CHANNEL }.let { (off, on) -> ChannelChoices(off.ids(), on.ids()) } }
+        .distinctUntilChanged()
 
     /** The rows Home shows, after the user's choices. */
-    val channels: Flow<List<AppChannel>> = combine(saved, hiddenIds) { channels, off ->
-        Channels.select(channels, off.mapNotNull { it.toLongOrNull() }.toSet())
-    }
+    val channels: Flow<List<AppChannel>> = combine(saved, choices) { channels, c -> Channels.select(channels, c.off, c.on) }
 
-    /** Settings › Home rows: each channel, with its app's name (from [labels]), in the TV's order. */
-    fun switches(labels: Flow<Map<String, String>>): Flow<List<ChannelSwitch>> = combine(saved, hiddenIds, labels) { channels, off, names ->
-        channels.map { ChannelSwitch(it.id, it.name, names[it.packageName] ?: it.packageName, it.id.toString() !in off) }
+    /**
+     * Settings › Home rows: each app's channels, by the app's name (from [labels]), A to Z, and each app's channels in
+     * the TV's order.
+     */
+    fun switches(labels: Flow<Map<String, String>>): Flow<List<AppChannels>> = combine(saved, choices, labels) { channels, c, names ->
+        channels.groupBy { it.packageName }
+            .map { (pkg, list) ->
+                AppChannels(pkg, names[pkg] ?: pkg, list.map { ChannelSwitch(it.id, it.name, Channels.shown(it, c.off, c.on)) })
+            }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.app })
     }
 
     fun start() = follower.start()
@@ -74,23 +87,44 @@ class ChannelRepository(
     /** Reads now: for tests. */
     suspend fun read() = follower.readNow()
 
+    /** Turns a channel's row on or off. Each choice is saved, so it holds whether the TV shows the channel or not. */
     suspend fun setChannelShown(id: Long, on: Boolean) {
-        if (on) hidden.show(HiddenKind.CHANNEL, id.toString()) else hidden.hide(HiddenRow(HiddenKind.CHANNEL, id.toString()))
+        val key = id.toString()
+        if (on) {
+            hidden.show(HiddenKind.CHANNEL, key)
+            hidden.hide(HiddenRow(HiddenKind.CHANNEL_ON, key))
+        } else {
+            hidden.show(HiddenKind.CHANNEL_ON, key)
+            hidden.hide(HiddenRow(HiddenKind.CHANNEL, key))
+        }
     }
 }
 
-/** A browsable preview channel's id, app and name; null for any other row (the TV's own channels, hidden ones). */
-private fun Cursor.toPreviewChannel(): Triple<Long, String, String>? {
-    if (string(TvChannels.COLUMN_TYPE) != TvChannels.TYPE_PREVIEW || long(TvChannels.COLUMN_BROWSABLE) == 0L) return null
+private data class ChannelChoices(val off: Set<Long>, val on: Set<Long>)
+
+private fun List<HiddenRow>.ids() = mapNotNullTo(HashSet()) { it.key.toLongOrNull() }
+
+/**
+ * A preview channel with no items yet; null for any other row (the TV's own broadcast channels). Channels that the TV
+ * does not show are read too (the owner, 2026-11-14: apps such as Plex have several, and only one shows at first).
+ */
+private fun Cursor.toPreviewChannel(): AppChannel? {
+    if (string(TvChannels.COLUMN_TYPE) != TvChannels.TYPE_PREVIEW) return null
     val id = long(BaseColumns._ID) ?: return null
-    return Triple(id, string(TvChannels.COLUMN_PACKAGE_NAME).orEmpty(), string(TvChannels.COLUMN_DISPLAY_NAME).orEmpty())
+    return AppChannel(
+        id,
+        string(TvChannels.COLUMN_PACKAGE_NAME).orEmpty(),
+        string(TvChannels.COLUMN_DISPLAY_NAME).orEmpty(),
+        emptyList(),
+        browsable = long(TvChannels.COLUMN_BROWSABLE) != 0L
+    )
 }
 
 private fun List<AppChannel>.toRows(): List<ChannelItemRow> = flatMapIndexed { c, channel ->
     Channels.order(channel.items).mapIndexed { i, item ->
         ChannelItemRow(
             "${channel.id}/${item.key}", channel.id, channel.name, c, item.packageName, item.title, item.subtitle,
-            item.pictureUri, item.shape, item.progress, i, item.intentUri
+            item.pictureUri, item.shape, item.progress, i, item.intentUri, channel.browsable
         )
     }
 }
@@ -101,7 +135,8 @@ private fun List<ChannelItemRow>.toChannels(): List<AppChannel> = groupBy { it.c
         first.channelId,
         first.packageName,
         first.channelName,
-        rows.map { WatchNextItem(it.key, it.packageName, it.title, it.subtitle, it.pictureUri, it.shape, it.progress, 0, it.intentUri) }
+        rows.map { WatchNextItem(it.key, it.packageName, it.title, it.subtitle, it.pictureUri, it.shape, it.progress, 0, it.intentUri) },
+        first.channelBrowsable
     )
 }
 
@@ -124,7 +159,7 @@ class ProviderChannels(private val context: Context) : ChannelSource {
         val channels = context.contentResolver.query(TvChannels.CONTENT_URI, null, null, null, null)?.use { c ->
             buildList { while (c.moveToNext()) c.toPreviewChannel()?.let(::add) }
         }.orEmpty()
-        val wanted = channels.mapTo(HashSet()) { it.first }
+        val wanted = channels.mapTo(HashSet()) { it.id }
         val programs = context.contentResolver.query(PreviewPrograms.CONTENT_URI, null, null, null, null)?.use { c ->
             buildList {
                 while (c.moveToNext()) {
@@ -133,7 +168,7 @@ class ProviderChannels(private val context: Context) : ChannelSource {
                 }
             }
         }.orEmpty().groupBy({ it.first }, { it.second })
-        channels.map { (id, pkg, name) -> AppChannel(id, pkg, name, programs[id].orEmpty()) }
+        channels.map { it.copy(items = programs[it.id].orEmpty()) }
     } catch (_: SecurityException) {
         emptyList()
     } catch (_: IllegalArgumentException) {

@@ -71,6 +71,8 @@
     <string name="app_move">Move</string>
     <string name="app_move_help">Left and Right move it on Home</string>
     <string name="app_move_hint">Left and Right move %1$s. OK or Back ends.</string>
+    <string name="app_move_all_help">The arrows move it, on Home too</string>
+    <string name="app_move_all_hint">The arrows move %1$s. OK or Back ends.</string>
     <string name="app_hide">Hide from Home</string>
     <string name="app_hide_help">It stays in All apps</string>
     <string name="app_show">Show on Home</string>
@@ -95,4 +97,9 @@
     <string name="network_other">Connected</string>
     <string name="network_none">No network</string>
     <string name="network_vpn">VPN</string>
+    <string name="rows_order">Row order</string>
+    <string name="rows_order_help">The order of the rows on Home</string>
+    <string name="rows_order_intro">OK on a row picks it up. Up and Down move it, and OK or Back puts it down.</string>
+    <string name="rows_order_moving">Up and Down move %1$s. OK or Back ends.</string>
+    <string name="rows_order_lifted">Moving</string>
 </resources>

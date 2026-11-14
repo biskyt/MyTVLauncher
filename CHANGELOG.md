@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.1
+- Settings › Home rows › Row order sets the order of Home's rows.
+- Every app's channels are listed in Settings › Home rows, grouped by app.
+- Channel cards are half their old size.
+- Rows no longer jump when you move up and down.
+- Back on a row goes back to its first card.
+- A moved app stays in view as it moves.
+- All apps can move apps too.
+
 ## 0.4.0
 - Apps' home screen channels show as rows below your apps.
 - Settings › Home rows turns channel rows on or off, one by one.

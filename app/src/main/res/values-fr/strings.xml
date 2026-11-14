@@ -66,6 +66,8 @@
     <string name="app_move">Déplacer</string>
     <string name="app_move_help">Gauche et droite la déplacent sur l’accueil</string>
     <string name="app_move_hint">Gauche et droite déplacent %1$s. OK ou Retour termine.</string>
+    <string name="app_move_all_help">Les flèches la déplacent, aussi sur l’accueil</string>
+    <string name="app_move_all_hint">Les flèches déplacent %1$s. OK ou Retour termine.</string>
     <string name="app_hide">Masquer de l’accueil</string>
     <string name="app_hide_help">Elle reste dans Toutes les applications</string>
     <string name="app_show">Afficher sur l’accueil</string>
@@ -90,4 +92,9 @@
     <string name="network_other">Connecté</string>
     <string name="network_none">Pas de réseau</string>
     <string name="network_vpn">VPN</string>
+    <string name="rows_order">Ordre des rangées</string>
+    <string name="rows_order_help">L’ordre des rangées sur l’accueil</string>
+    <string name="rows_order_intro">OK sur une rangée la prend. Haut et bas la déplacent, et OK ou Retour la pose.</string>
+    <string name="rows_order_moving">Haut et bas déplacent %1$s. OK ou Retour termine.</string>
+    <string name="rows_order_lifted">Déplacement</string>
 </resources>

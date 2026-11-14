@@ -175,7 +175,10 @@ object FakeWatchNext : WatchNextSource {
     }
 }
 
-/** The apps' channels a test's launcher reads: Videos' "Free films" with one film. [reads] counts the reads. */
+/**
+ * The apps' channels a test's launcher reads: Videos' "Free films" with one film, and Music's [extra]. [reads] counts
+ * the reads.
+ */
 object FakeChannels : ChannelSource {
     val films = AppChannel(
         7,
@@ -184,7 +187,16 @@ object FakeChannels : ChannelSource {
         listOf(WatchNextItem("free/1", FakeApps.videos.packageName, "Big Buck Bunny", null, null, CardShape.POSTER, null, 1, null))
     )
 
-    @Volatile var channels: List<AppChannel> = listOf(films)
+    /** A channel that the TV does not show on its own home screen: off on Home until the user turns it on. */
+    val extra = AppChannel(
+        8,
+        FakeApps.music.packageName,
+        "More films",
+        listOf(WatchNextItem("more/1", FakeApps.music.packageName, "Elephants Dream", null, null, CardShape.POSTER, null, 1, null)),
+        browsable = false
+    )
+
+    @Volatile var channels: List<AppChannel> = listOf(films, extra)
 
     @Volatile var reads = 0
 
@@ -200,7 +212,7 @@ object FakeChannels : ChannelSource {
     override fun stopWatching() = Unit
 
     fun reset() {
-        channels = listOf(films)
+        channels = listOf(films, extra)
         reads = 0
     }
 }

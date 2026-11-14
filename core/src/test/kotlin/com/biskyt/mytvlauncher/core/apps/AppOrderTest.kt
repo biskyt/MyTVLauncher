@@ -39,6 +39,8 @@ class AppOrderTest {
         assertEquals(listOf("a", "c", "b"), AppOrder.move(order, "c", -1))
         assertEquals(order, AppOrder.move(order, "a", -1))
         assertEquals(order, AppOrder.move(order, "c", 1))
+        // A grid row's step past the end goes to the end (Down onto a short last row in All apps).
+        assertEquals(listOf("b", "c", "a"), AppOrder.move(order, "a", 4))
     }
 
     @Test
@@ -78,5 +80,14 @@ class AppOrderTest {
         val saved = listOf(AppPlace(setup.packageName, 0))
         assertEquals(listOf(false), AppOrder.merge(listOf(setup), saved).map { it.hidden })
         assertEquals(listOf(true), AppOrder.merge(listOf(setup), saved, hideAtFirstAgain = true).map { it.hidden })
+    }
+
+    @Test
+    fun `All apps saves every app in the order moved, hidden ones too, and an app not in it goes after`() {
+        val places = listOf(AppPlace("a", 0), AppPlace("b", 1, hidden = true), AppPlace("c", 2), AppPlace("d", 3))
+        val after = AppOrder.reorderAll(places, listOf("c", "b", "a"))
+        assertEquals(listOf("c", "b", "a", "d"), after.map { it.packageName })
+        assertEquals(listOf(0, 1, 2, 3), after.map { it.position })
+        assertEquals(true, after[1].hidden)
     }
 }

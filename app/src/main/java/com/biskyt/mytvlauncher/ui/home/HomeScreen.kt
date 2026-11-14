@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.biskyt.mytvlauncher.ui.home
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +24,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +45,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -50,7 +57,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
-import com.biskyt.mytvlauncher.core.apps.AppOrder
+import com.biskyt.mytvlauncher.core.rows.RowOrder
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.openAndroidSettings
@@ -93,32 +100,57 @@ fun HomeScreen(nav: Navigator) {
         if (!it) Toast.makeText(context, refused, Toast.LENGTH_LONG).show()
     }
     var options by remember { mutableStateOf<ItemChoice?>(null) }
+    val savedOrder by container.rowOrder.collectAsState()
     // Drawn once every saved list is read (from Room, and the settings that the accent colour waits for already).
     val appList = apps
     val watch = items
     val on = rowOn
-    val ready = appList != null && watch != null && on != null && channelRowsRead(channelsOn, channels)
+    val ready = listOf(appList, watch, on, savedOrder).all { it != null } && channelRowsRead(channelsOn, channels)
     // The permission is asked for while either row that needs it is on.
     val askFirst = (on == true || channelsOn == true) && !allowed
     val watchRow = on == true && allowed && !watch.isNullOrEmpty()
+    val channelList = if (channelsOn == true && channelsAllowed) channels.orEmpty() else emptyList()
+    // The rows in the user's order (Settings › Home rows › Row order): Continue watching (or the question for the
+    // permission in its place), the apps, then the channels below the apps (layout B) until the user moves them.
+    val order = remember(askFirst, watchRow, channelList, savedOrder) {
+        val keys = listOfNotNull(RowOrder.WATCH_NEXT.takeIf { askFirst || watchRow }, RowOrder.APPS) +
+            channelList.map { RowOrder.channel(it.id) }
+        RowOrder.order(keys, savedOrder.orEmpty())
+    }
+    val channelByKey = remember(channelList) { channelList.associateBy { RowOrder.channel(it.id) } }
     // Focus starts on the top row's first card, once a visit: never again while the remote moves along the rows.
     val first = rememberOnceFocus(ready)
-    val toApps = !askFirst && !watchRow
-    Column(Modifier.fillMaxSize()) {
+    val top = order.firstOrNull()
+    val margin = rememberRowPadPx()
+    var pressed by rememberSaveable { mutableStateOf(false) }
+    FocusNewTop(top.takeIf { ready }, pressed, first)
+    Column(
+        Modifier.fillMaxSize().onPreviewKeyEvent {
+            if (it.type == KeyEventType.KeyDown) pressed = true
+            false
+        }
+    ) {
         TopBar(nav)
         if (!ready) return@Column
-        LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
-            if (askFirst) item(key = "allow") { AllowRow(first) { ask.launch(TvListings.PERMISSION) } }
-            if (watchRow) {
-                item(key = "watch") {
-                    ContinueWatchingRow(watch.orEmpty(), first) { options = ItemChoice(it) }
-                }
-            }
-            item(key = "apps") { AppsRow(appList.orEmpty(), if (toApps) first else null) { nav.open(Screen.ALL_APPS) } }
-            // Below the apps (layout B), while the setting is on; they arrive from the saved rows as Room reads them.
-            if (channelsOn == true && channelsAllowed) {
-                channels.orEmpty().forEach { channel ->
-                    item(key = "channel-${channel.id}") { ChannelRow(channel) { options = ItemChoice(it, channel.id) } }
+        // Twice the margin: a row's name above its cards stays in view as the remote moves up onto it.
+        val spec = remember(margin) { KeepInViewSpec(2 * margin) }
+        CompositionLocalProvider(LocalBringIntoViewSpec provides spec) {
+            LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
+                order.forEach { key ->
+                    val focus = if (key == top) first else null
+                    item(key = key) {
+                        when (key) {
+                            RowOrder.WATCH_NEXT -> if (askFirst) {
+                                AllowRow(focus) { ask.launch(TvListings.PERMISSION) }
+                            } else {
+                                ContinueWatchingRow(watch.orEmpty(), focus) { options = ItemChoice(it) }
+                            }
+                            RowOrder.APPS -> AppsRow(appList.orEmpty(), focus) { nav.open(Screen.ALL_APPS) }
+                            else -> channelByKey[key]?.let { channel ->
+                                ChannelRow(channel, focus) { options = ItemChoice(it, channel.id) }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -134,62 +166,49 @@ fun HomeScreen(nav: Navigator) {
 private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps: () -> Unit) {
     val container = LocalContext.current.container
     var options by remember { mutableStateOf<AppEntry?>(null) }
-    var moving by remember { mutableStateOf<String?>(null) }
-    var order by remember { mutableStateOf(emptyList<String>()) }
-    // A moved order being saved: shown until the saved list comes back, so that the row does not flick back meanwhile.
-    var saving by remember { mutableStateOf(false) }
-    LaunchedEffect(apps) { saving = false }
     val byName = remember(apps) { apps.associateBy { it.packageName } }
     val listState = rememberLazyListState()
-    fun endMove() {
-        val moved = order
-        moving = null
-        saving = true
-        container.appScope.launch { container.apps.saveOrder(moved) }
-    }
-    BackHandler(enabled = moving != null) { endMove() }
+    val margin = rememberRowPadPx()
+    val move = rememberListMove(apps, container.apps::saveOrder) { name, index -> listState.keepInView(name, index, margin) }
+    val moving = move.moving
+    val back = rememberRowBack(listState, enabled = moving == null)
     Column {
         SectionTitle(stringResource(R.string.home_apps), Modifier.padding(horizontal = ROW_PAD))
         moving?.let { name ->
             Muted(stringResource(R.string.app_move_hint, byName[name]?.label ?: name), Modifier.padding(start = ROW_PAD, bottom = 10.dp))
         }
         LazyRow(
+            back.row,
             state = listState,
             contentPadding = PaddingValues(horizontal = ROW_PAD),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            val shown = if (moving != null || saving) order.mapNotNull { byName[it] } else apps
+            val shown = move.shown(apps, byName)
             itemsIndexed(shown, key = { _, app -> app.packageName }) { i, app ->
                 val isMoving = moving == app.packageName
+                val focus = back.item(i, if (i == 0) Modifier.focusOn(firstFocus) else Modifier)
                 AppTile(
                     app.packageName,
                     app.label,
-                    modifier = tileModifier(i == 0, firstFocus, isMoving) { step ->
-                        // The row stays where it is (a keyed row would follow the first app shown as it moves).
-                        listState.requestScrollToItem(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
-                        order = AppOrder.move(order, app.packageName, step)
+                    modifier = if (isMoving) {
+                        focus.moveKeys { step ->
+                            move.step(app.packageName, step) {
+                                listState.requestScrollToItem(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+                            }
+                        }
+                    } else {
+                        focus
                     },
                     moving = isMoving,
-                    onClick = if (isMoving) ::endMove else null,
+                    onClick = if (isMoving) move::end else null,
                     onOptions = if (moving == null) ({ options = app }) else null
                 )
             }
             val allAppsFocus = if (apps.isEmpty()) firstFocus else null
-            if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, Modifier.focusOn(allAppsFocus)) }
+            if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, back.item(shown.size, Modifier.focusOn(allAppsFocus))) }
         }
     }
-    options?.let { app ->
-        AppOptions(app, onMove = {
-            order = apps.map { it.packageName }
-            moving = app.packageName
-        }) { options = null }
-    }
-}
-
-/** An app tile's modifier on Home: the first focus on the first tile, and move mode's keys on the app being moved. */
-private fun tileModifier(first: Boolean, firstFocus: FocusRequester?, moving: Boolean, onStep: (Int) -> Unit): Modifier {
-    val focus = if (first) Modifier.focusOn(firstFocus) else Modifier
-    return if (moving) focus.moveKeys(onStep) else focus
+    options?.let { app -> AppOptions(app, onMove = { move.start(apps.map { it.packageName }, app.packageName) }) { options = null } }
 }
 
 /**
@@ -245,6 +264,22 @@ private fun BarItem(onClick: () -> Unit, icon: ImageVector, label: String) {
         fill = true
     ) {
         Icon(icon, contentDescription = label, tint = cardColor(Palette.textDim), modifier = Modifier.padding(BAR_PAD).size(24.dp))
+    }
+}
+
+/**
+ * A row that comes in above the first one before the user presses a key (Continue watching, read after the apps) takes
+ * the first focus: the focus is on the top row's first card, as when Home opens. Not once the user has pressed a key,
+ * and not when Home first shows [top] (coming back to Home gives focus back to the item used last).
+ */
+@Composable
+private fun FocusNewTop(top: String?, pressed: Boolean, first: FocusRequester) {
+    var shown by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(top) {
+        val before = shown
+        shown = top
+        if (top == null || before == null || pressed) return@LaunchedEffect
+        settleFor { runCatching { first.requestFocus() }.getOrDefault(false) }
     }
 }
 

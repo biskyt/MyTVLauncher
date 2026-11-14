@@ -81,6 +81,9 @@ class AppContainer(
     /** The apps' channel rows, from the saved items (see ChannelRepository). */
     val channelRows: StateFlow<List<AppChannel>?> = channels.channels.stateIn(appScope, SharingStarted.Eagerly, null)
 
+    /** The order of Home's rows, by key (see RowOrder): empty until the user moves one. */
+    val rowOrder: StateFlow<List<String>?> = settings.rowOrder.stateIn(appScope, SharingStarted.Eagerly, null)
+
     /** Continue watching, from the saved items (see WatchNextRepository). */
     val watchNextItems: StateFlow<List<WatchNextItem>?> = watchNext.items.stateIn(appScope, SharingStarted.Eagerly, null)
 

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,15 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[WATCH_NEXT_SHOWN] = on }
     }
 
+    /** The order of Home's rows, by key (see RowOrder): empty until the user moves one (Settings › Home rows). */
+    val rowOrder: Flow<List<String>> = context.dataStore.data
+        .map { prefs -> prefs[ROW_ORDER]?.split(',')?.filter { it.isNotEmpty() }.orEmpty() }
+        .distinctUntilChanged()
+
+    suspend fun setRowOrder(keys: List<String>) {
+        context.dataStore.edit { it[ROW_ORDER] = keys.joinToString(",") }
+    }
+
     /** Back to the defaults: for tests (the settings file outlives each test's app). */
     suspend fun reset() {
         context.dataStore.edit { it.clear() }
@@ -52,5 +62,6 @@ class SettingsRepository(private val context: Context) {
         val WATCH_NEXT_SHOWN = booleanPreferencesKey("watch_next_shown")
         val CHANNELS_SHOWN = booleanPreferencesKey("channels_shown")
         val SYSTEM_PHONE_APPS_HIDDEN = booleanPreferencesKey("system_phone_apps_hidden")
+        val ROW_ORDER = stringPreferencesKey("row_order")
     }
 }

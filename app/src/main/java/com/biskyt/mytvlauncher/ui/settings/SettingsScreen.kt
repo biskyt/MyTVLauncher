@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -79,10 +81,11 @@ fun SettingsScreen(nav: Navigator) {
 
 /** A settings page: its title, then its rows in a column that scrolls, as MyPlexPlayer's settings pages lay them out. */
 @Composable
-fun SettingsPage(@StringRes title: Int, content: LazyListScope.() -> Unit) {
+fun SettingsPage(@StringRes title: Int, state: LazyListState = rememberLazyListState(), content: LazyListScope.() -> Unit) {
     LazyColumn(
         // Rows as wide as MyPlexPlayer's settings rows, not the whole screen.
         Modifier.fillMaxHeight().padding(horizontal = 96.dp).width(820.dp),
+        state = state,
         contentPadding = PaddingValues(vertical = 40.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
