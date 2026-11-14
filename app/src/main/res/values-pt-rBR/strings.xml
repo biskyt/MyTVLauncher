@@ -45,4 +45,21 @@
     <string name="check_home_gap">%1$d ms depois do anterior</string>
     <string name="check_home_in_front">o launcher estava na frente</string>
     <string name="check_home_other_app">outro app estava na frente</string>
+
+    <string name="home_continue_watching">Continuar assistindo</string>
+    <string name="home_allow_watch_next">Permitir Continuar assistindo</string>
+    <string name="home_allow_watch_next_help">Selecione para deixar o launcher ler os itens de Continuar assistindo de outros apps</string>
+    <string name="item_open_app">Abrir %1$s</string>
+    <string name="item_hide">Ocultar este item</string>
+    <string name="item_hide_app">Ocultar todos os itens de %1$s</string>
+    <string name="item_hide_app_help">Configurações › Linhas do início mostra de novo</string>
+    <string name="settings_home_rows">Linhas do início</string>
+    <string name="settings_home_rows_help">Continuar assistindo e os apps nele</string>
+    <string name="rows_continue_watching_help">Itens de outros apps para continuar. Desativado, o launcher não lê nenhum.</string>
+    <string name="rows_apps">Apps em Continuar assistindo</string>
+    <string name="rows_no_apps">Nenhum app tem itens em Continuar assistindo ainda.</string>
+    <string name="rows_hidden_items">Itens ocultos: %1$d</string>
+    <string name="rows_hidden_items_help">Selecione para mostrar todos de novo</string>
+    <string name="check_tv_channels">Canais de TV</string>
+    <string name="home_allow_refused">Não permitido. Configurações › Verificação de Assistir a seguir tem o comando adb.</string>
 </resources>

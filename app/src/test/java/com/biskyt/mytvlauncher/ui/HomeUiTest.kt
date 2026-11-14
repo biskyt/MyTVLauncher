@@ -10,10 +10,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.biskyt.mytvlauncher.MainActivity
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.testutil.FakeApps
+import com.biskyt.mytvlauncher.testutil.FakeWatchNext
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
 import com.biskyt.mytvlauncher.testutil.idleFrames
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -27,7 +29,9 @@ class HomeUiTest {
     private fun shown(description: String) = rule.onAllNodes(hasContentDescription(description)).fetchSemanticsNodes().isNotEmpty()
 
     @Test
-    fun `Home shows the installed apps in A to Z order, and the first one has focus`() {
+    fun `with no Continue watching items, Home shows the installed apps in A to Z order, and the first one has focus`() {
+        FakeWatchNext.items = emptyList()
+        runBlocking { rule.activity.container.watchNext.read() }
         rule.waitAdvancingClock { shown(FakeApps.videos.label) }
         val names = FakeApps.apps.map { it.label }
         val labels = rule.onAllNodes(names.map { hasText(it) }.reduce { a, b -> a or b })

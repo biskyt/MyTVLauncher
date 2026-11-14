@@ -42,6 +42,12 @@ object Palette {
     val danger = Color(0xFFE58080)
 }
 
+/**
+ * Settings › large text in MyPlexPlayer. The launcher has no such setting (the owner, 2026-11-14), so it is always
+ * false: kept so that Board.kt stays as MyPlexPlayer has it.
+ */
+val LocalLargeText = staticCompositionLocalOf { false }
+
 @Immutable
 data class Accent(val color: Color, val tint: Color, val soft: Color, val onAccent: Color)
 

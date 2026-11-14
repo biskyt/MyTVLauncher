@@ -7,8 +7,11 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.biskyt.mytvlauncher.LauncherApp
+import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
+import com.biskyt.mytvlauncher.data.db.WatchNextRow
 import com.biskyt.mytvlauncher.testutil.FakeApps
+import com.biskyt.mytvlauncher.testutil.FakeWatchNext
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import kotlinx.coroutines.runBlocking
@@ -25,15 +28,28 @@ class HomeStartUiTest {
     private val app = ApplicationProvider.getApplicationContext<LauncherApp>()
 
     @After
-    fun releaseApps() = FakeApps.release()
+    fun release() {
+        FakeApps.release()
+        FakeWatchNext.release()
+    }
 
     @Test
-    fun `Home shows the saved apps and gives one focus while the look at the installed apps is held`() {
-        runBlocking { app.container.db.appPlaces().replace(listOf(AppPlaceRow("com.example.saved", "Saved app", 0))) }
+    fun `Home shows the saved apps and items, and gives focus, while the reads of the apps and Watch Next are held`() {
+        runBlocking {
+            // Any read started with the app ends first, so that the saved lists below are the ones shown.
+            app.container.apps.look()
+            app.container.watchNext.read()
+            app.container.db.appPlaces().replace(listOf(AppPlaceRow("com.example.saved", "Saved app", 0)))
+            app.container.db.watchNext().replace(
+                listOf(WatchNextRow("k", "com.example.saved", "Saved item", null, null, CardShape.POSTER, null, 1, null))
+            )
+        }
         FakeApps.hold()
+        FakeWatchNext.hold()
         app.container.apps.refresh()
+        app.container.watchNext.refresh()
         rule.setContent { AppRoot(Navigator()) }
         rule.waitAdvancingClock { rule.onAllNodes(hasContentDescription("Saved app")).fetchSemanticsNodes().isNotEmpty() }
-        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Saved app").assertIsFocused() }.isSuccess }
+        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Saved item").assertIsFocused() }.isSuccess }
     }
 }

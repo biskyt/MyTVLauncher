@@ -12,6 +12,7 @@ lifecycle = "2.9.2"
 room = "2.7.2"
 datastore = "1.1.7"
 tvprovider = "1.1.0"
+coil = "3.3.0"
 junit = "4.13.2"
 robolectric = "4.15.1"
 androidxTest = "1.7.0"
@@ -46,6 +47,8 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "tvprovider" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }

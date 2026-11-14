@@ -50,4 +50,21 @@
     <string name="check_home_gap">%1$d ms after the last one</string>
     <string name="check_home_in_front">the launcher was in front</string>
     <string name="check_home_other_app">another app was in front</string>
+
+    <string name="home_continue_watching">Continue watching</string>
+    <string name="home_allow_watch_next">Allow Continue watching</string>
+    <string name="home_allow_watch_next_help">Select to let the launcher read other apps’ Continue watching items</string>
+    <string name="item_open_app">Open %1$s</string>
+    <string name="item_hide">Hide this item</string>
+    <string name="item_hide_app">Hide all items from %1$s</string>
+    <string name="item_hide_app_help">Settings › Home rows shows them again</string>
+    <string name="settings_home_rows">Home rows</string>
+    <string name="settings_home_rows_help">Continue watching, and the apps in it</string>
+    <string name="rows_continue_watching_help">Other apps’ items to carry on with. When it is off, the launcher reads none.</string>
+    <string name="rows_apps">Apps in Continue watching</string>
+    <string name="rows_no_apps">No app has Continue watching items yet.</string>
+    <string name="rows_hidden_items">Hidden items: %1$d</string>
+    <string name="rows_hidden_items_help">Select to show them all again</string>
+    <string name="check_tv_channels">TV channels</string>
+    <string name="home_allow_refused">Not allowed. Settings › Watch Next check has the adb command.</string>
 </resources>

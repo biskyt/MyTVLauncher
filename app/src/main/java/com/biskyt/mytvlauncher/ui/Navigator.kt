@@ -7,6 +7,7 @@ enum class Screen(val keptOnHome: Boolean = false) {
     HOME,
     SETTINGS,
     ACCENT,
+    HOME_ROWS,
 
     /** The Home key test shows what each press sends. */
     CHECK(keptOnHome = true)

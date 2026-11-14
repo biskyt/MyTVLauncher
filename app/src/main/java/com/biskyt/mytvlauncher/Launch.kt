@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
+import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import java.net.URISyntaxException
 
 /**
  * Starts the first of [intents] that the TV can open, as a new task; false if it can open none. A TV that refuses one
@@ -28,6 +30,29 @@ fun Context.openApp(packageName: String): Boolean {
         ?: return false
     return tryStart(intent)
 }
+
+/**
+ * Opens a Watch Next item: the app's own intent for it, else the app. The intent comes from another app, so it opens
+ * only that app (an intent for any other app, or for the launcher itself, is not started), with no grant of this
+ * launcher's access to files or content.
+ */
+fun Context.openWatchNext(item: WatchNextItem): Boolean {
+    val intent = item.intentUri?.let {
+        try {
+            Intent.parseUri(it, Intent.URI_INTENT_SCHEME)
+        } catch (_: URISyntaxException) {
+            null
+        }
+    }?.takeIf { it.component == null || it.component?.packageName == item.packageName }?.apply {
+        selector = null
+        `package` = item.packageName
+        flags = flags and GRANT_FLAGS.inv()
+    }
+    return (intent != null && tryStart(intent)) || openApp(item.packageName)
+}
+
+private const val GRANT_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
 
 /** Opens Android's own settings; false if the TV has no screen for it. */
 fun Context.openAndroidSettings(): Boolean = tryStart(Intent(Settings.ACTION_SETTINGS))

@@ -33,7 +33,7 @@ import com.biskyt.mytvlauncher.ui.common.SettingRow
 import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 
-/** The launcher's settings: the accent colour, the Watch Next check, Android settings, the home app, and the version. */
+/** The launcher's settings: the accent colour, Home rows, the Watch Next check, Android settings, the home app, the version. */
 @Composable
 fun SettingsScreen(nav: Navigator) {
     val context = LocalContext.current
@@ -48,6 +48,11 @@ fun SettingsScreen(nav: Navigator) {
                 { nav.open(Screen.ACCENT) },
                 rememberFirstFocus(once = true)
             ) { Box(Modifier.size(26.dp).clip(CircleShape).background(accent)) }
+        }
+        item {
+            SettingRow(stringResource(R.string.settings_home_rows), stringResource(R.string.settings_home_rows_help), {
+                nav.open(Screen.HOME_ROWS)
+            })
         }
         item {
             SettingRow(stringResource(R.string.settings_check), stringResource(R.string.settings_check_help), { nav.open(Screen.CHECK) })

@@ -15,6 +15,7 @@ import com.biskyt.mytvlauncher.ui.common.KeepsFocus
 import com.biskyt.mytvlauncher.ui.home.HomeScreen
 import com.biskyt.mytvlauncher.ui.settings.AccentScreen
 import com.biskyt.mytvlauncher.ui.settings.CheckScreen
+import com.biskyt.mytvlauncher.ui.settings.HomeRowsScreen
 import com.biskyt.mytvlauncher.ui.settings.SettingsScreen
 import com.biskyt.mytvlauncher.ui.theme.LauncherTheme
 import com.biskyt.mytvlauncher.ui.theme.Palette
@@ -37,6 +38,7 @@ fun AppRoot(nav: Navigator) {
                         Screen.HOME -> HomeScreen(nav)
                         Screen.SETTINGS -> SettingsScreen(nav)
                         Screen.ACCENT -> AccentScreen()
+                        Screen.HOME_ROWS -> HomeRowsScreen()
                         Screen.CHECK -> CheckScreen()
                     }
                 }
