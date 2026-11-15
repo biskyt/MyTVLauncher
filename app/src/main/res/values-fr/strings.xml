@@ -126,4 +126,13 @@
     <string name="settings_guide">Guide TV</string>
     <string name="settings_guide_help">Ce qu’ouvrent le bouton du guide TV et la touche Guide de la télécommande</string>
     <string name="guide_system">Système</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_not_opened">Cette notification n’a rien à ouvrir</string>
+    <string name="notifications_setting">Afficher les notifications</string>
+    <string name="notifications_setting_help">Une cloche dans la barre du haut avec les notifications du téléviseur</string>
+    <string name="notifications_adb">Autorisez l’accès aux notifications quand le téléviseur le demande. S’il ne le demande pas, donnez-le depuis un ordinateur avec cette commande :</string>
+    <plurals name="notifications_count">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
 </resources>

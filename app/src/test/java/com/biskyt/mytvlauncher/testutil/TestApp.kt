@@ -4,11 +4,13 @@ import android.os.SystemClock
 import com.biskyt.mytvlauncher.LauncherApp
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
 import com.biskyt.mytvlauncher.core.channels.AppChannel
+import com.biskyt.mytvlauncher.core.notifications.TvNotification
 import com.biskyt.mytvlauncher.core.recents.AppUse
 import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
+import com.biskyt.mytvlauncher.data.NotificationSource
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SpeakerOutput
 import com.biskyt.mytvlauncher.data.WatchNextSource
@@ -16,6 +18,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -38,6 +41,8 @@ class TestApp : LauncherApp() {
 
     override fun speakerOutput(): SpeakerOutput = FakeSpeaker
 
+    override fun notificationSource(): NotificationSource = FakeNotifications
+
     /**
      * Robolectric calls this after each test. Each test gets a new app, but the coroutine threads are shared by the
      * whole run: work left running would hold up the next test. Then the settings go back to their defaults, as the
@@ -59,6 +64,7 @@ class TestApp : LauncherApp() {
                 FakeRecents.reset()
                 FakeChannels.reset()
                 FakeSpeaker.reset()
+                FakeNotifications.reset()
             } finally {
                 super.onTerminate()
             }
@@ -255,5 +261,50 @@ object FakeSpeaker : SpeakerOutput {
     fun reset() {
         playing = false
         count.set(0)
+    }
+}
+
+/**
+ * The system notifications a test's launcher reads: Videos' "Download done" and Music's "Now playing". As the real
+ * listener, it gives them only while the launcher follows them and access is given ([allowed]). [opened] records what
+ * the launcher opened; a dismissed one goes.
+ */
+object FakeNotifications : NotificationSource {
+    val download = TvNotification("videos/1", FakeApps.videos.packageName, "Download done", "Big Buck Bunny", postedAt = 2)
+    val playing = TvNotification("music/1", FakeApps.music.packageName, "Now playing", null, postedAt = 1)
+
+    private var notices = listOf(download, playing)
+
+    override val all = MutableStateFlow(emptyList<TvNotification>())
+
+    @Volatile var allowed = true
+
+    @Volatile var following = false
+
+    @Volatile var opened: String? = null
+
+    override fun allowed() = allowed
+
+    override fun follow(on: Boolean) {
+        following = on
+        all.value = if (on && allowed) notices else emptyList()
+    }
+
+    override fun open(key: String): Boolean {
+        opened = key
+        return true
+    }
+
+    override fun dismiss(key: String) {
+        notices = notices.filter { it.key != key }
+        if (following) all.value = notices
+    }
+
+    fun reset() {
+        notices = listOf(download, playing)
+        all.value = emptyList()
+        allowed = true
+        following = false
+        opened = null
     }
 }

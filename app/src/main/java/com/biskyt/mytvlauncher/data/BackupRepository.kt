@@ -38,6 +38,7 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                 .put("speakerWake", settings.speakerWake)
                 .put("speakerWakeDelay", settings.speakerWakeDelay)
                 .put("guideApp", settings.guideApp.key)
+                .put("notificationsShown", settings.notificationsShown)
         )
         .put(
             "apps",
@@ -80,7 +81,9 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                         speakerWakeDelay =
                         settings.optInt("speakerWakeDelay", WakeDelay.DEFAULT).takeIf { it in WakeDelay.CHOICES } ?: WakeDelay.DEFAULT,
                         // Since 0.7.0: an older backup restores the TV's own guide.
-                        guideApp = GuideApp.fromKey(settings.optString("guideApp"))
+                        guideApp = GuideApp.fromKey(settings.optString("guideApp")),
+                        // Since 0.8.0: an older backup restores notifications as off.
+                        notificationsShown = settings.optBoolean("notificationsShown", false)
                     ),
                     places = root.getJSONArray("apps").objects().map {
                         AppPlace(it.getString("packageName"), it.getInt("position"), it.getBoolean("hidden"))

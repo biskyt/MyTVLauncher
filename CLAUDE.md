@@ -147,8 +147,11 @@ See also:
 - **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0) grows the card with focus and gives it an accent shadow, in its
   graphics layer only (no layout). `TvCard`'s ring stays as MyPlexPlayer has it.
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
-  (MyTVPlayer 1.19.0; MyPlexPlayer the same). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
+  (MyTVPlayer 1.19.0, and MyPlexPlayer's release of 2026-11-15). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
   sends it to the activity, not to the Compose root.
+- **Notifications** (0.8.0, `data/Notifications.kt`): `LauncherNotificationListener` is off in the manifest and turned
+  on only while Settings › Show notifications is on (`SystemNotifications.follow`), so Android binds it only then.
+  Access is checked again each time Home comes to the front. Tests use `FakeNotifications` (testutil/TestApp.kt).
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).

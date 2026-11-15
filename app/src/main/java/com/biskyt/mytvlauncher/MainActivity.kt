@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         container.apps.refresh()
         container.watchNext.cameToFront()
         container.channels.cameToFront()
+        if (container.notificationsShown.value == true) container.checkNotificationAccess()
     }
 
     override fun onStop() {

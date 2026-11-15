@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+- Settings › Show notifications adds a bell with the TV's notifications.
+- OK on a notification opens it; hold OK to dismiss it.
+
 ## 0.7.0
 - Pictures from Plex, Plezy and other home servers now show.
 - The card with focus grows and glows in the accent colour.

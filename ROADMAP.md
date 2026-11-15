@@ -32,7 +32,7 @@ owner approved the plan and the mockups on 2026-11-14 (https://claude.ai/artifac
 7. **0.7.0 (done):** the owner's points on 0.6.0 (2026-11-15): pictures over plain HTTP (Plex, Plezy), a focus glow,
    a TV guide button and the Guide key (System, MyTVPlayer or MyPlexPlayer), channel logos shown whole, larger posters
    in channel rows, Open in Play Store, a Left and Right speaker delay, and no Watch Next check.
-8. **0.8.0: system notifications** (the owner, 2026-11-15).
+8. **0.8.0 (done): system notifications** (the owner, 2026-11-15).
    - A setting, off by default. Turning it on asks for notification access (Android's page for it, or the adb command
      where the TV has none: `adb shell cmd notification allow_listener <launcher>/<listener service>`).
    - A bell in the top bar with the number of notifications, shown only when there are some.

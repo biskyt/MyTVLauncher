@@ -6,6 +6,8 @@ import android.os.SystemClock
 import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.keys.HomePress
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
+import com.biskyt.mytvlauncher.core.notifications.TvNotification
+import com.biskyt.mytvlauncher.core.notifications.TvNotifications
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.AppIcons
@@ -17,6 +19,7 @@ import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.NetworkMonitor
+import com.biskyt.mytvlauncher.data.NotificationSource
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SettingsRepository
 import com.biskyt.mytvlauncher.data.SpeakerOutput
@@ -32,9 +35,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
 /** The launcher's parts, made once for the app. */
@@ -44,7 +50,8 @@ class AppContainer(
     watchNextSource: WatchNextSource,
     channelSource: ChannelSource,
     val recents: RecentsSource,
-    speaker: SpeakerOutput
+    speaker: SpeakerOutput,
+    val notificationSource: NotificationSource
 ) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val db = LauncherDatabase.open(context)
@@ -96,6 +103,29 @@ class AppContainer(
 
     /** The apps' channel rows, from the saved items (see ChannelRepository). */
     val channelRows: StateFlow<List<AppChannel>?> = channels.channels.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** Whether the top bar shows system notifications (Settings › Show notifications). */
+    val notificationsShown: StateFlow<Boolean?> = settings.notificationsShown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    private val access = MutableStateFlow(false)
+
+    /** Whether the user gave notification access: checked while the setting is on (see [checkNotificationAccess]). */
+    val notificationAccess: StateFlow<Boolean> = access.asStateFlow()
+
+    /** Checks notification access again: when Home comes to the front with the setting on, and when Settings opens. */
+    fun checkNotificationAccess() {
+        access.value = notificationSource.allowed()
+    }
+
+    /** The notifications the bell counts and its panel lists, newest first: none while the setting is off. */
+    val notifications: StateFlow<List<TvNotification>> = combine(notificationsShown, notificationSource.all) { on, all ->
+        if (on == true) TvNotifications.shown(all, context.packageName) else emptyList()
+    }.stateIn(appScope, SharingStarted.Eagerly, emptyList())
+
+    /** Follows the notifications while the setting is on (see LauncherNotificationListener). */
+    fun followNotifications() {
+        appScope.launch { notificationsShown.filterNotNull().collect { notificationSource.follow(it) } }
+    }
 
     /** What the TV guide button opens (the TV's own guide until the setting is read). */
     val guideApp: StateFlow<GuideApp> = settings.guideApp.stateIn(appScope, SharingStarted.Eagerly, GuideApp.SYSTEM)
