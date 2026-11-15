@@ -35,6 +35,13 @@ class WatchNextTest {
     }
 
     @Test
+    fun `a TV channel's picture is a logo`() {
+        assertEquals("logo" to CardShape.LOGO, WatchNext.picture("logo", 1, "thumb", type = 6))
+        assertEquals("thumb" to CardShape.LOGO, WatchNext.picture(null, null, "thumb", type = 6))
+        assertEquals("logo" to CardShape.WIDE, WatchNext.picture("logo", 1, "thumb", type = 0))
+    }
+
+    @Test
     fun `progress needs a position and a duration`() {
         assertEquals(0.25f, WatchNext.progress(250, 1000)!!, 0.001f)
         assertEquals(1f, WatchNext.progress(2000, 1000)!!, 0.001f)

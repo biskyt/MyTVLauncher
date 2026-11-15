@@ -177,7 +177,8 @@ internal fun Cursor.toItem(sortColumn: String = WatchNextPrograms.COLUMN_LAST_EN
     val (picture, shape) = WatchNext.picture(
         string(WatchNextPrograms.COLUMN_POSTER_ART_URI),
         long(WatchNextPrograms.COLUMN_POSTER_ART_ASPECT_RATIO)?.toInt(),
-        string(WatchNextPrograms.COLUMN_THUMBNAIL_URI)
+        string(WatchNextPrograms.COLUMN_THUMBNAIL_URI),
+        long(WatchNextPrograms.COLUMN_TYPE)?.toInt()
     )
     return WatchNextItem(
         key = WatchNext.key(packageName, string(WatchNextPrograms.COLUMN_INTERNAL_PROVIDER_ID), long(BaseColumns._ID) ?: 0),

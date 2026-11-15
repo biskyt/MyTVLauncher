@@ -143,9 +143,14 @@ See also:
   "not exported" needs a permission of its own before Android 13. Tests use `FakeSpeaker` (testutil/TestApp.kt).
 - **Pictures over plain HTTP** (0.7.0): `usesCleartextTraffic` is on, because Plex and Plezy give Watch Next and
   channel pictures from a server on the home network. Pictures are the launcher's only network use.
-- **Pictures of another shape** (`fitsWhole`, a TV channel's logo) are scaled to fit the card, not cropped.
-- **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0) grows the card with focus and gives it an accent shadow, in its
-  graphics layer only (no layout). `TvCard`'s ring stays as MyPlexPlayer has it.
+- **Pictures of another shape** (`fitsWhole`) are scaled to fit the card, not cropped.
+- **TV channel logos** (0.8.1, `ui/home/Logo.kt`): an item of `TYPE_CHANNEL` is a `CardShape.LOGO` card. Its logo's
+  transparent border is cut off, every logo gets the same area inside a margin (`LogoFit`), and a dark logo on a
+  transparent background goes on a light card (`LogoLook`, in core).
+- **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0; 0.8.1: larger, with a glowing edge) grows the card with focus by
+  a tenth in its graphics layer and draws a blurred accent edge under it (no layout). Home's cards turn off `TvCard`'s
+  ring (`ring = false`); `TvCard` itself stays as MyPlexPlayer has it. `raiseOnFocus` on a row's item draws it over its
+  neighbours, so the semantics tree lists that item last: a test of the order on screen sorts by position.
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
   (MyTVPlayer 1.19.0, and MyPlexPlayer's release of 2026-11-15). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
   sends it to the activity, not to the Compose root.

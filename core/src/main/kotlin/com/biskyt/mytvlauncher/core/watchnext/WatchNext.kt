@@ -1,7 +1,10 @@
 package com.biskyt.mytvlauncher.core.watchnext
 
-/** The shape of a card in Continue watching: a 2:3 poster, or a wide 16:9 picture (the owner, 2026-11-14). */
-enum class CardShape { POSTER, WIDE }
+/**
+ * The shape of a card: a 2:3 poster, or a wide 16:9 picture (the owner, 2026-11-14). A [LOGO] card is wide, with a TV
+ * channel's logo in it (see LogoLook).
+ */
+enum class CardShape { POSTER, WIDE, LOGO }
 
 /**
  * One of another app's Watch Next items, as the launcher keeps it. [key] stays the same when the app writes the item
@@ -32,6 +35,9 @@ object WatchNext {
     private const val ASPECT_RATIO_2_3 = 4
     private const val ASPECT_RATIO_MOVIE_POSTER = 5
 
+    // TvContract.PreviewPrograms.TYPE_CHANNEL: the item is a TV channel, and its picture is the channel's logo.
+    private const val TYPE_CHANNEL = 6
+
     /**
      * The items the row shows: not from an app the user took out ([hiddenApps]), not hidden ([hiddenItems], by key),
      * newest first, at most [limit].
@@ -43,10 +49,11 @@ object WatchNext {
             .take(limit)
 
     /**
-     * The picture and the card's shape. A poster when the app gives one in a tall ratio (2:3 or a film poster),
-     * else the poster or thumbnail as a wide card.
+     * The picture and the card's shape. A TV channel's ([type]) picture is its logo. Otherwise a poster when the app
+     * gives one in a tall ratio (2:3 or a film poster), else the poster or thumbnail as a wide card.
      */
-    fun picture(posterUri: String?, posterRatio: Int?, thumbnailUri: String?): Pair<String?, CardShape> = when {
+    fun picture(posterUri: String?, posterRatio: Int?, thumbnailUri: String?, type: Int? = null): Pair<String?, CardShape> = when {
+        type == TYPE_CHANNEL -> (posterUri ?: thumbnailUri) to CardShape.LOGO
         posterUri != null && posterRatio.isTall() -> posterUri to CardShape.POSTER
         posterUri != null -> posterUri to CardShape.WIDE
         else -> thumbnailUri to CardShape.WIDE
