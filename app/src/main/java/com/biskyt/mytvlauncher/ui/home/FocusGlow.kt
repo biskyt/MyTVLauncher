@@ -8,7 +8,6 @@ import androidx.compose.ui.focus.FocusEventModifierNode
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
@@ -31,9 +30,9 @@ import kotlinx.coroutines.launch
 
 /**
  * The launcher's highlight for the card with focus (the owner, 2026-11-15: larger, with a glowing edge in place of a
- * solid ring): the card grows by a tenth and a soft glow in [color] (the accent) shows around its edge. The growth is a
- * property of the card's own drawing layer, and the glow one blurred shape drawn under it, both on the GPU: a focus
- * change animates them only, with no composition and no new layout, so rows scroll without stutter. Put it on the card
+ * solid ring): the card grows by a tenth and a glow in [color] (the accent) shows around its edge. Both are one scale of
+ * the card's drawing, with the glow's blurred shapes under it, on the GPU: a focus change animates them only, with no
+ * composition and no new layout, so rows scroll without stutter. Put it on the card
  * ([shape] is the card's), outside its focus target, so that it sees the card's focus. Put [raiseOnFocus] on the row's
  * item, so that the card draws over the cards next to it.
  */
@@ -55,53 +54,57 @@ private data class FocusGlowElement(val shape: Shape, val color: Color) : Modifi
 
 private class FocusGlowNode(var shape: Shape, var color: Color) :
     Modifier.Node(),
-    LayoutModifierNode,
     DrawModifierNode,
     FocusEventModifierNode {
     private val lift = Animatable(0f)
     private var focused = false
-    private val paint = Paint()
-    private var blurPx = 0f
+    private val soft = Paint()
+    private val edge = Paint()
+    private var blurDensity = 0f
 
     /** The card's outline, made again only when its size or shape changes, not on each frame of the animation. */
     private var outline: Outline? = null
     private var outlineSize = Size.Unspecified
     private var outlineShape: Shape? = null
 
-    /** Read by the layer while it draws: a change of [lift] draws the layer again, and nothing else. */
-    private val layer: GraphicsLayerScope.() -> Unit = {
-        val scale = 1f + LIFT_SCALE * lift.value
-        scaleX = scale
-        scaleY = scale
-    }
-
-    override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-        val placeable = measurable.measure(constraints)
-        return layout(placeable.width, placeable.height) { placeable.placeWithLayer(0, 0, layerBlock = layer) }
-    }
-
-    /** The glow, under the card and grown with it: the card's shape, blurred outwards only. */
+    /**
+     * The card and its glow, grown together by one transform of the drawing, so that they always match (in 0.8.1 the
+     * card grew in a layer and the glow by its own transform, and on the TV the card did not fill the glow, the owner,
+     * 2026-11-15). The glow is the card's shape, blurred outwards only, in two passes: a wide soft one and a narrow
+     * bright one at the edge. The blur grows with the transform too.
+     */
     override fun ContentDrawScope.draw() {
         val amount = lift.value
-        if (amount > 0f) {
-            val radius = GLOW_RADIUS.toPx()
-            val framework = paint.asFrameworkPaint()
-            if (radius != blurPx) {
-                blurPx = radius
-                framework.isAntiAlias = true
-                framework.maskFilter = BlurMaskFilter(radius, BlurMaskFilter.Blur.OUTER)
+        if (amount <= 0f) return drawContent()
+        scale(1f + LIFT_SCALE * amount) {
+            // The blurs depend on the screen's density only: made again only if it changes.
+            if (blurDensity != density) {
+                blurDensity = density
+                soft.asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    maskFilter = BlurMaskFilter(GLOW_RADIUS.toPx(), BlurMaskFilter.Blur.OUTER)
+                }
+                edge.asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    maskFilter = BlurMaskFilter(EDGE_RADIUS.toPx(), BlurMaskFilter.Blur.OUTER)
+                }
             }
-            framework.color = color.copy(alpha = GLOW_ALPHA * amount).toArgb()
+            val argb = color.copy(alpha = amount).toArgb()
+            soft.asFrameworkPaint().color = argb
+            edge.asFrameworkPaint().color = argb
             if (outline == null || outlineSize != size || outlineShape != shape) {
                 outline = shape.createOutline(size, layoutDirection, this)
                 outlineSize = size
                 outlineShape = shape
             }
-            val edge = outline ?: return drawContent()
-            val grown = 1f + LIFT_SCALE * amount
-            scale(grown) { drawIntoCanvas { it.drawOutline(edge, paint) } }
+            outline?.let { o ->
+                drawIntoCanvas {
+                    it.drawOutline(o, soft)
+                    it.drawOutline(o, edge)
+                }
+            }
+            this@draw.drawContent()
         }
-        drawContent()
     }
 
     override fun onFocusEvent(focusState: FocusState) {
@@ -141,9 +144,9 @@ private const val LIFT_SCALE = 0.1f
 
 private const val LIFT_MS = 150
 
-/** How far the glow reaches out from the card's edge, and how strong it is at the edge. */
+/** How far the soft glow reaches out from the card's edge, and the narrow bright glow at the edge. */
 private val GLOW_RADIUS = 12.dp
-private const val GLOW_ALPHA = 0.85f
+private val EDGE_RADIUS = 4.dp
 
 /** Room above and below a row of cards for the card with focus to grow and glow into. */
 val GLOW_ROOM = 20.dp

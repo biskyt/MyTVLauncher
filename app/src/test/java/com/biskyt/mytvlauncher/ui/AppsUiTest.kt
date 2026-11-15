@@ -20,6 +20,7 @@ import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -79,11 +80,27 @@ class AppsUiTest {
 
     @Test
     fun `Home pressed twice opens the recent apps, most recent first`() {
-        rule.waitAdvancingClock { shown(FakeApps.videos.label) }
-        pressHome()
-        pressHome()
-        rule.waitForText("Recent apps")
-        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Music").assertIsFocused() }.isSuccess }
+        openRecents()
+    }
+
+    @Test
+    fun `Menu on a recent app opens its options, with no Move`() {
+        openRecents()
+        press(KeyEvent.KEYCODE_MENU)
+        rule.waitForText("App info")
+        assertTrue(rule.onAllNodes(hasText("Move")).fetchSemanticsNodes().isEmpty())
+        rule.onNode(hasText("Hide from Home")).performClick()
+        rule.waitAdvancingClock { runBlocking { rule.activity.container.db.appPlaces().all() }.any { it.label == "Music" && it.hidden } }
+    }
+
+    @Test
+    fun `the tile under the recent apps opens All apps`() {
+        openRecents()
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("All apps").assertIsFocused() }.isSuccess }
+        press(KeyEvent.KEYCODE_DPAD_CENTER)
+        // All apps in place of Recent apps: its grid has every app, and Browser is not a recent app.
+        rule.waitAdvancingClock { rule.onAllNodes(hasText("Recent apps")).fetchSemanticsNodes().isEmpty() && shown("Browser") }
     }
 
     @Test
@@ -94,6 +111,15 @@ class AppsUiTest {
         pressHome()
         rule.waitForText("Allow usage access")
         rule.waitForText("appops set")
+    }
+
+    /** Home pressed twice: the recent apps, with focus on the most recent, Music. */
+    private fun openRecents() {
+        rule.waitAdvancingClock { shown(FakeApps.videos.label) }
+        pressHome()
+        pressHome()
+        rule.waitForText("Recent apps")
+        rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Music").assertIsFocused() }.isSuccess }
     }
 
     private fun pressHome() = rule.runOnUiThread {

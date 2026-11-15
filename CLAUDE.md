@@ -148,7 +148,8 @@ See also:
   transparent border is cut off, every logo gets the same area inside a margin (`LogoFit`), and a dark logo on a
   transparent background goes on a light card (`LogoLook`, in core).
 - **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0; 0.8.1: larger, with a glowing edge) grows the card with focus by
-  a tenth in its graphics layer and draws a blurred accent edge under it (no layout). Home's cards turn off `TvCard`'s
+  a tenth and draws a blurred accent edge under it, in one scale of the card's drawing (no layout). In 0.8.1 the card
+  grew in a layer and the glow by its own transform, and on the TV the card did not fill the glow. Home's cards turn off `TvCard`'s
   ring (`ring = false`); `TvCard` itself stays as MyPlexPlayer has it. `raiseOnFocus` on a row's item draws it over its
   neighbours, so the semantics tree lists that item last: a test of the order on screen sorts by position.
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
