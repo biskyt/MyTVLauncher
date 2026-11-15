@@ -5,4 +5,7 @@
     <string name="settings_accent">Accent colour</string>
     <string name="settings_accent_help">The colour of the item that has focus</string>
     <string name="backup_intro">Saves the accent colour, the order of your apps and rows, the hidden apps and items, and your row choices to a file. Copy it with a file manager app to keep it somewhere else.</string>
+    <string name="app_hide">Remove from favourite apps</string>
+    <string name="app_show">Add to favourite apps</string>
+    <string name="all_apps_on_home">Favourite app</string>
 </resources>

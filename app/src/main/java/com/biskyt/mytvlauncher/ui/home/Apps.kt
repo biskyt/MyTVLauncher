@@ -150,8 +150,8 @@ fun Modifier.moveKeys(rowStep: () -> Int = { 0 }, onStep: (Int) -> Unit): Modifi
 }
 
 /**
- * An app's options: Move (when [onMove] is given), Hide from Home or Show on Home, App info (Android's page for it), and
- * Open in Play Store (the owner, 2026-11-15).
+ * An app's options: Move (when [onMove] is given), Remove from or Add to favourite apps (the apps on Home; the owner,
+ * 2026-11-15), App info (Android's page for it), and Open in Play Store (the owner, 2026-11-15).
  */
 @Composable
 fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.app_move_help, onDismiss: () -> Unit) {

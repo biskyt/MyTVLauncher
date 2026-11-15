@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+- Video thumbnails fill their cards, with no bars.
+- All apps shows a heart on your favourite apps, the ones on Home.
+- Hold OK on an app to add it to or remove it from favourite apps.
+
 ## 0.8.2
 - The card with focus now fills its glow, which is brighter.
 - Progress bars sit inside the card, as in MyTVPlayer.
