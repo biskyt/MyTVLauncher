@@ -77,9 +77,10 @@ fun AppTile(
             TvCard(
                 onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
                 onLongClick = onOptions,
-                modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
-                    contentDescription = label
-                },
+                modifier = modifier.ambientSource(LocalAmbience.current, AmbientSource.Icon(packageName))
+                    .focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
+                        contentDescription = label
+                    },
                 shape = TileShape,
                 // The glow shows the focus (see focusGlow), in place of the ring.
                 ring = false

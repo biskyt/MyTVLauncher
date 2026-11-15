@@ -152,6 +152,12 @@ See also:
   grew in a layer and the glow by its own transform, and on the TV the card did not fill the glow. Home's cards turn off `TvCard`'s
   ring (`ring = false`); `TvCard` itself stays as MyPlexPlayer has it. `raiseOnFocus` on a row's item draws it over its
   neighbours, so the semantics tree lists that item last: a test of the order on screen sorts by position.
+- **Home's background** (1.1.0, `ui/home/Ambient.kt`): it follows the card with focus (`ambientSource` on each card,
+  through `LocalAmbience`, only on Home). A card with a picture gives a backdrop: the picture decoded 48 px wide and
+  stretched (a cheap blur: Android 9 to 11 have no blur effect) under a dark overlay. An app's icon, or a card with no
+  picture, gives soft radial glows in its colours (`tonesOf`). It changes only after the focus rests for 250 ms and
+  fades over 600 ms, so it does no work while the remote moves along a row. A test of its change needs
+  `waitAdvancingClock(stepMs > 0)` for the settle delay.
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
   (MyTVPlayer 1.19.0, and MyPlexPlayer's release of 2026-11-15). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
   sends it to the activity, not to the Compose root.

@@ -127,30 +127,35 @@ fun HomeScreen(nav: Navigator) {
     val margin = rememberRowPadPx()
     var pressed by rememberSaveable { mutableStateOf(false) }
     FocusNewTop(top.takeIf { ready }, pressed, first)
-    Column(
-        Modifier.fillMaxSize().onPreviewKeyEvent {
-            if (it.type == KeyEventType.KeyDown) pressed = true
-            false
-        }
-    ) {
-        TopBar(nav)
-        if (!ready) return@Column
-        // Twice the margin: a row's name above its cards stays in view as the remote moves up onto it.
-        val spec = remember(margin) { KeepInViewSpec(2 * margin) }
-        CompositionLocalProvider(LocalBringIntoViewSpec provides spec) {
-            LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
-                order.forEach { key ->
-                    val focus = if (key == top) first else null
-                    item(key = key) {
-                        when (key) {
-                            RowOrder.WATCH_NEXT -> if (askFirst) {
-                                AllowRow(focus) { ask.launch(TvListings.PERMISSION) }
-                            } else {
-                                ContinueWatchingRow(watch.orEmpty(), focus) { options = ItemChoice(it) }
-                            }
-                            RowOrder.APPS -> AppsRow(appList.orEmpty(), focus) { nav.open(Screen.ALL_APPS) }
-                            else -> channelByKey[key]?.let { channel ->
-                                ChannelRow(channel, focus) { options = ItemChoice(it, channel.id) }
+    // The background follows the card with focus (see AmbientBackground).
+    val ambience = remember { Ambience() }
+    AmbientBackground(ambience)
+    CompositionLocalProvider(LocalAmbience provides ambience) {
+        Column(
+            Modifier.fillMaxSize().onPreviewKeyEvent {
+                if (it.type == KeyEventType.KeyDown) pressed = true
+                false
+            }
+        ) {
+            TopBar(nav)
+            if (!ready) return@Column
+            // Twice the margin: a row's name above its cards stays in view as the remote moves up onto it.
+            val spec = remember(margin) { KeepInViewSpec(2 * margin) }
+            CompositionLocalProvider(LocalBringIntoViewSpec provides spec) {
+                LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
+                    order.forEach { key ->
+                        val focus = if (key == top) first else null
+                        item(key = key) {
+                            when (key) {
+                                RowOrder.WATCH_NEXT -> if (askFirst) {
+                                    AllowRow(focus) { ask.launch(TvListings.PERMISSION) }
+                                } else {
+                                    ContinueWatchingRow(watch.orEmpty(), focus) { options = ItemChoice(it) }
+                                }
+                                RowOrder.APPS -> AppsRow(appList.orEmpty(), focus) { nav.open(Screen.ALL_APPS) }
+                                else -> channelByKey[key]?.let { channel ->
+                                    ChannelRow(channel, focus) { options = ItemChoice(it, channel.id) }
+                                }
                             }
                         }
                     }

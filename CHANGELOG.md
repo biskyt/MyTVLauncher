@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+- Home's background shows a soft, blurred copy of the selected card's picture.
+- App icons and cards without a picture tint the background with their colours.
+
 ## 1.0.0
 - App icons fill round cards.
 - Video thumbnails fill their cards, with no bars.
