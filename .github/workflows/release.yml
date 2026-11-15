@@ -85,7 +85,7 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.MYTVLAUNCHER_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.MYTVLAUNCHER_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.MYTVLAUNCHER_KEY_ALIAS || 'mytvlauncher' }}
+          KEY_ALIAS: ${{ secrets.MYTVLAUNCHER_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.MYTVLAUNCHER_KEY_PASSWORD || secrets.MYTVLAUNCHER_KEYSTORE_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
@@ -93,7 +93,6 @@ jobs:
             {
               echo "MYTVLAUNCHER_KEYSTORE=$RUNNER_TEMP/release.keystore"
               echo "MYTVLAUNCHER_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
-              echo "MYTVLAUNCHER_KEY_ALIAS=$KEY_ALIAS"
               echo "MYTVLAUNCHER_KEY_PASSWORD=$KEY_PASSWORD"
             } >> "$GITHUB_ENV"
             echo "SIGNED_WITH=release" >> "$GITHUB_ENV"
@@ -105,10 +104,18 @@ jobs:
               echo "::error::The keystore did not open with MYTVLAUNCHER_KEYSTORE_PASSWORD, or it holds no key."
               exit 1
             fi
-            if ! printf '%s\n' "$aliases" | grep -Fixq -- "$KEY_ALIAS"; then
-              echo "::error::No key named as MYTVLAUNCHER_KEY_ALIAS (or 'mytvlauncher') in the keystore. Its keys: $(printf '%s ' $aliases)"
+            # With no MYTVLAUNCHER_KEY_ALIAS, the keystore's only key is used.
+            if [ -z "$KEY_ALIAS" ]; then
+              if [ "$(printf '%s\n' "$aliases" | wc -l)" -ne 1 ]; then
+                echo "::error::The keystore holds more than one key: set MYTVLAUNCHER_KEY_ALIAS to one of: $(printf '%s ' $aliases)"
+                exit 1
+              fi
+              KEY_ALIAS=$aliases
+            elif ! printf '%s\n' "$aliases" | grep -Fixq -- "$KEY_ALIAS"; then
+              echo "::error::No key named as MYTVLAUNCHER_KEY_ALIAS in the keystore. Its keys: $(printf '%s ' $aliases)"
               exit 1
             fi
+            echo "MYTVLAUNCHER_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
             # Reading the private key needs the key's own password: a wrong one is Gradle's "null".
             if ! keytool -certreq -alias "$KEY_ALIAS" -keystore "$RUNNER_TEMP/release.keystore" \
               -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" > /dev/null 2>&1; then

@@ -25,7 +25,7 @@ Android only installs an update if it is signed with the same key as the install
    | `MYTVLAUNCHER_KEYSTORE_BASE64` | the output of `base64 -w0 mytvlauncher-release.jks` (macOS: `base64 -i mytvlauncher-release.jks`) |
    | `MYTVLAUNCHER_KEYSTORE_PASSWORD` | the password you chose |
 
-   Two more are optional, only if yours differ from the defaults: `MYTVLAUNCHER_KEY_ALIAS` (default `mytvlauncher`) and `MYTVLAUNCHER_KEY_PASSWORD` (default: the keystore password, which is what `keytool` uses).
+   Two more are optional, only if yours differ from the defaults: `MYTVLAUNCHER_KEY_ALIAS` (not needed when the keystore holds one key: the release uses that key) and `MYTVLAUNCHER_KEY_PASSWORD` (default: the keystore password, which is what `keytool` uses).
 
 Until these secrets exist, releases still build, but they are signed with the public development key and marked as test pre-releases.
 
