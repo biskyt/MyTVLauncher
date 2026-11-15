@@ -49,8 +49,10 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -232,6 +234,7 @@ private fun TopBar(nav: Navigator) {
         Box(Modifier.weight(1f))
         NetworkStatus()
         Clock()
+        NotificationBell()
         BarItem({ context.openGuide() }, LauncherIcons.Guide, stringResource(R.string.home_guide))
         BarItem({ nav.open(Screen.ALL_APPS) }, LauncherIcons.Grid, stringResource(R.string.home_all_apps))
         BarItem({ nav.open(Screen.SETTINGS) }, LauncherIcons.Tune, stringResource(R.string.home_settings))
@@ -239,6 +242,23 @@ private fun TopBar(nav: Navigator) {
             context.openOrSay(missing) { openAndroidSettings() }
         }, LauncherIcons.Settings, stringResource(R.string.home_android_settings))
     }
+}
+
+/**
+ * The bell in the top bar (0.8.0): the number of notifications, shown only while there are some (none while Settings ›
+ * Show notifications is off or access is missing). OK opens their panel.
+ */
+@Composable
+private fun NotificationBell() {
+    val notices by LocalContext.current.container.notifications.collectAsState()
+    var open by remember { mutableStateOf(false) }
+    // The last one dismissed closes the panel: a later notification must not open it again by itself.
+    LaunchedEffect(notices.isEmpty()) { if (notices.isEmpty()) open = false }
+    // Empty while the setting is off or access is missing: the listener runs only with both (see Notifications.kt).
+    if (notices.isEmpty()) return
+    val label = pluralStringResource(R.plurals.notifications_count, notices.size, notices.size)
+    BarItem({ open = true }, LauncherIcons.Bell, label, notices.size)
+    if (open) NotificationsPanel { open = false }
 }
 
 /** "Home" in the accent colour with a line under it, as MyPlexPlayer's top bar shows the tab in use. */
@@ -258,14 +278,25 @@ private fun HomeLabel(name: String) {
 
 /** A top bar button: drawn on nothing; with focus, a pill filled with the accent colour (as MyPlexPlayer's). */
 @Composable
-private fun BarItem(onClick: () -> Unit, icon: ImageVector, label: String) {
+private fun BarItem(onClick: () -> Unit, icon: ImageVector, label: String, count: Int? = null) {
     TvCard(
         onClick = onClick,
+        modifier = Modifier.semantics { contentDescription = label },
         shape = RoundedCornerShape(50),
         color = Color.Transparent,
         fill = true
     ) {
-        Icon(icon, contentDescription = label, tint = cardColor(Palette.textDim), modifier = Modifier.padding(BAR_PAD).size(24.dp))
+        Row(Modifier.padding(BAR_PAD), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = cardColor(Palette.textDim), modifier = Modifier.size(24.dp))
+            count?.let {
+                Text(
+                    it.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = cardColor(LocalAccent.current.color),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+        }
     }
 }
 

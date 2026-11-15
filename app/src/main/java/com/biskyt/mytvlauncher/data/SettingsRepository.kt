@@ -23,7 +23,8 @@ data class SavedSettings(
     val rowOrder: List<String>,
     val speakerWake: Boolean = false,
     val speakerWakeDelay: Int = WakeDelay.DEFAULT,
-    val guideApp: GuideApp = GuideApp.SYSTEM
+    val guideApp: GuideApp = GuideApp.SYSTEM,
+    val notificationsShown: Boolean = false
 )
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
@@ -77,6 +78,13 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[GUIDE_APP] = app.key }
     }
 
+    /** Whether the top bar shows system notifications (Settings › Show notifications, 0.8.0). Off by default. */
+    val notificationsShown: Flow<Boolean> = context.dataStore.data.map { it[NOTIFICATIONS_SHOWN] ?: false }.distinctUntilChanged()
+
+    suspend fun setNotificationsShown(on: Boolean) {
+        context.dataStore.edit { it[NOTIFICATIONS_SHOWN] = on }
+    }
+
     suspend fun setSpeakerWake(on: Boolean) {
         context.dataStore.edit { it[SPEAKER_WAKE] = on }
     }
@@ -93,7 +101,8 @@ class SettingsRepository(private val context: Context) {
         rowOrder.first(),
         speakerWake.first(),
         speakerWakeDelay.first(),
-        guideApp.first()
+        guideApp.first(),
+        notificationsShown.first()
     )
 
     /**
@@ -109,6 +118,7 @@ class SettingsRepository(private val context: Context) {
             it[SPEAKER_WAKE] = saved.speakerWake
             it[SPEAKER_WAKE_DELAY] = saved.speakerWakeDelay
             it[GUIDE_APP] = saved.guideApp.key
+            it[NOTIFICATIONS_SHOWN] = saved.notificationsShown
             it[SYSTEM_PHONE_APPS_HIDDEN] = true
         }
     }
@@ -127,5 +137,6 @@ class SettingsRepository(private val context: Context) {
         val SPEAKER_WAKE = booleanPreferencesKey("speaker_wake")
         val SPEAKER_WAKE_DELAY = intPreferencesKey("speaker_wake_delay")
         val GUIDE_APP = stringPreferencesKey("guide_app")
+        val NOTIFICATIONS_SHOWN = booleanPreferencesKey("notifications_shown")
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,14 +31,18 @@ import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.core.ui.cycle
 import com.biskyt.mytvlauncher.data.GuideApp
+import com.biskyt.mytvlauncher.data.SystemNotifications
 import com.biskyt.mytvlauncher.openAndroidSettings
 import com.biskyt.mytvlauncher.openHomeAppChoice
+import com.biskyt.mytvlauncher.openNotificationAccess
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.Screen
 import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SettingRow
+import com.biskyt.mytvlauncher.ui.common.Toggle
 import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
+import com.biskyt.mytvlauncher.ui.home.AdbCommand
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import kotlinx.coroutines.launch
 
@@ -68,6 +73,7 @@ fun SettingsScreen(nav: Navigator) {
                 context.container.appScope.launch { context.container.settings.setGuideApp(GuideApp.entries.cycle(guide, d)) }
             })
         }
+        item { NotificationsSetting() }
         item {
             SettingRow(stringResource(R.string.speaker_title), stringResource(R.string.speaker_help), { nav.open(Screen.SPEAKER_WAKE) })
         }
@@ -127,3 +133,28 @@ private val accentNames = mapOf(
 /** A TV guide choice's name: the apps by their own names, the TV's own as "System". */
 @Composable
 private fun guideName(app: GuideApp): String = app.appName ?: stringResource(R.string.guide_system)
+
+/**
+ * Settings › Show notifications (0.8.0, off by default). Turning it on asks for notification access: Android's page for
+ * it, or the adb command where the TV has none, shown while access is missing.
+ */
+@Composable
+private fun NotificationsSetting() {
+    val context = LocalContext.current
+    val container = context.container
+    val on by container.notificationsShown.collectAsState()
+    val allowed by container.notificationAccess.collectAsState()
+    LaunchedEffect(Unit) { container.checkNotificationAccess() }
+    val shown = on ?: return
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        SettingRow(stringResource(R.string.notifications_setting), stringResource(R.string.notifications_setting_help), {
+            container.appScope.launch { container.settings.setNotificationsShown(!shown) }
+            // Checked now: access can have been taken away in Android settings since the page opened.
+            container.checkNotificationAccess()
+            if (!shown && !container.notificationAccess.value) context.openNotificationAccess()
+        }) { Toggle(shown) }
+        if (shown && !allowed) {
+            AdbCommand(stringResource(R.string.notifications_adb), SystemNotifications.adbGrant(context.packageName))
+        }
+    }
+}

@@ -55,6 +55,19 @@ object LauncherIcons {
         arcTo(2f, 2f, 0f, true, true, 10f, 17f)
     }
 
+    /** Notifications: a bell. */
+    val Bell = icon("bell") {
+        moveTo(6f, 16f)
+        verticalLineTo(11f)
+        arcTo(6f, 6f, 0f, false, true, 18f, 11f)
+        verticalLineTo(16f)
+        lineTo(19.5f, 17.5f)
+        horizontalLineTo(4.5f)
+        close()
+        moveTo(10f, 20f)
+        horizontalLineTo(14f)
+    }
+
     /** The TV guide: a screen with a grid of programmes. */
     val Guide = icon("guide") {
         moveTo(5f, 5f)

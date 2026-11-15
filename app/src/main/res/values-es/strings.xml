@@ -126,4 +126,13 @@
     <string name="settings_guide">Guía de TV</string>
     <string name="settings_guide_help">Lo que abren el botón de guía de TV y la tecla Guía del mando</string>
     <string name="guide_system">Sistema</string>
+    <string name="notifications_title">Notificaciones</string>
+    <string name="notifications_not_opened">Esta notificación no tiene nada que abrir</string>
+    <string name="notifications_setting">Mostrar notificaciones</string>
+    <string name="notifications_setting_help">Una campana en la barra superior con las notificaciones del televisor</string>
+    <string name="notifications_adb">Permite el acceso a las notificaciones cuando el televisor lo pida. Si no lo pide, dalo desde un ordenador con este comando:</string>
+    <plurals name="notifications_count">
+        <item quantity="one">%1$d notificación</item>
+        <item quantity="other">%1$d notificaciones</item>
+    </plurals>
 </resources>

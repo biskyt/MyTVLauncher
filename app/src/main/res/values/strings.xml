@@ -132,4 +132,13 @@
     <string name="settings_guide">TV guide</string>
     <string name="settings_guide_help">What the TV guide button and the remote\'s Guide key open</string>
     <string name="guide_system">System</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_not_opened">This notification has nothing to open</string>
+    <string name="notifications_setting">Show notifications</string>
+    <string name="notifications_setting_help">A bell in the top bar with the TV\'s notifications</string>
+    <string name="notifications_adb">Allow notification access when the TV asks. If it does not ask, give it from a computer with this command:</string>
+    <plurals name="notifications_count">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
 </resources>

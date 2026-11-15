@@ -1,12 +1,15 @@
 package com.biskyt.mytvlauncher
 
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import com.biskyt.mytvlauncher.data.LauncherNotificationListener
 import java.net.URISyntaxException
 
 /**
@@ -76,6 +79,20 @@ fun Context.openInPlayStore(packageName: String): Boolean {
 }
 
 private const val PLAY_STORE = "com.android.vending"
+
+/**
+ * Opens Android's page for the launcher's notification access (Android 11 and later), else its list of notification
+ * access; false if the TV has neither.
+ */
+fun Context.openNotificationAccess(): Boolean {
+    val all = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return tryStart(all)
+    val listener = ComponentName(this, LauncherNotificationListener::class.java).flattenToString()
+    val detail = Intent(
+        Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS
+    ).putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, listener)
+    return tryStart(detail, all)
+}
 
 /** Opens Android's usage access settings (for recent apps); false if the TV has no screen for it. */
 fun Context.openUsageAccess(): Boolean = tryStart(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
