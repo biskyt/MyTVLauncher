@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.3
+- MyTVPlayer's rows on Home update when the TV wakes and Home opens.
+- A card no longer keeps its glow when a row reuses it.
+
 ## 1.1.2
 - Settings › Background brightness sets how bright Home's background is, or turns it off.
 - The background is a little darker by default.

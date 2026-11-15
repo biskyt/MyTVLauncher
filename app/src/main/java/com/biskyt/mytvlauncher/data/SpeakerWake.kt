@@ -39,10 +39,16 @@ class SpeakerWake(private val settings: SettingsRepository, private val output: 
     private var waking: Job? = null
     private var trying: Job? = null
 
-    /** Follows the TV's wakes (ACTION_SCREEN_ON is sent only to receivers registered while the app runs). */
-    fun start(context: Context) {
+    /**
+     * Follows the TV's wakes (ACTION_SCREEN_ON is sent only to receivers registered while the app runs). [alsoOnWake]
+     * runs at each wake too (the home rows nudge).
+     */
+    fun start(context: Context, alsoOnWake: () -> Unit = {}) {
         val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) = woke()
+            override fun onReceive(context: Context, intent: Intent) {
+                woke()
+                alsoOnWake()
+            }
         }
         // Exported: only the system can send this protected broadcast. "Not exported" needs a permission of its own before
         // Android 13.

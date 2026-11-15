@@ -39,6 +39,8 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         container.apps.refresh()
         container.watchNext.cameToFront()
+        // MyTVPlayer brings its rows up to date (from the user's other TVs): see HomeRowsNudge.
+        container.homeRowsNudge.nudge()
         container.channels.cameToFront()
         if (container.notificationsShown.value == true) container.checkNotificationAccess()
     }

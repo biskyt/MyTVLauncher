@@ -31,7 +31,7 @@ open class LauncherApp : Application() {
         container.apps.refresh()
         container.watchNext.start()
         container.channels.start()
-        container.speakerWake.start(this)
+        container.speakerWake.start(this) { container.homeRowsNudge.nudge() }
         container.followNotifications()
     }
 

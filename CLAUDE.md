@@ -164,6 +164,13 @@ See also:
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
   (MyTVPlayer 1.19.0, and MyPlexPlayer's release of 2026-11-15). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
   sends it to the activity, not to the Compose root.
+- **Home rows nudge** (1.1.3, `data/HomeRowsNudge.kt`): when the TV wakes (through Speaker wake's `ACTION_SCREEN_ON`
+  receiver) and when Home comes to the front, the launcher sends MyTVPlayer a direct broadcast,
+  `com.biskyt.mytvplayer.action.REFRESH_HOME_ROWS` (with `FLAG_INCLUDE_STOPPED_PACKAGES`), 8 s later (for the network
+  after a wake, and for Home's first frame), at most once in 5 minutes and only while Continue watching or the channel
+  rows are on. MyTVPlayer then syncs from the user's other TVs and writes its Watch Next items and channels,
+  and the rows follow. Android has no such request of its own. MyTVPlayer runs no scheduled sync for it (the owner,
+  2026-11-15: it is used only with this launcher).
 - **Notifications** (0.8.0, `data/Notifications.kt`): `LauncherNotificationListener` is off in the manifest and turned
   on only while Settings › Show notifications is on (`SystemNotifications.follow`), so Android binds it only then.
   Access is checked again each time Home comes to the front. Tests use `FakeNotifications` (testutil/TestApp.kt).

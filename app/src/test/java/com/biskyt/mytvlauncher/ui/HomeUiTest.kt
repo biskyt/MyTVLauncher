@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.biskyt.mytvlauncher.MainActivity
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.data.HomeRowsNudge
 import com.biskyt.mytvlauncher.testutil.FakeApps
 import com.biskyt.mytvlauncher.testutil.FakeChannels
 import com.biskyt.mytvlauncher.testutil.FakeWatchNext
@@ -22,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Shadows.shadowOf
 
 @RunWith(AndroidJUnit4::class)
 class HomeUiTest {
@@ -78,5 +80,14 @@ class HomeUiTest {
 
     private fun pressHome() = rule.runOnUiThread {
         rule.activity.takeIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
+    }
+
+    @Test
+    fun `Home coming to the front asks MyTVPlayer to bring its rows up to date`() {
+        rule.waitAdvancingClock {
+            shadowOf(rule.activity.application).broadcastIntents.any {
+                it.action == HomeRowsNudge.action("com.biskyt.mytvplayer") && it.`package` == "com.biskyt.mytvplayer"
+            }
+        }
     }
 }
