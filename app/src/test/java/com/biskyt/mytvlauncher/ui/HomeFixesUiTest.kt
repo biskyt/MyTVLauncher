@@ -71,11 +71,11 @@ class HomeFixesUiTest {
     }
 
     @Test
-    fun `channel cards are half the size of Continue watching's`() {
+    fun `channel posters are three quarters the size of Continue watching's`() {
         val film = FakeChannels.films.items.single().title
         rule.waitAdvancingClock { shown(film) && shown(FakeWatchNext.film.title) }
-        // Both are posters: 124 wide in Continue watching, 62 in a channel row.
-        assertTrue(abs(width(FakeWatchNext.film.title) - 2 * width(film)) <= 2)
+        // Both are posters: 124 wide in Continue watching, 93 in a channel row (three quarters, the owner, 2026-11-15).
+        assertTrue(abs(width(FakeWatchNext.film.title) * 3 / 4 - width(film)) <= 2)
     }
 
     @Test

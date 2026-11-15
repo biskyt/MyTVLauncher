@@ -29,6 +29,16 @@ owner approved the plan and the mockups on 2026-11-14 (https://claude.ai/artifac
 6. **0.6.0 (done), low priority:** wake the speaker when the TV leaves standby, with about 1 s of silent sound, once for
    each wake, only when nothing plays, after a delay set in Settings (0 to 10 s, 2 s by default). Off by default.
    The wait for an HDMI or ARC output to appear was left out: the delay is simpler and the owner can set it.
+7. **0.7.0 (done):** the owner's points on 0.6.0 (2026-11-15): pictures over plain HTTP (Plex, Plezy), a focus glow,
+   a TV guide button and the Guide key (System, MyTVPlayer or MyPlexPlayer), channel logos shown whole, larger posters
+   in channel rows, Open in Play Store, a Left and Right speaker delay, and no Watch Next check.
+8. **0.8.0: system notifications** (the owner, 2026-11-15).
+   - A setting, off by default. Turning it on asks for notification access (Android's page for it, or the adb command
+     where the TV has none: `adb shell cmd notification allow_listener <launcher>/<listener service>`).
+   - A bell in the top bar with the number of notifications, shown only when there are some.
+   - OK on the bell opens a panel of the notifications (app, title, text). OK opens one; holding OK or Menu
+     dismisses it.
+   - The launcher follows notifications only while the setting is on and access is given.
 
 ## Test results and decisions (the owner, 2026-11-14)
 - On the Philips TV, 0.1.0 read 38 Watch Next items and 390 rows of the channels table. That table also holds the TV's

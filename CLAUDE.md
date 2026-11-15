@@ -112,7 +112,7 @@ See also:
 ## Gotchas learned the hard way
 - **Android never gives the Home key to an app.** A launcher only gets the HOME intent for a short press
   (`MainActivity.onNewIntent`). A held press and a double press are set by the TV maker. The Home key test in
-  Settings › Watch Next check logs what each TV sends.
+  Settings › Watch Next check showed what the Philips TV sends; the screen went in 0.7.0 (the owner, 2026-11-15).
 - **Android 11 package visibility:** the launcher sees other apps only through the `<queries>` block in the manifest.
 - **Which apps show** (`core/apps/LaunchEntries`): every app is in All apps. A system app with only a phone entry
   (`LAUNCHER`, no `LEANBACK_LAUNCHER`) is hidden from Home when first found, and once for places saved before 0.3.0
@@ -141,6 +141,14 @@ See also:
 - **Speaker wake** (0.6.0, `data/SpeakerWake.kt`): a receiver for `ACTION_SCREEN_ON`, registered when the app starts
   (that broadcast goes only to receivers registered at run time). It is exported: only the system can send it, and
   "not exported" needs a permission of its own before Android 13. Tests use `FakeSpeaker` (testutil/TestApp.kt).
+- **Pictures over plain HTTP** (0.7.0): `usesCleartextTraffic` is on, because Plex and Plezy give Watch Next and
+  channel pictures from a server on the home network. Pictures are the launcher's only network use.
+- **Pictures of another shape** (`fitsWhole`, a TV channel's logo) are scaled to fit the card, not cropped.
+- **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0) grows the card with focus and gives it an accent shadow, in its
+  graphics layer only (no layout). `TvCard`'s ring stays as MyPlexPlayer has it.
+- **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
+  (MyTVPlayer 1.19.0; MyPlexPlayer the same). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
+  sends it to the activity, not to the Compose root.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).

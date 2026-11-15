@@ -16,8 +16,8 @@ import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
 import kotlinx.coroutines.launch
 
 /**
- * Settings › Speaker wake (the owner, 2026-11-14): the speaker wake on or off, the delay after the TV wakes (OK steps
- * through the choices), and the sound now, to try it.
+ * Settings › Speaker wake (the owner, 2026-11-14): the speaker wake on or off, the delay after the TV wakes (Left and
+ * Right change it, as MyTVPlayer's language setting), and the sound now, to try it.
  */
 @Composable
 fun SpeakerWakeScreen() {
@@ -40,9 +40,16 @@ fun SpeakerWakeScreen() {
             ) { Toggle(wake) }
         }
         item {
-            SettingRow(stringResource(R.string.speaker_delay, seconds), stringResource(R.string.speaker_delay_help), {
-                later { container.settings.setSpeakerWakeDelay(WakeDelay.next(seconds)) }
-            })
+            CycleSettingRow(
+                stringResource(
+                    R.string.speaker_delay
+                ),
+                stringResource(R.string.speaker_delay_help),
+                stringResource(R.string.speaker_delay_value, seconds),
+                { d ->
+                    later { container.settings.setSpeakerWakeDelay(WakeDelay.step(seconds, d)) }
+                }
+            )
         }
         item {
             SettingRow(stringResource(R.string.speaker_try), stringResource(R.string.speaker_try_help), {

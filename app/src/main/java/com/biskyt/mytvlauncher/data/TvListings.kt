@@ -12,13 +12,13 @@ import kotlinx.coroutines.withContext
 data class TableCount(val count: Int?, val error: String? = null)
 
 /**
- * What the Watch Next check found: whether the permission is given, and what the launcher can read. The channels table
+ * What a check of the TV provider found (the emulator smoke test): whether the permission is given, and what the launcher can read. The channels table
  * holds apps' home screen channels ([appChannels], type preview) and the TV's own broadcast channels ([tvChannels]).
  */
 data class ListingsCheck(val allowed: Boolean, val watchNext: TableCount, val appChannels: TableCount, val tvChannels: TableCount)
 
 /**
- * The Watch Next check in Settings: whether the launcher may read other apps' Watch Next items and home screen
+ * A check of the TV provider (the emulator smoke test uses it; Settings' Watch Next check went in 0.7.0): whether the launcher may read other apps' Watch Next items and home screen
  * channels, and how many it can read. Some TVs need the permission given with adb (see [adbGrant]). Reads run in the
  * background and ask only for row ids, never in a way that holds up Home.
  */

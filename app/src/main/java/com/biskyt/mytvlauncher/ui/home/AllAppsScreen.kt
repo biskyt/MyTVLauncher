@@ -52,7 +52,7 @@ fun AllAppsScreen() {
         LazyVerticalGrid(
             GridCells.Adaptive(COLUMN),
             state = grid,
-            contentPadding = PaddingValues(bottom = 40.dp),
+            contentPadding = PaddingValues(top = GLOW_ROOM, bottom = 40.dp),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {

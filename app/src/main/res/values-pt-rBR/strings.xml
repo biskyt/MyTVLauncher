@@ -10,8 +10,6 @@
     <string name="settings_title">Configurações</string>
     <string name="settings_accent">Cor de destaque</string>
     <string name="settings_accent_help">A cor do item em foco</string>
-    <string name="settings_check">Verificação de Assistir a seguir</string>
-    <string name="settings_check_help">O que o launcher pode ler de outros apps, e o teste do botão Início</string>
     <string name="settings_android_help">Rede, tela, som e mais</string>
     <string name="settings_home_app">App de início</string>
     <string name="settings_home_app_help">Escolha qual launcher o botão Início abre</string>
@@ -27,23 +25,7 @@
     <string name="accent_lime">Lima</string>
     <string name="accent_pink">Rosa</string>
     <string name="accent_silver">Prata</string>
-
-    <string name="check_permission">Permissão para ler a programação da TV</string>
-    <string name="check_allowed">Permitida</string>
-    <string name="check_not_allowed">Não permitida. Selecione para pedir.</string>
     <string name="check_adb">Se a TV não pedir, dê a permissão a partir de um computador com este comando:</string>
-    <string name="check_read_again">Ler de novo</string>
-    <string name="check_watch_next">Itens de Assistir a seguir</string>
-    <string name="check_channels">Canais de apps</string>
-    <string name="check_count">%1$s: %2$d</string>
-    <string name="check_no_table">%1$s: este dispositivo não tem</string>
-    <string name="check_refused">%1$s: recusado (%2$s)</string>
-    <string name="check_home_title">Teste do botão Início</string>
-    <string name="check_home_help">Aperte Início, segure Início e aperte Início duas vezes. Cada sinal de Início que chega ao launcher aparece aqui.</string>
-    <string name="check_home_none">Ainda não há sinais de Início.</string>
-    <string name="check_home_gap">%1$d ms depois do anterior</string>
-    <string name="check_home_in_front">o launcher estava na frente</string>
-    <string name="check_home_other_app">outro app estava na frente</string>
 
     <string name="home_continue_watching">Continuar assistindo</string>
     <string name="home_allow_watch_next">Permitir Continuar assistindo</string>
@@ -59,8 +41,7 @@
     <string name="rows_no_apps">Nenhum app tem itens em Continuar assistindo ainda.</string>
     <string name="rows_hidden_items">Itens ocultos: %1$d</string>
     <string name="rows_hidden_items_help">Selecione para mostrar todos de novo</string>
-    <string name="check_tv_channels">Canais de TV</string>
-    <string name="home_allow_refused">Não permitido. Configurações › Verificação de Assistir a seguir tem o comando adb.</string>
+    <string name="home_allow_refused">Não permitido. O comando adb abaixo do botão dá a permissão.</string>
 
     <string name="home_all_apps">Todos os apps</string>
     <string name="app_move">Mover</string>
@@ -74,6 +55,9 @@
     <string name="app_info">Informações do app</string>
     <string name="app_info_help">A página do Android para este app</string>
     <string name="app_info_missing">Esta TV não tem uma página de informações do app que o launcher possa abrir.</string>
+    <string name="app_play_store">Abrir na Play Store</string>
+    <string name="app_play_store_help">A página dele na Play Store</string>
+    <string name="app_play_store_missing">A Play Store não abriu</string>
     <string name="all_apps_hidden">Oculto do início</string>
     <string name="recents_title">Apps recentes</string>
     <string name="recents_none">Ainda não há apps recentes.</string>
@@ -132,8 +116,14 @@
     <string name="speaker_intro">Alguns alto-falantes e soundbars dormem enquanto a TV está em espera e só despertam quando toca algum som. Quando a TV liga, o launcher toca cerca de um segundo de silêncio para eles. Nada toca se já houver som.</string>
     <string name="speaker_on">Despertar o alto-falante</string>
     <string name="speaker_on_help">Desligado por padrão</string>
-    <string name="speaker_delay">Atraso: %1$d s</string>
-    <string name="speaker_delay_help">Quanto tempo depois de a TV ligar. OK muda.</string>
+    <string name="speaker_delay">Atraso</string>
+    <string name="speaker_delay_value">%1$d s</string>
+    <string name="speaker_delay_help">Quanto tempo depois de a TV ligar. Esquerda e direita mudam.</string>
     <string name="speaker_try">Tocar agora</string>
     <string name="speaker_try_help">Toca o som silencioso uma vez, para testar</string>
+    <string name="home_guide">Guia de TV</string>
+    <string name="guide_missing">O guia de TV não abriu</string>
+    <string name="settings_guide">Guia de TV</string>
+    <string name="settings_guide_help">O que o botão do guia de TV e a tecla Guia do controle abrem</string>
+    <string name="guide_system">Sistema</string>
 </resources>

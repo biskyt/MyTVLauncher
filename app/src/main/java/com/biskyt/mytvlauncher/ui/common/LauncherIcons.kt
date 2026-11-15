@@ -55,6 +55,28 @@ object LauncherIcons {
         arcTo(2f, 2f, 0f, true, true, 10f, 17f)
     }
 
+    /** The TV guide: a screen with a grid of programmes. */
+    val Guide = icon("guide") {
+        moveTo(5f, 5f)
+        horizontalLineTo(19f)
+        arcTo(2f, 2f, 0f, false, true, 21f, 7f)
+        verticalLineTo(17f)
+        arcTo(2f, 2f, 0f, false, true, 19f, 19f)
+        horizontalLineTo(5f)
+        arcTo(2f, 2f, 0f, false, true, 3f, 17f)
+        verticalLineTo(7f)
+        arcTo(2f, 2f, 0f, false, true, 5f, 5f)
+        close()
+        moveTo(3f, 10f)
+        horizontalLineTo(21f)
+        moveTo(3f, 14.5f)
+        horizontalLineTo(21f)
+        moveTo(9f, 10f)
+        verticalLineTo(19f)
+        moveTo(15f, 14.5f)
+        verticalLineTo(19f)
+    }
+
     /** All apps: four rounded squares. */
     val Grid = icon("grid") {
         listOf(3f to 3f, 14f to 3f, 3f to 14f, 14f to 14f).forEach { (x, y) ->

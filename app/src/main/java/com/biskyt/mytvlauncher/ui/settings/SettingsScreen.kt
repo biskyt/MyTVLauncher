@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +27,9 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.BuildConfig
 import com.biskyt.mytvlauncher.R
+import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.core.ui.cycle
+import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.openAndroidSettings
 import com.biskyt.mytvlauncher.openHomeAppChoice
 import com.biskyt.mytvlauncher.openOrSay
@@ -34,8 +39,9 @@ import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SettingRow
 import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
+import kotlinx.coroutines.launch
 
-/** The launcher's settings: the accent colour, Home rows, Speaker wake, Backup & restore, the Watch Next check, Android settings, the home app, the version. */
+/** The launcher's settings: the accent colour, Home rows, Speaker wake, Backup & restore, Android settings, the home app, the version. */
 @Composable
 fun SettingsScreen(nav: Navigator) {
     val context = LocalContext.current
@@ -57,13 +63,16 @@ fun SettingsScreen(nav: Navigator) {
             })
         }
         item {
+            val guide by context.container.guideApp.collectAsState()
+            CycleSettingRow(stringResource(R.string.settings_guide), stringResource(R.string.settings_guide_help), guideName(guide), { d ->
+                context.container.appScope.launch { context.container.settings.setGuideApp(GuideApp.entries.cycle(guide, d)) }
+            })
+        }
+        item {
             SettingRow(stringResource(R.string.speaker_title), stringResource(R.string.speaker_help), { nav.open(Screen.SPEAKER_WAKE) })
         }
         item {
             SettingRow(stringResource(R.string.backup_title), stringResource(R.string.backup_help), { nav.open(Screen.BACKUP) })
-        }
-        item {
-            SettingRow(stringResource(R.string.settings_check), stringResource(R.string.settings_check_help), { nav.open(Screen.CHECK) })
         }
         item {
             SettingRow(stringResource(R.string.home_android_settings), stringResource(R.string.settings_android_help), {
@@ -114,3 +123,7 @@ private val accentNames = mapOf(
     "pink" to R.string.accent_pink,
     "silver" to R.string.accent_silver
 )
+
+/** A TV guide choice's name: the apps by their own names, the TV's own as "System". */
+@Composable
+private fun guideName(app: GuideApp): String = app.appName ?: stringResource(R.string.guide_system)

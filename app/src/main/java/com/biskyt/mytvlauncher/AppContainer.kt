@@ -14,6 +14,7 @@ import com.biskyt.mytvlauncher.data.BackupFile
 import com.biskyt.mytvlauncher.data.BackupRepository
 import com.biskyt.mytvlauncher.data.ChannelRepository
 import com.biskyt.mytvlauncher.data.ChannelSource
+import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.NetworkMonitor
 import com.biskyt.mytvlauncher.data.RecentsSource
@@ -95,6 +96,9 @@ class AppContainer(
 
     /** The apps' channel rows, from the saved items (see ChannelRepository). */
     val channelRows: StateFlow<List<AppChannel>?> = channels.channels.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /** What the TV guide button opens (the TV's own guide until the setting is read). */
+    val guideApp: StateFlow<GuideApp> = settings.guideApp.stateIn(appScope, SharingStarted.Eagerly, GuideApp.SYSTEM)
 
     /** The order of Home's rows, by key (see RowOrder): empty until the user moves one. */
     val rowOrder: StateFlow<List<String>?> = settings.rowOrder.stateIn(appScope, SharingStarted.Eagerly, null)

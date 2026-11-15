@@ -14,8 +14,6 @@
     <string name="settings_title">Settings</string>
     <string name="settings_accent">Accent colour</string>
     <string name="settings_accent_help">The colour of the item that has focus</string>
-    <string name="settings_check">Watch Next check</string>
-    <string name="settings_check_help">What the launcher can read from other apps, and the Home key test</string>
     <string name="settings_android_help">Network, display, sound and more</string>
     <string name="settings_home_app">Home app</string>
     <string name="settings_home_app_help">Choose which launcher the Home button opens</string>
@@ -32,23 +30,8 @@
     <string name="accent_pink">Pink</string>
     <string name="accent_silver">Silver</string>
 
-    <!-- Watch Next check -->
-    <string name="check_permission">Permission to read TV listings</string>
-    <string name="check_allowed">Allowed</string>
-    <string name="check_not_allowed">Not allowed. Select to ask for it.</string>
+    <!-- The permission for Continue watching and app channels -->
     <string name="check_adb">If the TV does not ask, give the permission from a computer with this command:</string>
-    <string name="check_read_again">Read again</string>
-    <string name="check_watch_next">Watch Next items</string>
-    <string name="check_channels">App channels</string>
-    <string name="check_count">%1$s: %2$d</string>
-    <string name="check_no_table">%1$s: this device has none</string>
-    <string name="check_refused">%1$s: refused (%2$s)</string>
-    <string name="check_home_title">Home key test</string>
-    <string name="check_home_help">Press Home, hold Home, and press Home twice. Each Home signal that reaches the launcher shows here.</string>
-    <string name="check_home_none">No Home signals yet.</string>
-    <string name="check_home_gap">%1$d ms after the last one</string>
-    <string name="check_home_in_front">the launcher was in front</string>
-    <string name="check_home_other_app">another app was in front</string>
 
     <string name="home_continue_watching">Continue watching</string>
     <string name="home_allow_watch_next">Allow Continue watching</string>
@@ -64,8 +47,7 @@
     <string name="rows_no_apps">No app has Continue watching items yet.</string>
     <string name="rows_hidden_items">Hidden items: %1$d</string>
     <string name="rows_hidden_items_help">Select to show them all again</string>
-    <string name="check_tv_channels">TV channels</string>
-    <string name="home_allow_refused">Not allowed. Settings › Watch Next check has the adb command.</string>
+    <string name="home_allow_refused">Not allowed. The adb command under the button gives the permission.</string>
 
     <string name="home_all_apps">All apps</string>
     <string name="app_move">Move</string>
@@ -79,6 +61,9 @@
     <string name="app_info">App info</string>
     <string name="app_info_help">Android’s page for this app</string>
     <string name="app_info_missing">This TV has no App info page that the launcher can open.</string>
+    <string name="app_play_store">Open in Play Store</string>
+    <string name="app_play_store_help">Its page in the Play Store</string>
+    <string name="app_play_store_missing">The Play Store did not open</string>
     <string name="all_apps_hidden">Hidden from Home</string>
     <string name="recents_title">Recent apps</string>
     <string name="recents_none">No recent apps yet.</string>
@@ -137,8 +122,14 @@
     <string name="speaker_intro">Some speakers and soundbars sleep while the TV is in standby and wake only when sound plays. When the TV wakes, the launcher plays about a second of silence for them. Nothing plays if sound plays already.</string>
     <string name="speaker_on">Wake the speaker</string>
     <string name="speaker_on_help">Off by default</string>
-    <string name="speaker_delay">Delay: %1$d s</string>
-    <string name="speaker_delay_help">How long after the TV wakes. OK changes it.</string>
+    <string name="speaker_delay">Delay</string>
+    <string name="speaker_delay_value">%1$d s</string>
+    <string name="speaker_delay_help">How long after the TV wakes. Left and Right change it.</string>
     <string name="speaker_try">Play it now</string>
     <string name="speaker_try_help">Plays the silent sound once, to try it</string>
+    <string name="home_guide">TV guide</string>
+    <string name="guide_missing">The TV guide did not open</string>
+    <string name="settings_guide">TV guide</string>
+    <string name="settings_guide_help">What the TV guide button and the remote\'s Guide key open</string>
+    <string name="guide_system">System</string>
 </resources>
