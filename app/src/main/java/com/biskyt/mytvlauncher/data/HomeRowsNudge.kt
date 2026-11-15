@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Asks MyTVPlayer to bring its rows on Home up to date (the owner, 2026-11-15): its Continue watching items and its
- * channels. MyTVPlayer syncs what was watched on the user's other TVs only while it runs, so after standby
+ * Asks MyTVPlayer and MyPlexPlayer to bring their rows on Home up to date (the owner, 2026-11-15): their Continue
+ * watching items and their channels. Each app syncs what was watched elsewhere only while it runs, so after standby
  * the launcher's rows could be out of date. Android has no such request of its own, so this is a direct broadcast,
  * `<package>.action.REFRESH_HOME_ROWS` (as the TV guide's `<package>.action.TV_GUIDE`). The app syncs and writes its
  * items, and the rows follow them as they follow every change. Sent when the TV wakes and when Home comes to the
@@ -50,8 +50,8 @@ class HomeRowsNudge(
     }
 
     companion object {
-        /** The apps asked: MyTVPlayer, which syncs between the user's TVs. */
-        val APPS = listOf("com.biskyt.mytvplayer")
+        /** The apps asked: MyTVPlayer, which syncs between the user's TVs, and MyPlexPlayer, with the Plex server. */
+        val APPS = listOf("com.biskyt.mytvplayer", "com.biskyt.myplexplayer")
 
         const val MIN_GAP_MS = 5 * 60_000L
         const val WAIT_MS = 8_000L

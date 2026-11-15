@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.4
+- MyPlexPlayer's rows on Home also update when the TV wakes and Home opens.
+
 ## 1.1.3
 - MyTVPlayer's rows on Home update when the TV wakes and Home opens.
 - A card no longer keeps its glow when a row reuses it.
