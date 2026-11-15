@@ -151,10 +151,11 @@ private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> 
         TvCard(
             onClick = { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openWatchNext(item) } },
             onLongClick = onOptions,
-            modifier = modifier.focusGlow(CardShape10, LocalAccent.current.color).size(width, height).semantics {
-                contentDescription =
-                    item.title
-            },
+            modifier = modifier.ambientSource(LocalAmbience.current, backgroundOf(item))
+                .focusGlow(CardShape10, LocalAccent.current.color).size(width, height).semantics {
+                    contentDescription =
+                        item.title
+                },
             shape = CardShape10,
             // The glow shows the focus (see focusGlow), in place of the ring.
             ring = false
@@ -320,6 +321,12 @@ fun ItemOptions(choice: ItemChoice, onDismiss: () -> Unit) {
 }
 
 private val CardShape10 = RoundedCornerShape(10.dp)
+
+/** What Home's background shows for [item]: its picture, its logo's colours, or the accent's glow. */
+private fun backgroundOf(item: WatchNextItem): AmbientSource {
+    val uri = item.pictureUri ?: return AmbientSource.Plain
+    return if (item.shape == CardShape.LOGO) AmbientSource.Logo(uri) else AmbientSource.Picture(uri)
+}
 
 /** The progress bar on a full size card: its height, and how far in it is from the card's sides and bottom. */
 private val BAR_HEIGHT = 5.dp
