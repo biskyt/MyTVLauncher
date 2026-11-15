@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -21,7 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusEventModifierNode
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,12 +31,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalContext
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.core.ui.BackdropLevel
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.Dispatchers
@@ -62,9 +66,42 @@ class Ambience {
 /** Home's [Ambience]; null on other screens, where cards do not change the background. */
 val LocalAmbience = staticCompositionLocalOf<Ambience?> { null }
 
-/** Tells Home's background which card has focus (when the card is on Home). */
+/**
+ * Tells Home's background which card has focus (when the card is on Home): when the card takes focus, and when its
+ * [source] changes while it has focus (a card shown from saved data at start-up gets its picture later).
+ */
 fun Modifier.ambientSource(ambience: Ambience?, source: AmbientSource): Modifier =
-    if (ambience == null) this else onFocusChanged { if (it.hasFocus) ambience.source = source }
+    if (ambience == null) this else this then AmbientSourceElement(ambience, source)
+
+private data class AmbientSourceElement(val ambience: Ambience, val source: AmbientSource) : ModifierNodeElement<AmbientSourceNode>() {
+    override fun create() = AmbientSourceNode(ambience, source)
+
+    override fun update(node: AmbientSourceNode) {
+        node.ambience = ambience
+        node.source = source
+        if (node.focused) ambience.source = source
+    }
+}
+
+private class AmbientSourceNode(var ambience: Ambience, var source: AmbientSource) :
+    Modifier.Node(),
+    FocusEventModifierNode {
+    var focused = false
+
+    override fun onFocusEvent(focusState: FocusState) {
+        focused = focusState.hasFocus
+        if (focused) ambience.source = source
+    }
+
+    // A row item reused or removed while it had focus gets no focus event: it must not count as focused after.
+    override fun onDetach() {
+        focused = false
+    }
+
+    override fun onReset() {
+        focused = false
+    }
+}
 
 /**
  * Home's background (the owner, 2026-11-15): for a card with a picture, the picture itself, decoded tiny and
@@ -76,6 +113,10 @@ fun Modifier.ambientSource(ambience: Ambience?, source: AmbientSource): Modifier
 @Composable
 fun AmbientBackground(ambience: Ambience) {
     val context = LocalContext.current
+    // From memory: read from the settings once, and again only when the user changes it.
+    val known by context.container.backdropLevel.collectAsState()
+    // Until the saved value is read (a moment at start-up): no background, so that Off is right from the first frame.
+    val level = known ?: return
     var settled by remember { mutableStateOf<AmbientSource?>(null) }
     val source = ambience.source
     LaunchedEffect(source) {
@@ -86,9 +127,11 @@ fun AmbientBackground(ambience: Ambience) {
     var backdrop by remember { mutableStateOf<ImageBitmap?>(null) }
     // What the glows show: an icon, a logo or no picture, or (the accent colour) a picture that did not load.
     var light by remember { mutableStateOf<AmbientSource?>(null) }
-    LaunchedEffect(settled) {
+    val on = level > 0
+    LaunchedEffect(settled, on) {
         val now = settled
-        if (now is AmbientSource.Picture) {
+        // Off: no picture is loaded at all.
+        if (now is AmbientSource.Picture && on) {
             val picture = withContext(Dispatchers.IO) { backdrop(context, now.uri) }
             backdrop = picture
             if (picture == null) light = AmbientSource.Plain
@@ -97,20 +140,25 @@ fun AmbientBackground(ambience: Ambience) {
             light = now
         }
     }
-    AmbientLight(light, visible = backdrop == null)
+    AmbientLight(light, visible = backdrop == null && on, scale = BackdropLevel.glowScale(level))
     Crossfade(backdrop, animationSpec = tween(FADE_MS), label = "backdrop") { picture ->
-        if (picture != null) {
+        // With the background off, no backdrop shows either.
+        if (picture != null && on) {
             Box(Modifier.fillMaxSize()) {
                 Image(picture, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                Box(Modifier.fillMaxSize().background(Palette.background.copy(alpha = BACKDROP_DIM)))
+                // The setting's share of the picture shows through the dark background (0: none).
+                Box(Modifier.fillMaxSize().background(Palette.background.copy(alpha = BackdropLevel.overlayAlpha(level))))
             }
         }
     }
 }
 
-/** The glows, in [source]'s colours (the accent's where it has none). Not drawn while a backdrop covers them. */
+/**
+ * The glows, in [source]'s colours (the accent's where it has none), as strong as the setting asks ([scale]: 1 at
+ * 1.1.0's level). Not drawn while a backdrop covers them, or with the background set to off.
+ */
 @Composable
-private fun AmbientLight(source: AmbientSource?, visible: Boolean) {
+private fun AmbientLight(source: AmbientSource?, visible: Boolean, scale: Float) {
     val context = LocalContext.current
     val accent = LocalAccent.current.color
     val tones by produceState<List<Color?>?>(null, source) {
@@ -124,9 +172,9 @@ private fun AmbientLight(source: AmbientSource?, visible: Boolean) {
         Modifier.fillMaxSize().drawWithCache {
             // Made again only when the colours or the size change.
             val glows = listOf(
-                glow(a, Offset(size.width * 0.12f, -size.height * 0.1f), size.width * 0.62f, 0.30f),
-                glow(b, Offset(size.width * 0.95f, size.height * 0.15f), size.width * 0.5f, 0.24f),
-                glow(c, Offset(size.width * 0.45f, size.height * 1.15f), size.width * 0.7f, 0.20f)
+                glow(a, Offset(size.width * 0.12f, -size.height * 0.1f), size.width * 0.62f, 0.30f * scale),
+                glow(b, Offset(size.width * 0.95f, size.height * 0.15f), size.width * 0.5f, 0.24f * scale),
+                glow(c, Offset(size.width * 0.45f, size.height * 1.15f), size.width * 0.7f, 0.20f * scale)
             )
             onDrawBehind { glows.forEach { (brush, center, radius) -> drawCircle(brush, radius, center) } }
         }
@@ -248,6 +296,3 @@ private const val MAX_LIFT = 2.5f
 private const val BACKDROP_PX = 48
 private const val BACKDROP_UP = 8
 private const val BLUR_PASSES = 2
-
-/** How much of the dark background lies over the backdrop. */
-private const val BACKDROP_DIM = 0.72f

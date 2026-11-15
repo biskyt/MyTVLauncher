@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
+import com.biskyt.mytvlauncher.core.ui.BackdropLevel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -24,7 +25,8 @@ data class SavedSettings(
     val speakerWake: Boolean = false,
     val speakerWakeDelay: Int = WakeDelay.DEFAULT,
     val guideApp: GuideApp = GuideApp.SYSTEM,
-    val notificationsShown: Boolean = false
+    val notificationsShown: Boolean = false,
+    val backdropLevel: Int = BackdropLevel.DEFAULT
 )
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
@@ -85,6 +87,18 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[NOTIFICATIONS_SHOWN] = on }
     }
 
+    /** How bright Home's background is, in percent (see BackdropLevel). */
+    val backdropLevel: Flow<Int> = context.dataStore.data.map { it[BACKDROP_LEVEL] ?: BackdropLevel.DEFAULT }.distinctUntilChanged()
+
+    suspend fun setBackdropLevel(percent: Int) {
+        context.dataStore.edit { it[BACKDROP_LEVEL] = percent }
+    }
+
+    /** Steps the level from its saved value in one change, so that quick presses each count (see BackdropLevel.step). */
+    suspend fun stepBackdropLevel(step: Int) {
+        context.dataStore.edit { it[BACKDROP_LEVEL] = BackdropLevel.step(it[BACKDROP_LEVEL] ?: BackdropLevel.DEFAULT, step) }
+    }
+
     suspend fun setSpeakerWake(on: Boolean) {
         context.dataStore.edit { it[SPEAKER_WAKE] = on }
     }
@@ -102,7 +116,8 @@ class SettingsRepository(private val context: Context) {
         speakerWake.first(),
         speakerWakeDelay.first(),
         guideApp.first(),
-        notificationsShown.first()
+        notificationsShown.first(),
+        backdropLevel.first()
     )
 
     /**
@@ -119,6 +134,7 @@ class SettingsRepository(private val context: Context) {
             it[SPEAKER_WAKE_DELAY] = saved.speakerWakeDelay
             it[GUIDE_APP] = saved.guideApp.key
             it[NOTIFICATIONS_SHOWN] = saved.notificationsShown
+            it[BACKDROP_LEVEL] = saved.backdropLevel
             it[SYSTEM_PHONE_APPS_HIDDEN] = true
         }
     }
@@ -138,5 +154,6 @@ class SettingsRepository(private val context: Context) {
         val SPEAKER_WAKE_DELAY = intPreferencesKey("speaker_wake_delay")
         val GUIDE_APP = stringPreferencesKey("guide_app")
         val NOTIFICATIONS_SHOWN = booleanPreferencesKey("notifications_shown")
+        val BACKDROP_LEVEL = intPreferencesKey("backdrop_level")
     }
 }

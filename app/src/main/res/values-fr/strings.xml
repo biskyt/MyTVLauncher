@@ -129,6 +129,10 @@
     <string name="guide_missing">Le guide TV ne s’est pas ouvert</string>
     <string name="settings_guide">Guide TV</string>
     <string name="settings_guide_help">Ce qu’ouvrent le bouton du guide TV et la touche Guide de la télécommande</string>
+    <string name="settings_backdrop">Luminosité du fond</string>
+    <string name="settings_backdrop_help">La luminosité du fond de l’accueil derrière les cartes</string>
+    <string name="settings_backdrop_off">Désactivé</string>
+    <string name="settings_backdrop_value">%1$d %%</string>
     <string name="guide_system">Système</string>
     <string name="notifications_title">Notifications</string>
     <string name="notifications_not_opened">Cette notification n’a rien à ouvrir</string>

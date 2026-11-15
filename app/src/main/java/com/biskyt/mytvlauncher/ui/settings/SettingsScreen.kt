@@ -29,6 +29,7 @@ import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.BuildConfig
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.core.ui.BackdropLevel
 import com.biskyt.mytvlauncher.core.ui.cycle
 import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.data.SystemNotifications
@@ -72,6 +73,16 @@ fun SettingsScreen(nav: Navigator) {
             CycleSettingRow(stringResource(R.string.settings_guide), stringResource(R.string.settings_guide_help), guideName(guide), { d ->
                 context.container.appScope.launch { context.container.settings.setGuideApp(GuideApp.entries.cycle(guide, d)) }
             })
+        }
+        item {
+            val known by context.container.backdropLevel.collectAsState()
+            val level = known ?: BackdropLevel.DEFAULT
+            CycleSettingRow(
+                stringResource(R.string.settings_backdrop),
+                stringResource(R.string.settings_backdrop_help),
+                if (level == 0) stringResource(R.string.settings_backdrop_off) else stringResource(R.string.settings_backdrop_value, level),
+                { d -> context.container.appScope.launch { context.container.settings.stepBackdropLevel(d) } }
+            )
         }
         item { NotificationsSetting() }
         item {

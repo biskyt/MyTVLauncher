@@ -129,6 +129,10 @@
     <string name="guide_missing">O guia de TV não abriu</string>
     <string name="settings_guide">Guia de TV</string>
     <string name="settings_guide_help">O que o botão do guia de TV e a tecla Guia do controle abrem</string>
+    <string name="settings_backdrop">Brilho do fundo</string>
+    <string name="settings_backdrop_help">O brilho do fundo do início atrás dos cartões</string>
+    <string name="settings_backdrop_off">Desligado</string>
+    <string name="settings_backdrop_value">%1$d%%</string>
     <string name="guide_system">Sistema</string>
     <string name="notifications_title">Notificações</string>
     <string name="notifications_not_opened">Esta notificação não tem nada para abrir</string>

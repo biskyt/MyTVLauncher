@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+- Settings › Background brightness sets how bright Home's background is, or turns it off.
+- The background is a little darker by default.
+- The background now follows a card whose picture arrives after it has focus.
+
 ## 1.1.1
 - Left and Right no longer leave a row for the top bar.
 
