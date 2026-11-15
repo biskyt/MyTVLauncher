@@ -70,7 +70,7 @@
     <string name="app_play_store">Open in Play Store</string>
     <string name="app_play_store_help">Its page in the Play Store</string>
     <string name="app_play_store_missing">The Play Store did not open</string>
-    <string name="all_apps_hidden">Hidden from Home</string>
+    <string name="all_apps_on_home">On Home</string>
     <string name="recents_title">Recent apps</string>
     <string name="recents_none">No recent apps yet.</string>
     <string name="recents_access">Allow usage access</string>

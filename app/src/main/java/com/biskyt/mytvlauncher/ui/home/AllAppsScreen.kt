@@ -26,8 +26,8 @@ import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.ui.common.Muted
 
 /**
- * All apps: every app, hidden ones too, faded and marked "Hidden from Home" (the owner, 2026-11-14: no counts and no
- * button to Android's app list). OK opens an app; holding OK (or Menu) shows it on Home again or hides it, moves it, or
+ * All apps: every app, hidden ones too, with no counts and no button to Android's app list (the owner, 2026-11-14). A
+ * heart marks the apps on Home (the owner, 2026-11-15). OK opens an app; holding OK (or Menu) shows it on Home again or hides it, moves it, or
  * opens App info. In move mode the arrows move the app (the owner, 2026-11-14), and OK or Back saves the order, which
  * is Home's order too.
  */
@@ -39,7 +39,6 @@ fun AllAppsScreen() {
     val list = apps
     val byName = remember(list) { list.orEmpty().associateBy { it.packageName } }
     val first = rememberOnceFocus(ready = list != null)
-    val hiddenNote = stringResource(R.string.all_apps_hidden)
     val grid = rememberLazyGridState()
     val margin = with(LocalDensity.current) { MOVE_MARGIN.toPx() }
     val move = rememberListMove(list, container.apps::saveAllOrder) { name, index -> grid.keepInView(name, index, margin) }
@@ -73,8 +72,7 @@ fun AllAppsScreen() {
                         focus
                     },
                     moving = isMoving,
-                    dimmed = app.hidden,
-                    note = if (app.hidden) hiddenNote else null,
+                    onHome = !app.hidden,
                     onClick = if (isMoving) move::end else null,
                     onOptions = if (moving == null) ({ options = app }) else null
                 )

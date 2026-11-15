@@ -56,13 +56,16 @@ class AppsUiTest {
 
         // The top bar button and the tile at the end of the apps row both open All apps.
         rule.onAllNodes(hasContentDescription("All apps")).onFirst().performClick()
-        rule.waitForText("Hidden from Home")
         rule.waitAdvancingClock { shown("Browser") }
+        // A heart on each app on Home: not on Browser.
+        val hearts = { rule.onAllNodes(hasContentDescription("On Home")).fetchSemanticsNodes().size }
+        rule.waitAdvancingClock { hearts() == 3 }
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Browser").assertIsFocused() }.isSuccess }
         press(KeyEvent.KEYCODE_MENU)
         rule.waitForText("Show on Home")
         rule.onNode(hasText("Show on Home")).performClick()
         rule.waitAdvancingClock { runBlocking { rule.activity.container.db.appPlaces().all() }.none { it.hidden } }
+        rule.waitAdvancingClock { hearts() == 4 }
     }
 
     @Test

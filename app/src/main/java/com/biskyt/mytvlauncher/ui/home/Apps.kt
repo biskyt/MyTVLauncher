@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -50,9 +49,8 @@ import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
 
 /**
- * An app: its icon on a square card, and its name under it (or [note], such as "Hidden from Home"). OK opens it, or
- * runs [onClick]; holding OK (or Menu) runs [onOptions]. [moving] lifts it with an accent ring (move mode); [dimmed]
- * fades it (hidden from Home, in All apps).
+ * An app: its icon on a square card, and its name under it. OK opens it, or runs [onClick]; holding OK (or Menu) runs
+ * [onOptions]. [moving] lifts it with an accent ring (move mode). [onHome] marks it with a heart (All apps).
  */
 @Composable
 fun AppTile(
@@ -60,8 +58,7 @@ fun AppTile(
     label: String,
     modifier: Modifier = Modifier,
     moving: Boolean = false,
-    dimmed: Boolean = false,
-    note: String? = null,
+    onHome: Boolean = false,
     onClick: (() -> Unit)? = null,
     onOptions: (() -> Unit)? = null
 ) {
@@ -70,7 +67,7 @@ fun AppTile(
     val notOpened = stringResource(R.string.home_app_not_opened, label)
     val ring = if (moving) Modifier.border(BorderStroke(3.dp, LocalAccent.current.color), TileShape) else Modifier
     Column(
-        Modifier.raiseOnFocus().width(TILE + 12.dp).alpha(if (dimmed) DIMMED else 1f),
+        Modifier.raiseOnFocus().width(TILE + 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TvCard(
@@ -89,10 +86,17 @@ fun AppTile(
                 } else {
                     Text(label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
                 }
+                if (onHome) {
+                    Icon(
+                        LauncherIcons.Heart,
+                        contentDescription = stringResource(R.string.all_apps_on_home),
+                        tint = LocalAccent.current.color,
+                        modifier = Modifier.align(Alignment.TopEnd).padding(6.dp).size(HEART)
+                    )
+                }
             }
         }
         TileLabel(label)
-        note?.let { TileLabel(it) }
     }
 }
 
@@ -190,4 +194,4 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier) =
 private val TileShape = RoundedCornerShape(18.dp)
 private val TILE = 84.dp
 private val ICON = 56.dp
-private const val DIMMED = 0.45f
+private val HEART = 16.dp

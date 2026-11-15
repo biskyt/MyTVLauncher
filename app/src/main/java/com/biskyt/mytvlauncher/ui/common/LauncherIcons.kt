@@ -157,4 +157,17 @@ object LauncherIcons {
         verticalLineTo(6f)
         close()
     }
+
+    /** On Home, in All apps (the owner, 2026-11-15): a heart, filled (tinted where it is drawn). */
+    val Heart = ImageVector.Builder("heart", 24.dp, 24.dp, 24f, 24f).apply {
+        path(fill = SolidColor(Color.White)) {
+            moveTo(12f, 20.5f)
+            lineTo(4.6f, 13.2f)
+            curveTo(2.5f, 11.1f, 2.6f, 7.7f, 4.8f, 5.8f)
+            curveTo(6.9f, 4f, 9.9f, 4.3f, 12f, 6.6f)
+            curveTo(14.1f, 4.3f, 17.1f, 4f, 19.2f, 5.8f)
+            curveTo(21.4f, 7.7f, 21.5f, 11.1f, 19.4f, 13.2f)
+            close()
+        }
+    }.build()
 }

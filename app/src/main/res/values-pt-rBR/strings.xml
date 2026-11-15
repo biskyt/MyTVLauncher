@@ -62,7 +62,7 @@
     <string name="app_play_store">Abrir na Play Store</string>
     <string name="app_play_store_help">A página dele na Play Store</string>
     <string name="app_play_store_missing">A Play Store não abriu</string>
-    <string name="all_apps_hidden">Oculto do início</string>
+    <string name="all_apps_on_home">No início</string>
     <string name="recents_title">Apps recentes</string>
     <string name="recents_none">Ainda não há apps recentes.</string>
     <string name="recents_access">Permitir acesso de uso</string>
