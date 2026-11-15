@@ -10,9 +10,11 @@ import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
 import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.RecentsSource
+import com.biskyt.mytvlauncher.data.SpeakerOutput
 import com.biskyt.mytvlauncher.data.WatchNextSource
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
@@ -34,6 +36,8 @@ class TestApp : LauncherApp() {
 
     override fun channelSource(): ChannelSource = FakeChannels
 
+    override fun speakerOutput(): SpeakerOutput = FakeSpeaker
+
     /**
      * Robolectric calls this after each test. Each test gets a new app, but the coroutine threads are shared by the
      * whole run: work left running would hold up the next test. Then the settings go back to their defaults, as the
@@ -54,6 +58,7 @@ class TestApp : LauncherApp() {
                 FakeWatchNext.reset()
                 FakeRecents.reset()
                 FakeChannels.reset()
+                FakeSpeaker.reset()
             } finally {
                 super.onTerminate()
             }
@@ -232,3 +237,23 @@ object FakeRecents : RecentsSource {
 
 /** How long a test's end waits for the app's own work to stop. */
 private const val APP_WORK_STOP_MS = 5_000L
+
+/** The sound output a test's launcher uses: [playing] says whether other sound plays, and [plays] counts the sounds. */
+object FakeSpeaker : SpeakerOutput {
+    @Volatile var playing = false
+
+    private val count = AtomicInteger()
+
+    val plays: Int get() = count.get()
+
+    override fun playing() = playing
+
+    override suspend fun playSilence() {
+        count.incrementAndGet()
+    }
+
+    fun reset() {
+        playing = false
+        count.set(0)
+    }
+}

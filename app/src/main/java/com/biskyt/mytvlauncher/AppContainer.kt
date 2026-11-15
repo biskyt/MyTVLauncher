@@ -18,6 +18,8 @@ import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.NetworkMonitor
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SettingsRepository
+import com.biskyt.mytvlauncher.data.SpeakerOutput
+import com.biskyt.mytvlauncher.data.SpeakerWake
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.data.WatchNextRepository
 import com.biskyt.mytvlauncher.data.WatchNextSource
@@ -40,7 +42,8 @@ class AppContainer(
     installed: InstalledApps,
     watchNextSource: WatchNextSource,
     channelSource: ChannelSource,
-    val recents: RecentsSource
+    val recents: RecentsSource,
+    speaker: SpeakerOutput
 ) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val db = LauncherDatabase.open(context)
@@ -54,6 +57,7 @@ class AppContainer(
     val watchNext = WatchNextRepository(db.watchNext(), db.hidden(), watchNextSource, settings, appScope, reads)
     val channels = ChannelRepository(db.channelItems(), db.hidden(), channelSource, settings, appScope, reads)
     val network = NetworkMonitor(context, appScope)
+    val speakerWake = SpeakerWake(settings, speaker, appScope)
     val backupFile = BackupFile(context)
     val backup = BackupRepository(db, settings, apps)
 

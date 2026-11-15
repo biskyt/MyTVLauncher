@@ -127,4 +127,13 @@
     <string name="backup_permission_denied">Sans l’autorisation de stockage, la sauvegarde ne peut pas être enregistrée. Autorisez-la dans Paramètres › Applis › MyTVLauncher › Autorisations du téléviseur.</string>
     <string name="backup_find_failed">Impossible de chercher une sauvegarde : %1$s</string>
     <string name="backup_already_there">Une sauvegarde est déjà là. Restaurez-la, ou appuyez de nouveau sur Sauvegarder maintenant pour la remplacer.</string>
+    <string name="speaker_title">Réveil de l’enceinte</string>
+    <string name="speaker_help">Réveille une enceinte endormie quand le téléviseur se réveille</string>
+    <string name="speaker_intro">Certaines enceintes et barres de son dorment pendant la veille du téléviseur et ne se réveillent que si un son est joué. Quand le téléviseur se réveille, le lanceur joue environ une seconde de silence pour elles. Rien n’est joué si un son est déjà en cours.</string>
+    <string name="speaker_on">Réveiller l’enceinte</string>
+    <string name="speaker_on_help">Désactivé par défaut</string>
+    <string name="speaker_delay">Délai : %1$d s</string>
+    <string name="speaker_delay_help">Combien de temps après le réveil du téléviseur. OK le change.</string>
+    <string name="speaker_try">Jouer maintenant</string>
+    <string name="speaker_try_help">Joue le son silencieux une fois, pour essayer</string>
 </resources>

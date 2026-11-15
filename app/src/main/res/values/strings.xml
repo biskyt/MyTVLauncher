@@ -132,4 +132,13 @@
     <string name="backup_permission_denied">Without the storage permission, the backup cannot be saved. Allow it in the TV\'s Settings › Apps › MyTVLauncher › Permissions.</string>
     <string name="backup_find_failed">Could not look for a backup: %1$s</string>
     <string name="backup_already_there">A backup is here already. Restore it, or press Back up now again to replace it.</string>
+    <string name="speaker_title">Speaker wake</string>
+    <string name="speaker_help">Wake a sleeping speaker when the TV wakes</string>
+    <string name="speaker_intro">Some speakers and soundbars sleep while the TV is in standby and wake only when sound plays. When the TV wakes, the launcher plays about a second of silence for them. Nothing plays if sound plays already.</string>
+    <string name="speaker_on">Wake the speaker</string>
+    <string name="speaker_on_help">Off by default</string>
+    <string name="speaker_delay">Delay: %1$d s</string>
+    <string name="speaker_delay_help">How long after the TV wakes. OK changes it.</string>
+    <string name="speaker_try">Play it now</string>
+    <string name="speaker_try_help">Plays the silent sound once, to try it</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.biskyt.mytvlauncher.ui
 
 import android.view.KeyEvent
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
@@ -13,6 +14,9 @@ import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.testutil.FakeChannels
 import com.biskyt.mytvlauncher.testutil.FakeWatchNext
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
+import com.biskyt.mytvlauncher.testutil.idleFrames
+import com.biskyt.mytvlauncher.testutil.otherThreads
+import com.biskyt.mytvlauncher.testutil.screen
 import com.biskyt.mytvlauncher.testutil.sendKey
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
@@ -38,6 +42,15 @@ class HomeFixesUiTest {
         rule.sendKey(code, KeyEvent.ACTION_DOWN)
         rule.sendKey(code, KeyEvent.ACTION_UP)
     }
+
+    private fun stack(): Any? {
+        val nav = MainActivity::class.java.getDeclaredField("nav").apply { isAccessible = true }.get(rule.activity)
+        return Navigator::class.java.getDeclaredField("stack").apply {
+            isAccessible = true
+        }.get(nav).toString().substringAfter("value=").substringBefore(")")
+    }
+
+    private fun texts(text: String) = rule.onAllNodes(hasText(text)).fetchSemanticsNodes().size
 
     private fun back() = rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
 
@@ -114,8 +127,20 @@ class HomeFixesUiTest {
         press(KeyEvent.KEYCODE_DPAD_UP)
         press(KeyEvent.KEYCODE_DPAD_CENTER)
         rule.waitAdvancingClock { container.rowOrder.value.orEmpty().take(2) == listOf("apps", "watch_next") }
-        repeat(3) { back() }
-        rule.waitAdvancingClock { shown("Browser") && shown(FakeWatchNext.film.title) }
+        // A frame after each Back: the move's own Back handler goes off only when the page draws again.
+        val trace = mutableListOf("before: ${stack()} lifted=${texts("Up and Down move Apps. OK or Back ends.")}")
+        repeat(3) {
+            back()
+            rule.idleFrames()
+            trace += "${stack()} lifted=${texts("Up and Down move Apps. OK or Back ends.")}"
+        }
+        try {
+            rule.waitAdvancingClock { shown("Browser") && shown(FakeWatchNext.film.title) }
+        } catch (e: ComposeTimeoutException) {
+            val c = rule.activity.container
+            val state = "rows=${c.rowOrder.value} trace=$trace"
+            throw AssertionError("Home did not show both rows. $state\nScreen:\n${rule.screen()}\nThreads:\n${otherThreads()}", e)
+        }
         val top = { d: String -> rule.onNodeWithContentDescription(d).fetchSemanticsNode().boundsInRoot.top }
         assertTrue(top("Browser") < top(FakeWatchNext.film.title))
     }

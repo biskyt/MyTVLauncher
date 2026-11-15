@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher.data
 
 import androidx.room.withTransaction
 import com.biskyt.mytvlauncher.core.apps.AppPlace
+import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import com.biskyt.mytvlauncher.data.db.HiddenRow
@@ -34,6 +35,8 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                 .put("watchNextShown", settings.watchNextShown)
                 .put("channelsShown", settings.channelsShown)
                 .put("rowOrder", JSONArray(settings.rowOrder))
+                .put("speakerWake", settings.speakerWake)
+                .put("speakerWakeDelay", settings.speakerWakeDelay)
         )
         .put(
             "apps",
@@ -70,7 +73,11 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                             ?: AccentPalette.DEFAULT,
                         watchNextShown = settings.getBoolean("watchNextShown"),
                         channelsShown = settings.getBoolean("channelsShown"),
-                        rowOrder = settings.optJSONArray("rowOrder").strings()
+                        rowOrder = settings.optJSONArray("rowOrder").strings(),
+                        // Since 0.6.0: a 0.5.0 backup has no speaker wake, so it restores as off.
+                        speakerWake = settings.optBoolean("speakerWake", false),
+                        speakerWakeDelay =
+                        settings.optInt("speakerWakeDelay", WakeDelay.DEFAULT).takeIf { it in WakeDelay.CHOICES } ?: WakeDelay.DEFAULT
                     ),
                     places = root.getJSONArray("apps").objects().map {
                         AppPlace(it.getString("packageName"), it.getInt("position"), it.getBoolean("hidden"))

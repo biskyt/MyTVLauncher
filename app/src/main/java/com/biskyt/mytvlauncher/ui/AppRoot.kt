@@ -28,6 +28,7 @@ import com.biskyt.mytvlauncher.ui.settings.CheckScreen
 import com.biskyt.mytvlauncher.ui.settings.HomeRowsScreen
 import com.biskyt.mytvlauncher.ui.settings.RowOrderScreen
 import com.biskyt.mytvlauncher.ui.settings.SettingsScreen
+import com.biskyt.mytvlauncher.ui.settings.SpeakerWakeScreen
 import com.biskyt.mytvlauncher.ui.theme.LauncherTheme
 import com.biskyt.mytvlauncher.ui.theme.Palette
 
@@ -66,6 +67,7 @@ private fun Screens(nav: Navigator) {
                 Screen.HOME_ROWS -> HomeRowsScreen(nav)
                 Screen.ROW_ORDER -> RowOrderScreen()
                 Screen.BACKUP -> BackupScreen()
+                Screen.SPEAKER_WAKE -> SpeakerWakeScreen()
                 Screen.ALL_APPS -> AllAppsScreen()
                 Screen.RECENTS -> RecentsScreen()
                 Screen.CHECK -> CheckScreen()
