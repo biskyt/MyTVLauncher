@@ -17,6 +17,7 @@ import com.biskyt.mytvlauncher.data.BackupRepository
 import com.biskyt.mytvlauncher.data.ChannelRepository
 import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.GuideApp
+import com.biskyt.mytvlauncher.data.HomeRowsNudge
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.NetworkMonitor
 import com.biskyt.mytvlauncher.data.NotificationSource
@@ -66,6 +67,7 @@ class AppContainer(
     val channels = ChannelRepository(db.channelItems(), db.hidden(), channelSource, settings, appScope, reads)
     val network = NetworkMonitor(context, appScope)
     val speakerWake = SpeakerWake(settings, speaker, appScope)
+
     val backupFile = BackupFile(context)
     val backup = BackupRepository(db, settings, apps)
 
@@ -106,6 +108,16 @@ class AppContainer(
 
     /** Whether the top bar shows system notifications (Settings › Show notifications). */
     val notificationsShown: StateFlow<Boolean?> = settings.notificationsShown.stateIn(appScope, SharingStarted.Eagerly, null)
+
+    /**
+     * Asks MyTVPlayer to bring its rows on Home up to date, while either kind of row is on (see HomeRowsNudge): from
+     * the settings already in memory, once they are read.
+     */
+    val homeRowsNudge = HomeRowsNudge(
+        context,
+        combine(watchNextShown.filterNotNull(), channelsShown.filterNotNull()) { watch, channels -> watch || channels },
+        appScope
+    )
 
     /** How bright Home's background is: read once into memory, and again only on a change. */
     val backdropLevel: StateFlow<Int?> = settings.backdropLevel.stateIn(appScope, SharingStarted.Eagerly, null)

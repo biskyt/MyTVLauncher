@@ -56,7 +56,7 @@ private class FocusGlowNode(var shape: Shape, var color: Color) :
     Modifier.Node(),
     DrawModifierNode,
     FocusEventModifierNode {
-    private val lift = Animatable(0f)
+    private var lift = Animatable(0f)
     private var focused = false
     private val soft = Paint()
     private val edge = Paint()
@@ -113,6 +113,14 @@ private class FocusGlowNode(var shape: Shape, var color: Color) :
         val target = if (focused) 1f else 0f
         coroutineScope.launch { lift.animateTo(target, tween(LIFT_MS)) }
     }
+
+    // A row that uses this card again for another item starts it without the glow (MyPlexPlayer's review, found in
+    // MyTVPlayer 1.21.0): no focus event comes for the item that left.
+    override fun onReset() {
+        focused = false
+        lift = Animatable(0f)
+        invalidateDraw()
+    }
 }
 
 private data object RaiseElement : ModifierNodeElement<RaiseNode>() {
@@ -135,6 +143,12 @@ private class RaiseNode :
     override fun onFocusEvent(focusState: FocusState) {
         if (focusState.hasFocus == focused) return
         focused = focusState.hasFocus
+        invalidatePlacement()
+    }
+
+    // The same for an item used again: it starts below its neighbours.
+    override fun onReset() {
+        focused = false
         invalidatePlacement()
     }
 }
