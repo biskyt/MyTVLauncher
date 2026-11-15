@@ -20,6 +20,7 @@ import com.biskyt.mytvlauncher.testutil.screen
 import com.biskyt.mytvlauncher.testutil.sendKey
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
+import com.biskyt.mytvlauncher.testutil.waitOnHome
 import kotlin.math.abs
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -79,16 +80,18 @@ class HomeFixesUiTest {
 
     @Test
     fun `Back on a row's later card goes back to the row's first card`() {
-        rule.waitAdvancingClock { focused(FakeWatchNext.film.title) }
+        rule.waitOnHome(rule.activity.container, "Continue watching's first card has no focus") { focused(FakeWatchNext.film.title) }
         press(KeyEvent.KEYCODE_DPAD_RIGHT)
         rule.waitAdvancingClock { focused(FakeWatchNext.episode.title) }
         back()
-        rule.waitAdvancingClock { focused(FakeWatchNext.film.title) }
+        rule.waitOnHome(rule.activity.container, "Continue watching's first card has no focus") { focused(FakeWatchNext.film.title) }
 
         // The apps row too.
         press(KeyEvent.KEYCODE_DPAD_DOWN)
         rule.waitAdvancingClock { focused("Browser") }
+        // One press at a time: on this small test screen, each focus change scrolls the row.
         press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        rule.waitAdvancingClock { focused("Music") }
         press(KeyEvent.KEYCODE_DPAD_RIGHT)
         rule.waitAdvancingClock { focused("Settings") }
         back()
@@ -97,7 +100,7 @@ class HomeFixesUiTest {
 
     @Test
     fun `Move in All apps moves the app, and OK saves the order for Home too`() {
-        rule.waitAdvancingClock { shown(FakeWatchNext.film.title) }
+        rule.waitOnHome(rule.activity.container, "Continue watching not shown") { shown(FakeWatchNext.film.title) }
         rule.onAllNodes(hasContentDescription("All apps")).onFirst().performClick()
         rule.waitAdvancingClock { focused("Browser") }
         press(KeyEvent.KEYCODE_MENU)
@@ -114,7 +117,7 @@ class HomeFixesUiTest {
     @Test
     fun `Row order moves the apps above Continue watching, and Home follows it`() {
         val container = rule.activity.container
-        rule.waitAdvancingClock { focused(FakeWatchNext.film.title) }
+        rule.waitOnHome(rule.activity.container, "Continue watching's first card has no focus") { focused(FakeWatchNext.film.title) }
         rule.onNodeWithContentDescription("Launcher settings").performClick()
         rule.onNode(hasText("Home rows")).performClick()
         rule.waitForText("Row order")
