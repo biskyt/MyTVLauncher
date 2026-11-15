@@ -24,7 +24,6 @@ import com.biskyt.mytvlauncher.ui.home.RecentsScreen
 import com.biskyt.mytvlauncher.ui.home.rememberRowPadPx
 import com.biskyt.mytvlauncher.ui.settings.AccentScreen
 import com.biskyt.mytvlauncher.ui.settings.BackupScreen
-import com.biskyt.mytvlauncher.ui.settings.CheckScreen
 import com.biskyt.mytvlauncher.ui.settings.HomeRowsScreen
 import com.biskyt.mytvlauncher.ui.settings.RowOrderScreen
 import com.biskyt.mytvlauncher.ui.settings.SettingsScreen
@@ -70,7 +69,6 @@ private fun Screens(nav: Navigator) {
                 Screen.SPEAKER_WAKE -> SpeakerWakeScreen()
                 Screen.ALL_APPS -> AllAppsScreen()
                 Screen.RECENTS -> RecentsScreen()
-                Screen.CHECK -> CheckScreen()
             }
         }
     }

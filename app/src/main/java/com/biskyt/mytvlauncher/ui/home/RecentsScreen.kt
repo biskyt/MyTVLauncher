@@ -19,8 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.core.recents.AppUse
@@ -30,7 +28,6 @@ import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.openUsageAccess
 import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SettingRow
-import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -78,12 +75,7 @@ fun RecentsScreen() {
                     { context.openOrSay(missing) { openUsageAccess() } },
                     Modifier.width(820.dp).focusOn(first)
                 )
-                Muted(stringResource(R.string.recents_adb), maxLines = 2)
-                Text(
-                    UsageStatsRecents.adbGrant(context.packageName),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = LocalAccent.current.soft
-                )
+                AdbCommand(stringResource(R.string.recents_adb), UsageStatsRecents.adbGrant(context.packageName))
             }
             is Recents.Apps -> if (r.packageNames.isEmpty()) {
                 Muted(stringResource(R.string.recents_none))

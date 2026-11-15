@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
+import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.ui.AppRoot
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.common.hasTouchScreen
@@ -58,6 +59,12 @@ class MainActivity : ComponentActivity() {
     // (Activity's own, public method: lint takes androidx's ComponentActivity override of it for a restricted one.)
     @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // The remote's Guide key while the launcher is in front: the guide that Settings › TV guide chose. With the TV's
+        // own guide (the default), the key goes on as before, for the TV to handle in its own way.
+        if (event.keyCode == KeyEvent.KEYCODE_GUIDE && container.guideApp.value != GuideApp.SYSTEM) {
+            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) openGuide()
+            return true
+        }
         if (Key(event.keyCode).isActing()) {
             when {
                 event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 -> pressedHere += event.keyCode

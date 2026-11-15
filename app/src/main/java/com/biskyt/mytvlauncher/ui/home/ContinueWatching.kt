@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ScaleFactor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -45,6 +47,7 @@ import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.watchnext.CardShape
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
+import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.openApp
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.openWatchNext
@@ -57,6 +60,7 @@ import com.biskyt.mytvlauncher.ui.common.ProgressLine
 import com.biskyt.mytvlauncher.ui.common.SectionTitle
 import com.biskyt.mytvlauncher.ui.common.TvCard
 import com.biskyt.mytvlauncher.ui.common.rememberFirstFocus
+import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
 
@@ -107,7 +111,7 @@ private fun CardRow(
         LazyRow(
             back.row,
             state = list,
-            contentPadding = PaddingValues(horizontal = ROW_PAD),
+            contentPadding = PaddingValues(horizontal = ROW_PAD, vertical = GLOW_ROOM),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             itemsIndexed(items, key = { _, item -> item.key }) { i, item ->
@@ -117,10 +121,13 @@ private fun CardRow(
     }
 }
 
-/** Without the permission: one card that asks for it, in the row's place. */
+/**
+ * Without the permission: one card that asks for it, in the row's place, and under it the adb command for a TV that
+ * does not ask.
+ */
 @Composable
 fun AllowRow(firstFocus: FocusRequester?, onAsk: () -> Unit) {
-    Column(Modifier.padding(horizontal = ROW_PAD)) {
+    Column(Modifier.padding(horizontal = ROW_PAD), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         SectionTitle(stringResource(R.string.home_continue_watching))
         TvCard(onClick = onAsk, modifier = Modifier.focusOn(firstFocus).width(WIDE), fill = true) {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
@@ -128,22 +135,27 @@ fun AllowRow(firstFocus: FocusRequester?, onAsk: () -> Unit) {
                 Muted(stringResource(R.string.home_allow_watch_next_help), maxLines = 2)
             }
         }
+        AdbCommand(stringResource(R.string.check_adb), TvListings.adbGrant(LocalContext.current.packageName))
     }
 }
 
 @Composable
 private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val width = (if (item.shape == CardShape.POSTER) POSTER else WIDE) * size.scale
-    val height = HEIGHT * size.scale
+    val scale = if (item.shape == CardShape.POSTER) size.posterScale else size.scale
+    val width = (if (item.shape == CardShape.POSTER) POSTER else WIDE) * scale
+    val height = HEIGHT * scale
     val textStyle = size.titleStyle()
     val notOpened = stringResource(R.string.home_app_not_opened, item.title)
     Column(Modifier.width(width)) {
         TvCard(
             onClick = { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openWatchNext(item) } },
             onLongClick = onOptions,
-            modifier = modifier.size(width, height).semantics { contentDescription = item.title },
-            shape = RoundedCornerShape(10.dp)
+            modifier = modifier.focusGlow(CardShape10, LocalAccent.current.color).size(width, height).semantics {
+                contentDescription =
+                    item.title
+            },
+            shape = CardShape10
         ) {
             Box(Modifier.fillMaxSize()) {
                 Picture(item.pictureUri, width, height) {
@@ -187,8 +199,9 @@ private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> 
 }
 
 /**
- * The item's picture, decoded at the card's size (not the app's full size) and cropped to fill it, with [placeholder]
- * until it loads, or if it has none or fails (as MyPlexPlayer's ImageWithInitials).
+ * The item's picture, decoded at the card's size (not the app's full size), with [placeholder] until it loads, or if it
+ * has none or fails (as MyPlexPlayer's ImageWithInitials). A picture about the card's shape is cropped to fill it, and
+ * one of another shape (a TV channel's logo, the owner, 2026-11-15) is scaled to fit, whole (see [fitsWhole]).
  */
 @Composable
 private fun Picture(uri: String?, width: Dp, height: Dp, placeholder: @Composable () -> Unit) {
@@ -205,7 +218,7 @@ private fun Picture(uri: String?, width: Dp, height: Dp, placeholder: @Composabl
     AsyncImage(
         request,
         contentDescription = null,
-        contentScale = ContentScale.Crop,
+        contentScale = CropOrFit,
         onSuccess = { loaded = true },
         modifier = Modifier.fillMaxSize()
     )
@@ -259,10 +272,32 @@ fun ItemOptions(choice: ItemChoice, onDismiss: () -> Unit) {
     }
 }
 
-/** The cards' size: Continue watching's, or the channel rows' half size, with smaller text. */
-private enum class CardSize(val scale: Float) {
-    FULL(1f),
-    HALF(0.5f);
+private val CardShape10 = RoundedCornerShape(10.dp)
+
+/**
+ * Whether a picture of [pictureAspect] (width over height) is shown whole on a card of [cardAspect], not cropped: when
+ * cropping would cut off more than about a fifth of it.
+ */
+internal fun fitsWhole(pictureAspect: Float, cardAspect: Float): Boolean = (pictureAspect / cardAspect) !in CROP_RANGE
+
+private val CROP_RANGE = 0.8f..1.25f
+
+/** Crops a picture about the card's shape to fill it, and fits one of another shape whole, when the card is laid out. */
+private object CropOrFit : ContentScale {
+    override fun computeScaleFactor(srcSize: Size, dstSize: Size): ScaleFactor {
+        val whole = srcSize.height > 0f && dstSize.height > 0f && fitsWhole(srcSize.width / srcSize.height, dstSize.width / dstSize.height)
+        return (if (whole) ContentScale.Fit else ContentScale.Crop).computeScaleFactor(srcSize, dstSize)
+    }
+}
+
+/**
+ * The cards' size: Continue watching's, or the channel rows' smaller size, with smaller text. A poster in a channel row
+ * is three quarters of Continue watching's, not half (the owner, 2026-11-15: half was too small), so it is taller than
+ * the wide cards beside it.
+ */
+private enum class CardSize(val scale: Float, val posterScale: Float) {
+    FULL(1f, 1f),
+    HALF(0.5f, 0.75f);
 
     @Composable
     fun titleStyle(): TextStyle = if (this == FULL) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall

@@ -59,6 +59,24 @@ private const val GRANT_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.
 fun Context.openAppInfo(packageName: String): Boolean =
     tryStart(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
 
+/** The TV guide that Settings › TV guide chose, or a message when nothing opened (the guide button, the Guide key). */
+fun Context.openGuide() {
+    val app = container.guideApp.value
+    openOrSay(getString(R.string.guide_missing)) { app.open(this) }
+}
+
+/** The app's page in the Play Store, or on Google Play's website where the TV has no Play Store. */
+fun Context.openInPlayStore(packageName: String): Boolean {
+    val market = Uri.parse("market://details?id=$packageName")
+    return tryStart(
+        Intent(Intent.ACTION_VIEW, market).setPackage(PLAY_STORE),
+        Intent(Intent.ACTION_VIEW, market),
+        Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+    )
+}
+
+private const val PLAY_STORE = "com.android.vending"
+
 /** Opens Android's usage access settings (for recent apps); false if the TV has no screen for it. */
 fun Context.openUsageAccess(): Boolean = tryStart(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
 

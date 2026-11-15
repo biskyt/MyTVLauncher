@@ -36,6 +36,7 @@ import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.openApp
 import com.biskyt.mytvlauncher.openAppInfo
+import com.biskyt.mytvlauncher.openInPlayStore
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.ui.common.BoardOption
 import com.biskyt.mytvlauncher.ui.common.BoardPanel
@@ -72,7 +73,9 @@ fun AppTile(
         TvCard(
             onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
             onLongClick = onOptions,
-            modifier = modifier.then(ring).size(TILE).semantics { contentDescription = label },
+            modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
+                contentDescription = label
+            },
             shape = TileShape
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -93,7 +96,13 @@ fun AppTile(
 fun AllAppsTile(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(R.string.home_all_apps)
     Column(Modifier.width(TILE + 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        TvCard(onClick = onClick, modifier = modifier.size(TILE).semantics { contentDescription = label }, shape = TileShape) {
+        TvCard(
+            onClick = onClick,
+            modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).size(TILE).semantics {
+                contentDescription = label
+            },
+            shape = TileShape
+        ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(LauncherIcons.Grid, contentDescription = null, tint = cardColor(Palette.textDim), modifier = Modifier.size(36.dp))
             }
@@ -130,14 +139,15 @@ fun Modifier.moveKeys(rowStep: () -> Int = { 0 }, onStep: (Int) -> Unit): Modifi
 }
 
 /**
- * An app's options: Move (when [onMove] is given), Hide from Home or Show on Home, and App info (Android's page for
- * it).
+ * An app's options: Move (when [onMove] is given), Hide from Home or Show on Home, App info (Android's page for it), and
+ * Open in Play Store (the owner, 2026-11-15).
  */
 @Composable
 fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.app_move_help, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val container = context.container
     val noInfo = stringResource(R.string.app_info_missing)
+    val noStore = stringResource(R.string.app_play_store_missing)
     BoardPanel(onDismiss) {
         BoardPanelTitle(app.label)
         if (onMove != null) {
@@ -157,6 +167,10 @@ fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.ap
         BoardOption(stringResource(R.string.app_info), stringResource(R.string.app_info_help)) {
             onDismiss()
             context.openOrSay(noInfo) { openAppInfo(app.packageName) }
+        }
+        BoardOption(stringResource(R.string.app_play_store), stringResource(R.string.app_play_store_help)) {
+            onDismiss()
+            context.openOrSay(noStore) { openInPlayStore(app.packageName) }
         }
     }
 }

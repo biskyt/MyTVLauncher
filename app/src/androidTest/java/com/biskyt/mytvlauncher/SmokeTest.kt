@@ -38,7 +38,7 @@ class SmokeTest {
         rule.waitUntil(WAIT_MS) { runBlocking { context.container.db.appPlaces().all() }.isNotEmpty() }
         rule.waitUntilAtLeastOneExists(hasContentDescription("Launcher settings"), WAIT_MS)
         rule.onNode(hasContentDescription("Launcher settings")).performClick()
-        rule.waitUntilAtLeastOneExists(hasText("Watch Next check"), WAIT_MS)
+        rule.waitUntilAtLeastOneExists(hasText("Home rows"), WAIT_MS)
     }
 
     @Test

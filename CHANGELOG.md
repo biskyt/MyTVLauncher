@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0
+- Pictures from Plex, Plezy and other home servers now show.
+- The card with focus grows and glows in the accent colour.
+- A TV guide button opens the TV's guide, MyTVPlayer's or MyPlexPlayer's.
+- The remote's Guide key on Home opens the same guide.
+- Channel logos show whole, not cropped.
+- Posters in channel rows are larger.
+- Hold OK on an app to open it in the Play Store.
+- Left and Right change the speaker wake delay.
+- The Watch Next check is gone from Settings.
+
 ## 0.6.0
 - Settings › Speaker wake can wake a sleeping speaker when the TV wakes.
 

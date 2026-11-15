@@ -37,6 +37,7 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                 .put("rowOrder", JSONArray(settings.rowOrder))
                 .put("speakerWake", settings.speakerWake)
                 .put("speakerWakeDelay", settings.speakerWakeDelay)
+                .put("guideApp", settings.guideApp.key)
         )
         .put(
             "apps",
@@ -77,7 +78,9 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                         // Since 0.6.0: a 0.5.0 backup has no speaker wake, so it restores as off.
                         speakerWake = settings.optBoolean("speakerWake", false),
                         speakerWakeDelay =
-                        settings.optInt("speakerWakeDelay", WakeDelay.DEFAULT).takeIf { it in WakeDelay.CHOICES } ?: WakeDelay.DEFAULT
+                        settings.optInt("speakerWakeDelay", WakeDelay.DEFAULT).takeIf { it in WakeDelay.CHOICES } ?: WakeDelay.DEFAULT,
+                        // Since 0.7.0: an older backup restores the TV's own guide.
+                        guideApp = GuideApp.fromKey(settings.optString("guideApp"))
                     ),
                     places = root.getJSONArray("apps").objects().map {
                         AppPlace(it.getString("packageName"), it.getInt("position"), it.getBoolean("hidden"))

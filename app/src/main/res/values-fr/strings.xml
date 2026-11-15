@@ -10,8 +10,6 @@
     <string name="settings_title">Paramètres</string>
     <string name="settings_accent">Couleur d’accent</string>
     <string name="settings_accent_help">La couleur de l’élément sélectionné</string>
-    <string name="settings_check">Vérification de « À suivre »</string>
-    <string name="settings_check_help">Ce que le lanceur peut lire des autres applications, et le test du bouton Accueil</string>
     <string name="settings_android_help">Réseau, affichage, son et plus</string>
     <string name="settings_home_app">Application d’accueil</string>
     <string name="settings_home_app_help">Choisissez le lanceur qu’ouvre le bouton Accueil</string>
@@ -27,23 +25,7 @@
     <string name="accent_lime">Citron vert</string>
     <string name="accent_pink">Rose</string>
     <string name="accent_silver">Argent</string>
-
-    <string name="check_permission">Autorisation de lire les programmes TV</string>
-    <string name="check_allowed">Autorisée</string>
-    <string name="check_not_allowed">Non autorisée. Sélectionnez pour la demander.</string>
     <string name="check_adb">Si le téléviseur ne la demande pas, donnez l’autorisation depuis un ordinateur avec cette commande :</string>
-    <string name="check_read_again">Lire à nouveau</string>
-    <string name="check_watch_next">Éléments « À suivre »</string>
-    <string name="check_channels">Chaînes des applications</string>
-    <string name="check_count">%1$s : %2$d</string>
-    <string name="check_no_table">%1$s : cet appareil n’en a pas</string>
-    <string name="check_refused">%1$s : refusé (%2$s)</string>
-    <string name="check_home_title">Test du bouton Accueil</string>
-    <string name="check_home_help">Appuyez sur Accueil, maintenez Accueil, puis appuyez deux fois sur Accueil. Chaque signal Accueil qui arrive au lanceur s’affiche ici.</string>
-    <string name="check_home_none">Aucun signal Accueil pour l’instant.</string>
-    <string name="check_home_gap">%1$d ms après le précédent</string>
-    <string name="check_home_in_front">le lanceur était au premier plan</string>
-    <string name="check_home_other_app">une autre application était au premier plan</string>
 
     <string name="home_continue_watching">Reprendre la lecture</string>
     <string name="home_allow_watch_next">Autoriser Reprendre la lecture</string>
@@ -59,8 +41,7 @@
     <string name="rows_no_apps">Aucune application n’a encore d’éléments à reprendre.</string>
     <string name="rows_hidden_items">Éléments masqués : %1$d</string>
     <string name="rows_hidden_items_help">Sélectionnez pour tous les afficher à nouveau</string>
-    <string name="check_tv_channels">Chaînes TV</string>
-    <string name="home_allow_refused">Non autorisé. Paramètres › Vérification de « À suivre » donne la commande adb.</string>
+    <string name="home_allow_refused">Non autorisé. La commande adb sous le bouton donne l’autorisation.</string>
 
     <string name="home_all_apps">Toutes les applications</string>
     <string name="app_move">Déplacer</string>
@@ -74,6 +55,9 @@
     <string name="app_info">Infos sur l’application</string>
     <string name="app_info_help">La page Android de cette application</string>
     <string name="app_info_missing">Ce téléviseur n’a pas de page d’infos sur l’application que le lanceur peut ouvrir.</string>
+    <string name="app_play_store">Ouvrir dans le Play Store</string>
+    <string name="app_play_store_help">Sa page dans le Play Store</string>
+    <string name="app_play_store_missing">Le Play Store ne s’est pas ouvert</string>
     <string name="all_apps_hidden">Masquée de l’accueil</string>
     <string name="recents_title">Applications récentes</string>
     <string name="recents_none">Aucune application récente pour l’instant.</string>
@@ -132,8 +116,14 @@
     <string name="speaker_intro">Certaines enceintes et barres de son dorment pendant la veille du téléviseur et ne se réveillent que si un son est joué. Quand le téléviseur se réveille, le lanceur joue environ une seconde de silence pour elles. Rien n’est joué si un son est déjà en cours.</string>
     <string name="speaker_on">Réveiller l’enceinte</string>
     <string name="speaker_on_help">Désactivé par défaut</string>
-    <string name="speaker_delay">Délai : %1$d s</string>
-    <string name="speaker_delay_help">Combien de temps après le réveil du téléviseur. OK le change.</string>
+    <string name="speaker_delay">Délai</string>
+    <string name="speaker_delay_value">%1$d s</string>
+    <string name="speaker_delay_help">Combien de temps après le réveil du téléviseur. Gauche et droite le changent.</string>
     <string name="speaker_try">Jouer maintenant</string>
     <string name="speaker_try_help">Joue le son silencieux une fois, pour essayer</string>
+    <string name="home_guide">Guide TV</string>
+    <string name="guide_missing">Le guide TV ne s’est pas ouvert</string>
+    <string name="settings_guide">Guide TV</string>
+    <string name="settings_guide_help">Ce qu’ouvrent le bouton du guide TV et la touche Guide de la télécommande</string>
+    <string name="guide_system">Système</string>
 </resources>

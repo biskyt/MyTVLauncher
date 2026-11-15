@@ -2,8 +2,8 @@ package com.biskyt.mytvlauncher.ui
 
 import androidx.compose.runtime.mutableStateListOf
 
-/** The launcher's screens. [keptOnHome]: a Home press does not close it (see [Navigator.home]). */
-enum class Screen(val keptOnHome: Boolean = false) {
+/** The launcher's screens. */
+enum class Screen {
     HOME,
     SETTINGS,
     ACCENT,
@@ -13,9 +13,6 @@ enum class Screen(val keptOnHome: Boolean = false) {
     SPEAKER_WAKE,
     ALL_APPS,
     RECENTS,
-
-    /** The Home key test shows what each press sends. */
-    CHECK(keptOnHome = true)
 }
 
 /** The screens open, Home at the bottom. */
@@ -33,15 +30,13 @@ class Navigator {
         if (stack.size > 1) stack.removeAt(stack.lastIndex)
     }
 
-    /** Home was pressed: back to Home, unless the top screen is [Screen.keptOnHome]. */
+    /** Home was pressed: back to Home. */
     fun home() {
-        if (top.keptOnHome) return
         while (stack.size > 1) stack.removeAt(stack.lastIndex)
     }
 
-    /** Home was pressed twice: the recent apps over Home, unless the top screen is [Screen.keptOnHome]. */
+    /** Home was pressed twice: the recent apps over Home. */
     fun recents() {
-        if (top.keptOnHome) return
         home()
         open(Screen.RECENTS)
     }

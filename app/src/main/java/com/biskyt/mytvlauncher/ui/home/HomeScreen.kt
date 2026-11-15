@@ -61,6 +61,7 @@ import com.biskyt.mytvlauncher.core.rows.RowOrder
 import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.TvListings
 import com.biskyt.mytvlauncher.openAndroidSettings
+import com.biskyt.mytvlauncher.openGuide
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.Screen
@@ -96,7 +97,7 @@ fun HomeScreen(nav: Navigator) {
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         container.watchNext.refresh()
         container.channels.refresh()
-        // Refused (or a TV with no question for it): the way that is left is adb (Settings › Watch Next check).
+        // Refused (or a TV with no question for it): the way that is left is adb (the command under the Allow card).
         if (!it) Toast.makeText(context, refused, Toast.LENGTH_LONG).show()
     }
     var options by remember { mutableStateOf<ItemChoice?>(null) }
@@ -180,7 +181,7 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps
         LazyRow(
             back.row,
             state = listState,
-            contentPadding = PaddingValues(horizontal = ROW_PAD),
+            contentPadding = PaddingValues(horizontal = ROW_PAD, vertical = GLOW_ROOM),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             val shown = move.shown(apps, byName)
@@ -212,7 +213,7 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps
 }
 
 /**
- * The top bar: "Home", then All apps, the launcher's settings and Android settings. The launcher's is named "Launcher
+ * The top bar: "Home", then the TV guide, All apps, the launcher's settings and Android settings. The launcher's is named "Launcher
  * settings": Android's own Settings app is on Home too, and a second "Settings" there would be unclear.
  */
 @Composable
@@ -231,6 +232,7 @@ private fun TopBar(nav: Navigator) {
         Box(Modifier.weight(1f))
         NetworkStatus()
         Clock()
+        BarItem({ context.openGuide() }, LauncherIcons.Guide, stringResource(R.string.home_guide))
         BarItem({ nav.open(Screen.ALL_APPS) }, LauncherIcons.Grid, stringResource(R.string.home_all_apps))
         BarItem({ nav.open(Screen.SETTINGS) }, LauncherIcons.Tune, stringResource(R.string.home_settings))
         BarItem({

@@ -38,6 +38,9 @@
         </intent>
     </queries>
 
+    <!-- usesCleartextTraffic: pictures that apps give to Watch Next and their channels can come from a media server on
+         the home network over plain HTTP (Plex and Plezy do, the owner, 2026-11-15). Pictures are the launcher's only
+         network use. -->
     <application
         android:name=".LauncherApp"
         android:allowBackup="false"
@@ -45,7 +48,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyTVLauncher">
+        android:theme="@style/Theme.MyTVLauncher"
+        android:usesCleartextTraffic="true">
 
         <!-- The home screen: HOME + DEFAULT make it a home app. singleTask, so that Home brings this one back. -->
         <activity

@@ -68,19 +68,6 @@ class HomeUiTest {
         assertEquals(1, rule.activity.container.homePresses.value.size)
     }
 
-    @Test
-    fun `the Home key test stays open when Home is pressed, and lists each press`() {
-        rule.waitAdvancingClock { shown("Browser") }
-        rule.onNodeWithContentDescription("Launcher settings").performClick()
-        rule.waitForText("Watch Next check")
-        rule.onNode(hasText("Watch Next check")).performClick()
-        rule.waitForText("No Home signals yet.")
-        pressHome()
-        pressHome()
-        rule.waitForText("ms after the last one")
-        rule.waitForText("Home key test")
-    }
-
     /** The remote's Back: the activity passes it to its Back handlers (BackHandler in AppRoot). */
     private fun pressBack() {
         rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }

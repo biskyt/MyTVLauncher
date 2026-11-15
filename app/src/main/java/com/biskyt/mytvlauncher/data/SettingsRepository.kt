@@ -22,7 +22,8 @@ data class SavedSettings(
     val channelsShown: Boolean,
     val rowOrder: List<String>,
     val speakerWake: Boolean = false,
-    val speakerWakeDelay: Int = WakeDelay.DEFAULT
+    val speakerWakeDelay: Int = WakeDelay.DEFAULT,
+    val guideApp: GuideApp = GuideApp.SYSTEM
 )
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
@@ -69,6 +70,13 @@ class SettingsRepository(private val context: Context) {
     /** How many seconds after the TV wakes the speaker wake sound plays (see WakeDelay). */
     val speakerWakeDelay: Flow<Int> = context.dataStore.data.map { it[SPEAKER_WAKE_DELAY] ?: WakeDelay.DEFAULT }.distinctUntilChanged()
 
+    /** What the TV guide button opens (Settings › TV guide). The TV's own guide by default. */
+    val guideApp: Flow<GuideApp> = context.dataStore.data.map { GuideApp.fromKey(it[GUIDE_APP]) }.distinctUntilChanged()
+
+    suspend fun setGuideApp(app: GuideApp) {
+        context.dataStore.edit { it[GUIDE_APP] = app.key }
+    }
+
     suspend fun setSpeakerWake(on: Boolean) {
         context.dataStore.edit { it[SPEAKER_WAKE] = on }
     }
@@ -84,7 +92,8 @@ class SettingsRepository(private val context: Context) {
         channelsShown.first(),
         rowOrder.first(),
         speakerWake.first(),
-        speakerWakeDelay.first()
+        speakerWakeDelay.first(),
+        guideApp.first()
     )
 
     /**
@@ -99,6 +108,7 @@ class SettingsRepository(private val context: Context) {
             it[ROW_ORDER] = saved.rowOrder.joinToString(",")
             it[SPEAKER_WAKE] = saved.speakerWake
             it[SPEAKER_WAKE_DELAY] = saved.speakerWakeDelay
+            it[GUIDE_APP] = saved.guideApp.key
             it[SYSTEM_PHONE_APPS_HIDDEN] = true
         }
     }
@@ -116,5 +126,6 @@ class SettingsRepository(private val context: Context) {
         val ROW_ORDER = stringPreferencesKey("row_order")
         val SPEAKER_WAKE = booleanPreferencesKey("speaker_wake")
         val SPEAKER_WAKE_DELAY = intPreferencesKey("speaker_wake_delay")
+        val GUIDE_APP = stringPreferencesKey("guide_app")
     }
 }
