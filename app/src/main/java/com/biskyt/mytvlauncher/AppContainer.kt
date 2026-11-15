@@ -107,6 +107,9 @@ class AppContainer(
     /** Whether the top bar shows system notifications (Settings › Show notifications). */
     val notificationsShown: StateFlow<Boolean?> = settings.notificationsShown.stateIn(appScope, SharingStarted.Eagerly, null)
 
+    /** How bright Home's background is: read once into memory, and again only on a change. */
+    val backdropLevel: StateFlow<Int?> = settings.backdropLevel.stateIn(appScope, SharingStarted.Eagerly, null)
+
     private val access = MutableStateFlow(false)
 
     /** Whether the user gave notification access: checked while the setting is on (see [checkNotificationAccess]). */

@@ -137,6 +137,10 @@
     <string name="guide_missing">The TV guide did not open</string>
     <string name="settings_guide">TV guide</string>
     <string name="settings_guide_help">What the TV guide button and the remote\'s Guide key open</string>
+    <string name="settings_backdrop">Background brightness</string>
+    <string name="settings_backdrop_help">How bright Home\'s background is behind the cards</string>
+    <string name="settings_backdrop_off">Off</string>
+    <string name="settings_backdrop_value">%1$d%%</string>
     <string name="guide_system">System</string>
     <string name="notifications_title">Notifications</string>
     <string name="notifications_not_opened">This notification has nothing to open</string>

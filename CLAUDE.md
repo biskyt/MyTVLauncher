@@ -157,7 +157,10 @@ See also:
   stretched (a cheap blur: Android 9 to 11 have no blur effect) under a dark overlay. An app's icon, or a card with no
   picture, gives soft radial glows in its colours (`tonesOf`). It changes only after the focus rests for 250 ms and
   fades over 600 ms, so it does no work while the remote moves along a row. A test of its change needs
-  `waitAdvancingClock(stepMs > 0)` for the settle delay.
+  `waitAdvancingClock(stepMs > 0)` for the settle delay. Settings › Background brightness (1.1.2, `BackdropLevel`, 0
+  to 40%, default 20%, 0 is off) sets the backdrop's share and the glows' strength; the card glow is not part of it.
+  `ambientSource` also updates the background when a card's source changes while it has focus: a card shown from
+  saved data at start-up gets its picture later (a flaky `AmbientUiTest` found this).
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`
   (MyTVPlayer 1.19.0, and MyPlexPlayer's release of 2026-11-15). The Guide key is handled in `MainActivity.dispatchKeyEvent`, so a test
   sends it to the activity, not to the Compose root.

@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import com.biskyt.mytvlauncher.core.apps.AppPlace
 import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
+import com.biskyt.mytvlauncher.core.ui.BackdropLevel
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import com.biskyt.mytvlauncher.data.db.HiddenRow
 import com.biskyt.mytvlauncher.data.db.LauncherDatabase
@@ -39,6 +40,7 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                 .put("speakerWakeDelay", settings.speakerWakeDelay)
                 .put("guideApp", settings.guideApp.key)
                 .put("notificationsShown", settings.notificationsShown)
+                .put("backdropLevel", settings.backdropLevel)
         )
         .put(
             "apps",
@@ -83,7 +85,9 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                         // Since 0.7.0: an older backup restores the TV's own guide.
                         guideApp = GuideApp.fromKey(settings.optString("guideApp")),
                         // Since 0.8.0: an older backup restores notifications as off.
-                        notificationsShown = settings.optBoolean("notificationsShown", false)
+                        notificationsShown = settings.optBoolean("notificationsShown", false),
+                        // Since 1.1.2: an older backup restores the default.
+                        backdropLevel = BackdropLevel.valid(settings.optInt("backdropLevel", BackdropLevel.DEFAULT))
                     ),
                     places = root.getJSONArray("apps").objects().map {
                         AppPlace(it.getString("packageName"), it.getInt("position"), it.getBoolean("hidden"))
