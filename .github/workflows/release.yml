@@ -89,6 +89,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.MYTVLAUNCHER_KEY_PASSWORD || secrets.MYTVLAUNCHER_KEYSTORE_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
+            # A secret pasted with a newline at its end: the newline is not part of the password. (Through GITHUB_ENV,
+            # Gradle never saw it, but keytool below would.)
+            KEYSTORE_PASSWORD=$(printf '%s' "$KEYSTORE_PASSWORD" | tr -d '\r')
+            KEY_PASSWORD=$(printf '%s' "$KEY_PASSWORD" | tr -d '\r')
+            KEY_ALIAS=$(printf '%s' "$KEY_ALIAS" | tr -d '\r')
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
             {
               echo "MYTVLAUNCHER_KEYSTORE=$RUNNER_TEMP/release.keystore"
@@ -98,9 +103,12 @@ jobs:
             echo "SIGNED_WITH=release" >> "$GITHUB_ENV"
             # A clear message before the build, in place of Gradle's "Failed to read key ... null": the aliases in the
             # keystore (names only, no passwords), and whether the one asked for is among them.
-            aliases=$(keytool -list -keystore "$RUNNER_TEMP/release.keystore" -storepass "$KEYSTORE_PASSWORD" 2>&1 \
-              | sed -n 's/^\([^,]*\), .*PrivateKeyEntry.*$/\1/p' || true)
+            listing=$(keytool -list -keystore "$RUNNER_TEMP/release.keystore" -storepass "$KEYSTORE_PASSWORD" 2>&1 || true)
+            aliases=$(printf '%s\n' "$listing" | sed -n 's/^\([^,]*\), .*PrivateKeyEntry.*$/\1/p')
             if [ -z "$aliases" ]; then
+              # keytool's own message (it never shows the password), and the file's size and first bytes' type.
+              printf '%s\n' "$listing" | grep -v '^Picked up' | head -5
+              echo "Keystore file: $(wc -c < "$RUNNER_TEMP/release.keystore") bytes, $(file -b "$RUNNER_TEMP/release.keystore")"
               echo "::error::The keystore did not open with MYTVLAUNCHER_KEYSTORE_PASSWORD, or it holds no key."
               exit 1
             fi
