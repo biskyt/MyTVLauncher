@@ -9,6 +9,8 @@ class FitsWholeTest {
     fun `a picture about the card's shape is cropped to fill it`() {
         assertFalse(fitsWhole(pictureAspect = 16f / 9, cardAspect = 331f / 186))
         assertFalse(fitsWhole(pictureAspect = 2f / 3, cardAspect = 124f / 186))
+        // A 4:3 video thumbnail, as SmartTube gives, on a wide card.
+        assertFalse(fitsWhole(pictureAspect = 4f / 3, cardAspect = 331f / 186))
     }
 
     @Test

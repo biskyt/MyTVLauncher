@@ -330,11 +330,13 @@ private const val BAR_MIN_SCALE = 0.7f
 
 /**
  * Whether a picture of [pictureAspect] (width over height) is shown whole on a card of [cardAspect], not cropped: when
- * cropping would cut off more than about a fifth of it.
+ * cropping would cut off more than about 30% of it. A 4:3 video thumbnail on a wide card is cropped to fill it (the
+ * owner, 2026-11-15: SmartTube's were shown small, with bars), which also cuts off the bars that such a thumbnail
+ * often has at its top and bottom.
  */
 internal fun fitsWhole(pictureAspect: Float, cardAspect: Float): Boolean = (pictureAspect / cardAspect) !in CROP_RANGE
 
-private val CROP_RANGE = 0.8f..1.25f
+private val CROP_RANGE = 0.7f..1.43f
 
 /** Crops a picture about the card's shape to fill it, and fits one of another shape whole, when the card is laid out. */
 private object CropOrFit : ContentScale {

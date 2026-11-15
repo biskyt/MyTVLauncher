@@ -50,19 +50,22 @@ class AppsUiTest {
     fun `an app hidden from Home stays in All apps, and shows on Home again from there`() {
         appsFirst()
         press(KeyEvent.KEYCODE_MENU)
-        rule.waitForText("Hide from Home")
-        rule.onNode(hasText("Hide from Home")).performClick()
+        rule.waitForText("Remove from favourite apps")
+        rule.onNode(hasText("Remove from favourite apps")).performClick()
         rule.waitAdvancingClock { !shown("Browser") }
 
         // The top bar button and the tile at the end of the apps row both open All apps.
         rule.onAllNodes(hasContentDescription("All apps")).onFirst().performClick()
-        rule.waitForText("Hidden from Home")
         rule.waitAdvancingClock { shown("Browser") }
+        // A heart on each app on Home: not on Browser.
+        val hearts = { rule.onAllNodes(hasContentDescription("Favourite app")).fetchSemanticsNodes().size }
+        rule.waitAdvancingClock { hearts() == 3 }
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Browser").assertIsFocused() }.isSuccess }
         press(KeyEvent.KEYCODE_MENU)
-        rule.waitForText("Show on Home")
-        rule.onNode(hasText("Show on Home")).performClick()
+        rule.waitForText("Add to favourite apps")
+        rule.onNode(hasText("Add to favourite apps")).performClick()
         rule.waitAdvancingClock { runBlocking { rule.activity.container.db.appPlaces().all() }.none { it.hidden } }
+        rule.waitAdvancingClock { hearts() == 4 }
     }
 
     @Test
@@ -89,7 +92,7 @@ class AppsUiTest {
         press(KeyEvent.KEYCODE_MENU)
         rule.waitForText("App info")
         assertTrue(rule.onAllNodes(hasText("Move")).fetchSemanticsNodes().isEmpty())
-        rule.onNode(hasText("Hide from Home")).performClick()
+        rule.onNode(hasText("Remove from favourite apps")).performClick()
         rule.waitAdvancingClock { runBlocking { rule.activity.container.db.appPlaces().all() }.any { it.label == "Music" && it.hidden } }
     }
 

@@ -3,6 +3,7 @@ package com.biskyt.mytvlauncher.ui.home
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,16 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -50,9 +51,8 @@ import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
 
 /**
- * An app: its icon on a square card, and its name under it (or [note], such as "Hidden from Home"). OK opens it, or
- * runs [onClick]; holding OK (or Menu) runs [onOptions]. [moving] lifts it with an accent ring (move mode); [dimmed]
- * fades it (hidden from Home, in All apps).
+ * An app: its icon on a square card, and its name under it. OK opens it, or runs [onClick]; holding OK (or Menu) runs
+ * [onOptions]. [moving] lifts it with an accent ring (move mode). [onHome] marks it with a heart (All apps).
  */
 @Composable
 fun AppTile(
@@ -60,8 +60,7 @@ fun AppTile(
     label: String,
     modifier: Modifier = Modifier,
     moving: Boolean = false,
-    dimmed: Boolean = false,
-    note: String? = null,
+    onHome: Boolean = false,
     onClick: (() -> Unit)? = null,
     onOptions: (() -> Unit)? = null
 ) {
@@ -70,29 +69,41 @@ fun AppTile(
     val notOpened = stringResource(R.string.home_app_not_opened, label)
     val ring = if (moving) Modifier.border(BorderStroke(3.dp, LocalAccent.current.color), TileShape) else Modifier
     Column(
-        Modifier.raiseOnFocus().width(TILE + 12.dp).alpha(if (dimmed) DIMMED else 1f),
+        Modifier.raiseOnFocus().width(TILE + 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TvCard(
-            onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
-            onLongClick = onOptions,
-            modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
-                contentDescription = label
-            },
-            shape = TileShape,
-            // The glow shows the focus (see focusGlow), in place of the ring.
-            ring = false
-        ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (icon != null) {
-                    Image(icon, contentDescription = null, modifier = Modifier.size(ICON))
-                } else {
-                    Text(label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
+        // The heart is outside the card, over the circle's top right, so that the round card does not cut it off.
+        Box {
+            TvCard(
+                onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
+                onLongClick = onOptions,
+                modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
+                    contentDescription = label
+                },
+                shape = TileShape,
+                // The glow shows the focus (see focusGlow), in place of the ring.
+                ring = false
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    if (icon != null) {
+                        // The icon fills the round card (the owner, 2026-11-15).
+                        Image(icon, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    } else {
+                        Text(label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
+                    }
                 }
+            }
+            if (onHome) {
+                Icon(
+                    LauncherIcons.Heart,
+                    contentDescription = stringResource(R.string.all_apps_on_home),
+                    tint = LocalAccent.current.color,
+                    // On a dark disc, so that it shows on any icon.
+                    modifier = Modifier.align(Alignment.TopEnd).size(HEART).background(Palette.background, CircleShape).padding(4.dp)
+                )
             }
         }
         TileLabel(label)
-        note?.let { TileLabel(it) }
     }
 }
 
@@ -146,8 +157,8 @@ fun Modifier.moveKeys(rowStep: () -> Int = { 0 }, onStep: (Int) -> Unit): Modifi
 }
 
 /**
- * An app's options: Move (when [onMove] is given), Hide from Home or Show on Home, App info (Android's page for it), and
- * Open in Play Store (the owner, 2026-11-15).
+ * An app's options: Move (when [onMove] is given), Remove from or Add to favourite apps (the apps on Home; the owner,
+ * 2026-11-15), App info (Android's page for it), and Open in Play Store (the owner, 2026-11-15).
  */
 @Composable
 fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.app_move_help, onDismiss: () -> Unit) {
@@ -187,7 +198,7 @@ fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.ap
 fun ScreenTitle(text: String, modifier: Modifier = Modifier) =
     Text(text, style = MaterialTheme.typography.headlineLarge, modifier = modifier.padding(top = 40.dp))
 
-private val TileShape = RoundedCornerShape(18.dp)
+/** App cards are round (the owner, 2026-11-15: "Option B"). */
+private val TileShape = CircleShape
 private val TILE = 84.dp
-private val ICON = 56.dp
-private const val DIMMED = 0.45f
+private val HEART = 24.dp

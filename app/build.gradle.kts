@@ -14,8 +14,8 @@ android {
         applicationId = "com.biskyt.mytvlauncher"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = 36
-        versionCode = 12
-        versionName = "0.8.2"
+        versionCode = 13
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
