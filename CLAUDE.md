@@ -138,6 +138,9 @@ See also:
   (`Backup.toJson` and `Backup.parse`), not a new library. It holds the settings, the app places and the `hidden` rows,
   not other apps' items. A file opened with the launcher (Open with, Share) goes to `AppContainer.openedFile`, and
   `AppRoot` opens Backup & restore for it.
+- **Speaker wake** (0.6.0, `data/SpeakerWake.kt`): a receiver for `ACTION_SCREEN_ON`, registered when the app starts
+  (that broadcast goes only to receivers registered at run time). It is exported: only the system can send it, and
+  "not exported" needs a permission of its own before Android 13. Tests use `FakeSpeaker` (testutil/TestApp.kt).
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).
@@ -165,6 +168,10 @@ See also:
     "Settings", as on a real TV.
   - **A read that a test calls straight after the app starts** must not depend on a flag that a coroutine sets later:
     the Watch Next read checks the saved setting itself (a flaky `WatchNextSafetyTest`, fixed in 0.2.0).
+  - **Do not send a system broadcast such as `ACTION_SCREEN_ON` in a test.** Robolectric delivered it to a receiver
+    left by an earlier test's app, and while `SpeakerWakeTest` sent one, UI tests later in the same JVM failed now and
+    then (Back did not reach AppRoot, a channel row was missing). Call the receiver's method (`SpeakerWake.woke`) and
+    check the registration with `shadowOf(app).registeredReceivers`.
   - **Thread dumps on timeout:** `otherThreads()` in UiWait.kt dumps the other threads when a wait times out.
   - **Images on two threads at once abort the test JVM** (exit 134, "JniConstants … Class not found: java/nio/…"):
     Robolectric's native graphics set themselves up unsafely. `TestApp` calls `lookUpNioClasses()`

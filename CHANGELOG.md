@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0
+- Settings › Speaker wake can wake a sleeping speaker when the TV wakes.
+
 ## 0.5.0
 - Settings › Backup & restore saves your Home and choices to a file.
 - Restore from that file, or open one with the launcher from a file manager.

@@ -6,9 +6,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -16,7 +16,14 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore("settings")
 
 /** The settings that a backup holds (see BackupRepository). */
-data class SavedSettings(val accent: Int, val watchNextShown: Boolean, val channelsShown: Boolean, val rowOrder: List<String>)
+data class SavedSettings(
+    val accent: Int,
+    val watchNextShown: Boolean,
+    val channelsShown: Boolean,
+    val rowOrder: List<String>,
+    val speakerWake: Boolean = false,
+    val speakerWakeDelay: Int = WakeDelay.DEFAULT
+)
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
 class SettingsRepository(private val context: Context) {
@@ -56,8 +63,29 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[ROW_ORDER] = keys.joinToString(",") }
     }
 
+    /** Whether the launcher wakes the speaker when the TV wakes (Settings › Speaker wake). Off by default. */
+    val speakerWake: Flow<Boolean> = context.dataStore.data.map { it[SPEAKER_WAKE] ?: false }.distinctUntilChanged()
+
+    /** How many seconds after the TV wakes the speaker wake sound plays (see WakeDelay). */
+    val speakerWakeDelay: Flow<Int> = context.dataStore.data.map { it[SPEAKER_WAKE_DELAY] ?: WakeDelay.DEFAULT }.distinctUntilChanged()
+
+    suspend fun setSpeakerWake(on: Boolean) {
+        context.dataStore.edit { it[SPEAKER_WAKE] = on }
+    }
+
+    suspend fun setSpeakerWakeDelay(seconds: Int) {
+        context.dataStore.edit { it[SPEAKER_WAKE_DELAY] = seconds }
+    }
+
     /** The settings a backup holds: from the same flows as the screens, with their defaults. */
-    suspend fun saved(): SavedSettings = combine(accent, watchNextShown, channelsShown, rowOrder, ::SavedSettings).first()
+    suspend fun saved() = SavedSettings(
+        accent.first(),
+        watchNextShown.first(),
+        channelsShown.first(),
+        rowOrder.first(),
+        speakerWake.first(),
+        speakerWakeDelay.first()
+    )
 
     /**
      * Restores a backup's settings in one change. The TV's system phone apps count as hidden once already: the
@@ -69,6 +97,8 @@ class SettingsRepository(private val context: Context) {
             it[WATCH_NEXT_SHOWN] = saved.watchNextShown
             it[CHANNELS_SHOWN] = saved.channelsShown
             it[ROW_ORDER] = saved.rowOrder.joinToString(",")
+            it[SPEAKER_WAKE] = saved.speakerWake
+            it[SPEAKER_WAKE_DELAY] = saved.speakerWakeDelay
             it[SYSTEM_PHONE_APPS_HIDDEN] = true
         }
     }
@@ -84,5 +114,7 @@ class SettingsRepository(private val context: Context) {
         val CHANNELS_SHOWN = booleanPreferencesKey("channels_shown")
         val SYSTEM_PHONE_APPS_HIDDEN = booleanPreferencesKey("system_phone_apps_hidden")
         val ROW_ORDER = stringPreferencesKey("row_order")
+        val SPEAKER_WAKE = booleanPreferencesKey("speaker_wake")
+        val SPEAKER_WAKE_DELAY = intPreferencesKey("speaker_wake_delay")
     }
 }

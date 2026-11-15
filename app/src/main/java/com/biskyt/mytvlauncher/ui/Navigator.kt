@@ -10,6 +10,7 @@ enum class Screen(val keptOnHome: Boolean = false) {
     HOME_ROWS,
     ROW_ORDER,
     BACKUP,
+    SPEAKER_WAKE,
     ALL_APPS,
     RECENTS,
 

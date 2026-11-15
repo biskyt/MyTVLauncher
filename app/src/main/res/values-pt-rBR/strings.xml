@@ -127,4 +127,13 @@
     <string name="backup_permission_denied">Sem a permissão de armazenamento, o backup não pode ser salvo. Permita em Configurações › Apps › MyTVLauncher › Permissões da TV.</string>
     <string name="backup_find_failed">Não foi possível procurar um backup: %1$s</string>
     <string name="backup_already_there">Já existe um backup aqui. Restaure-o, ou pressione Fazer backup agora de novo para substituí-lo.</string>
+    <string name="speaker_title">Despertar alto-falante</string>
+    <string name="speaker_help">Desperta um alto-falante adormecido quando a TV liga</string>
+    <string name="speaker_intro">Alguns alto-falantes e soundbars dormem enquanto a TV está em espera e só despertam quando toca algum som. Quando a TV liga, o launcher toca cerca de um segundo de silêncio para eles. Nada toca se já houver som.</string>
+    <string name="speaker_on">Despertar o alto-falante</string>
+    <string name="speaker_on_help">Desligado por padrão</string>
+    <string name="speaker_delay">Atraso: %1$d s</string>
+    <string name="speaker_delay_help">Quanto tempo depois de a TV ligar. OK muda.</string>
+    <string name="speaker_try">Tocar agora</string>
+    <string name="speaker_try_help">Toca o som silencioso uma vez, para testar</string>
 </resources>

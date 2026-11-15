@@ -51,7 +51,9 @@ class ListMove internal constructor(
         }
     }
 
+    /** Saves the order. Only once: a Back that comes before the screen draws again still reaches the move's handler. */
     fun end() {
+        if (moving == null) return
         val moved = order
         moving = null
         saving = true

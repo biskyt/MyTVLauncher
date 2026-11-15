@@ -33,6 +33,8 @@ class BackupRepositoryTest {
         container.settings.setRowOrder(listOf(RowOrder.APPS, RowOrder.WATCH_NEXT))
         container.watchNext.hideItem("k1")
         container.channels.setChannelShown(8, true)
+        container.settings.setSpeakerWake(true)
+        container.settings.setSpeakerWakeDelay(5)
         val saved = container.backup.export()
 
         // Everything changed after the backup.
@@ -48,6 +50,8 @@ class BackupRepositoryTest {
         assertEquals(0xFFE5A00D.toInt(), settings.accent)
         assertEquals(false, settings.channelsShown)
         assertEquals(listOf(RowOrder.APPS, RowOrder.WATCH_NEXT), settings.rowOrder)
+        assertEquals(true, settings.speakerWake)
+        assertEquals(5, settings.speakerWakeDelay)
         assertEquals(listOf("Videos", "Music", "Settings"), shownApps())
         assertEquals(
             setOf(HiddenRow(HiddenKind.WATCH_NEXT_ITEM, "k1"), HiddenRow(HiddenKind.CHANNEL_ON, "8")),

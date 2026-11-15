@@ -127,4 +127,13 @@
     <string name="backup_permission_denied">Sin el permiso de almacenamiento no se puede guardar la copia. Permítelo en Ajustes › Apps › MyTVLauncher › Permisos del televisor.</string>
     <string name="backup_find_failed">No se pudo buscar una copia: %1$s</string>
     <string name="backup_already_there">Ya hay una copia aquí. Restáurala o pulsa Hacer copia ahora otra vez para reemplazarla.</string>
+    <string name="speaker_title">Activar altavoz</string>
+    <string name="speaker_help">Activa un altavoz dormido cuando el televisor se enciende</string>
+    <string name="speaker_intro">Algunos altavoces y barras de sonido duermen mientras el televisor está en espera y solo se activan cuando suena algo. Cuando el televisor se enciende, el launcher reproduce un segundo de silencio para ellos. No suena nada si ya hay sonido.</string>
+    <string name="speaker_on">Activar el altavoz</string>
+    <string name="speaker_on_help">Desactivado por defecto</string>
+    <string name="speaker_delay">Retraso: %1$d s</string>
+    <string name="speaker_delay_help">Cuánto tiempo después de encender el televisor. OK lo cambia.</string>
+    <string name="speaker_try">Reproducir ahora</string>
+    <string name="speaker_try_help">Reproduce el sonido silencioso una vez, para probarlo</string>
 </resources>

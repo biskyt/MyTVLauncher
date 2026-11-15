@@ -1,5 +1,6 @@
 package com.biskyt.mytvlauncher.ui
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -9,6 +10,7 @@ import com.biskyt.mytvlauncher.MainActivity
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.testutil.FakeChannels
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
+import com.biskyt.mytvlauncher.testutil.otherThreads
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
 import kotlinx.coroutines.runBlocking
@@ -29,7 +31,14 @@ class ChannelsUiTest {
 
     @Test
     fun `a channel's row shows its items under its name and its app's`() {
-        rule.waitForText("Free films")
+        try {
+            rule.waitAdvancingClock { rule.onAllNodes(hasText("Free films")).fetchSemanticsNodes().isNotEmpty() }
+        } catch (e: ComposeTimeoutException) {
+            val c = rule.activity.container
+            val state = "rows=${c.channelRows.value?.map { it.name }} shown=${c.channelsShown.value} allowed=${c.channels.allowed.value} " +
+                "reads=${FakeChannels.reads} saved=${runBlocking { c.db.channelItems().all() }.size}"
+            throw AssertionError("No channel row. $state\nThreads:\n${otherThreads()}", e)
+        }
         rule.waitAdvancingClock { shown(film) }
     }
 

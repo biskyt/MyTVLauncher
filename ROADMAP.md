@@ -26,9 +26,9 @@ owner approved the plan and the mockups on 2026-11-14 (https://claude.ai/artifac
      in view, and Move in All apps.
 5. **0.5.0 (done):** backup and restore, as MyPlexPlayer's: one plain JSON file with a fixed name, permissions only when
    used, also accepted by Open with / Share.
-6. **0.6.0, low priority:** wake the speaker when the TV leaves standby, with about 1 s of silent sound, once for
-   each wake, only when nothing plays, after an HDMI or ARC output appears or a delay set in Settings. Off by default.
-   Dropped if the TV needs large workarounds.
+6. **0.6.0 (done), low priority:** wake the speaker when the TV leaves standby, with about 1 s of silent sound, once for
+   each wake, only when nothing plays, after a delay set in Settings (0 to 10 s, 2 s by default). Off by default.
+   The wait for an HDMI or ARC output to appear was left out: the delay is simpler and the owner can set it.
 
 ## Test results and decisions (the owner, 2026-11-14)
 - On the Philips TV, 0.1.0 read 38 Watch Next items and 390 rows of the channels table. That table also holds the TV's
