@@ -13,13 +13,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
 
-/** The launcher asks MyTVPlayer to bring its rows on Home up to date (the owner, 2026-11-15). */
+/** The launcher asks MyTVPlayer and MyPlexPlayer to bring its rows on Home up to date (the owner, 2026-11-15). */
 @RunWith(AndroidJUnit4::class)
 class HomeRowsNudgeTest {
     private val app = ApplicationProvider.getApplicationContext<Application>()
     private var time = 0L
 
-    private fun nudges() = shadowOf(app).broadcastIntents.filter { it.action == HomeRowsNudge.action("com.biskyt.mytvplayer") }
+    private fun nudges() = shadowOf(app).broadcastIntents.filter { it.action in HomeRowsNudge.APPS.map(HomeRowsNudge::action) }
 
     private fun nudge(rowsShown: Boolean = true) =
         HomeRowsNudge(app, flowOf(rowsShown), CoroutineScope(Dispatchers.Unconfined), waitMs = 0) {
@@ -27,19 +27,19 @@ class HomeRowsNudgeTest {
         }
 
     @Test
-    fun `the request goes to MyTVPlayer only, once in five minutes`() {
+    fun `the request goes to MyTVPlayer and MyPlexPlayer, once in five minutes`() {
         shadowOf(app).clearBroadcastIntents()
         val n = nudge()
         n.nudge()
-        assertEquals(listOf("com.biskyt.mytvplayer"), nudges().map { it.`package` })
-        // Also to MyTVPlayer in the stopped state.
+        assertEquals(listOf("com.biskyt.mytvplayer", "com.biskyt.myplexplayer"), nudges().map { it.`package` })
+        // Also to an app in the stopped state.
         assertTrue(nudges().all { it.flags and Intent.FLAG_INCLUDE_STOPPED_PACKAGES != 0 })
         time += HomeRowsNudge.MIN_GAP_MS - 1
         n.nudge()
-        assertEquals(1, nudges().size)
+        assertEquals(2, nudges().size)
         time += 1
         n.nudge()
-        assertEquals(2, nudges().size)
+        assertEquals(4, nudges().size)
     }
 
     @Test
