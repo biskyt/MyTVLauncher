@@ -43,6 +43,16 @@ class WatchNextTest {
     }
 
     @Test
+    fun `the time left is the whole length before the item is started, else what is left`() {
+        assertEquals(1000L, WatchNext.left(null, 1000))
+        assertEquals(1000L, WatchNext.left(0, 1000))
+        assertEquals(750L, WatchNext.left(250, 1000))
+        assertNull(WatchNext.left(1000, 1000))
+        assertNull(WatchNext.left(250, null))
+        assertNull(WatchNext.left(250, 0))
+    }
+
+    @Test
     fun `the key uses the app's own id when it has one`() {
         assertEquals("com.example.videos/ep-7", WatchNext.key("com.example.videos", "ep-7", 12))
         assertEquals("com.example.videos/#12", WatchNext.key("com.example.videos", " ", 12))

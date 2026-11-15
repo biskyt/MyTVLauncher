@@ -62,7 +62,10 @@ data class WatchNextRow(
     val shape: CardShape,
     val progress: Float?,
     val lastEngagementMs: Long,
-    val intentUri: String?
+    val intentUri: String?,
+    val season: String? = null,
+    val episode: String? = null,
+    val leftMs: Long? = null
 )
 
 @Dao
@@ -192,9 +195,14 @@ interface HiddenDao {
 
 @Database(
     entities = [AppPlaceRow::class, WatchNextRow::class, HiddenRow::class, ChannelItemRow::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)]
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5)
+    ]
 )
 abstract class LauncherDatabase : RoomDatabase() {
     abstract fun appPlaces(): AppPlaceDao

@@ -5,7 +5,8 @@ enum class CardShape { POSTER, WIDE }
 
 /**
  * One of another app's Watch Next items, as the launcher keeps it. [key] stays the same when the app writes the item
- * again (see [WatchNext.key]). [progress] is from 0 to 1, or null when the app gives no position.
+ * again (see [WatchNext.key]). [progress] is from 0 to 1, or null when the app gives no position. [season] and
+ * [episode] are the app's display numbers, and [leftMs] the time left to watch (see [WatchNext.left]).
  */
 data class WatchNextItem(
     val key: String,
@@ -16,7 +17,10 @@ data class WatchNextItem(
     val shape: CardShape,
     val progress: Float?,
     val lastEngagementMs: Long,
-    val intentUri: String?
+    val intentUri: String?,
+    val season: String? = null,
+    val episode: String? = null,
+    val leftMs: Long? = null
 )
 
 /** The rules of the Continue watching row. */
@@ -54,6 +58,15 @@ object WatchNext {
     fun progress(positionMs: Long?, durationMs: Long?): Float? {
         if (positionMs == null || durationMs == null || positionMs <= 0 || durationMs <= 0) return null
         return (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
+    }
+
+    /**
+     * The time left to watch: the whole length when not started, else what is left after the position. Null when the
+     * app gives no length, or nothing is left.
+     */
+    fun left(positionMs: Long?, durationMs: Long?): Long? {
+        if (durationMs == null || durationMs <= 0) return null
+        return (durationMs - (positionMs ?: 0).coerceAtLeast(0)).takeIf { it > 0 }
     }
 
     /**

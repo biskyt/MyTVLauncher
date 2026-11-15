@@ -182,7 +182,9 @@ private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> 
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 6.dp)
         )
-        item.subtitle?.let {
+        // The episode and the time left go in place of the episode's name, or any other subtitle (the owner, 2026-11-15:
+        // they matter more), as on the sister apps' cards. Without them, the subtitle shows.
+        (detail(item) ?: item.subtitle)?.let {
             if (size == CardSize.FULL) {
                 Muted(it)
             } else {
@@ -197,6 +199,30 @@ private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> 
         }
     }
 }
+
+/** The season and episode with the time left, short ("S1E2 22m"), as the sister apps show them; null with neither. */
+@Composable
+private fun detail(item: WatchNextItem): String? {
+    val season = item.season
+    val episode = item.episode
+    val code = if (season != null && episode != null) stringResource(R.string.home_episode_code, season, episode) else null
+    val left = item.leftMs?.let { shortLeft(it) }
+    return listOfNotNull(code, left).joinToString(" ").ifEmpty { null }
+}
+
+/** Time left, short, as a card has room for: "22m", "1h", "1h 5m" (whole minutes, rounded up; as MyTVPlayer's). */
+@Composable
+private fun shortLeft(ms: Long): String {
+    val minutes = ((ms + MS_PER_MINUTE - 1) / MS_PER_MINUTE).toInt()
+    return when {
+        minutes < MINUTES_PER_HOUR -> stringResource(R.string.home_left_m, minutes)
+        minutes % MINUTES_PER_HOUR == 0 -> stringResource(R.string.home_left_h, minutes / MINUTES_PER_HOUR)
+        else -> stringResource(R.string.home_left_h_m, minutes / MINUTES_PER_HOUR, minutes % MINUTES_PER_HOUR)
+    }
+}
+
+private const val MS_PER_MINUTE = 60_000L
+private const val MINUTES_PER_HOUR = 60
 
 /**
  * The item's picture, decoded at the card's size (not the app's full size), with [placeholder] until it loads, or if it
