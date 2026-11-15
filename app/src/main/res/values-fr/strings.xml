@@ -28,6 +28,10 @@
     <string name="check_adb">Si le téléviseur ne la demande pas, donnez l’autorisation depuis un ordinateur avec cette commande :</string>
 
     <string name="home_continue_watching">Reprendre la lecture</string>
+    <string name="home_episode_code">S%1$sÉ%2$s</string>
+    <string name="home_left_m">%1$d min</string>
+    <string name="home_left_h">%1$d h</string>
+    <string name="home_left_h_m">%1$d h %2$d min</string>
     <string name="home_allow_watch_next">Autoriser Reprendre la lecture</string>
     <string name="home_allow_watch_next_help">Sélectionnez pour laisser le lanceur lire les éléments « À suivre » des autres applications</string>
     <string name="item_open_app">Ouvrir %1$s</string>

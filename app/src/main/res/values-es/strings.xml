@@ -28,6 +28,10 @@
     <string name="check_adb">Si el televisor no lo pide, da el permiso desde un ordenador con este comando:</string>
 
     <string name="home_continue_watching">Seguir viendo</string>
+    <string name="home_episode_code">T%1$sE%2$s</string>
+    <string name="home_left_m">%1$d min</string>
+    <string name="home_left_h">%1$d h</string>
+    <string name="home_left_h_m">%1$d h %2$d min</string>
     <string name="home_allow_watch_next">Permitir Seguir viendo</string>
     <string name="home_allow_watch_next_help">Selecciona para que el launcher lea los elementos de Seguir viendo de otras aplicaciones</string>
     <string name="item_open_app">Abrir %1$s</string>

@@ -69,14 +69,19 @@ fun AppTile(
     val icon = rememberAppIcon(packageName)
     val notOpened = stringResource(R.string.home_app_not_opened, label)
     val ring = if (moving) Modifier.border(BorderStroke(3.dp, LocalAccent.current.color), TileShape) else Modifier
-    Column(Modifier.width(TILE + 12.dp).alpha(if (dimmed) DIMMED else 1f), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        Modifier.raiseOnFocus().width(TILE + 12.dp).alpha(if (dimmed) DIMMED else 1f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         TvCard(
             onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
             onLongClick = onOptions,
             modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
                 contentDescription = label
             },
-            shape = TileShape
+            shape = TileShape,
+            // The glow shows the focus (see focusGlow), in place of the ring.
+            ring = false
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 if (icon != null) {
@@ -95,13 +100,15 @@ fun AppTile(
 @Composable
 fun AllAppsTile(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val label = stringResource(R.string.home_all_apps)
-    Column(Modifier.width(TILE + 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.raiseOnFocus().width(TILE + 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         TvCard(
             onClick = onClick,
             modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).size(TILE).semantics {
                 contentDescription = label
             },
-            shape = TileShape
+            shape = TileShape,
+            // The glow shows the focus (see focusGlow), in place of the ring.
+            ring = false
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(LauncherIcons.Grid, contentDescription = null, tint = cardColor(Palette.textDim), modifier = Modifier.size(36.dp))

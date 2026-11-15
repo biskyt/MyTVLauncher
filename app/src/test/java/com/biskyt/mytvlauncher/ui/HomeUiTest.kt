@@ -41,7 +41,9 @@ class HomeUiTest {
         rule.waitAdvancingClock { shown(FakeApps.videos.label) }
         val names = FakeApps.apps.map { it.label }
         val labels = rule.onAllNodes(names.map { hasText(it) }.reduce { a, b -> a or b })
-            .fetchSemanticsNodes().map { it.config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString() }
+            // In their order on screen: the tree has the app with focus last, as it draws over the others.
+            .fetchSemanticsNodes().sortedBy { it.boundsInRoot.left }
+            .map { it.config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString() }
         assertEquals(listOf("Browser", "Music", "Settings", "Videos"), labels)
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription("Browser").assertIsFocused() }.isSuccess }
     }

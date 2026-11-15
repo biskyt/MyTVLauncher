@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1
+- Continue watching cards show the episode and time left, such as "S1E2 22m".
+- Channel logos are the same size, clear of the card's edges.
+- Dark channel logos show on a light card.
+- The card with focus grows larger, with a glowing edge.
+
 ## 0.8.0
 - Settings › Show notifications adds a bell with the TV's notifications.
 - OK on a notification opens it; hold OK to dismiss it.

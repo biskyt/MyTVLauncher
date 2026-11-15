@@ -105,10 +105,10 @@ class WatchNextRepository(
 }
 
 private fun WatchNextRow.toItem() =
-    WatchNextItem(key, packageName, title, subtitle, pictureUri, shape, progress, lastEngagementMs, intentUri)
+    WatchNextItem(key, packageName, title, subtitle, pictureUri, shape, progress, lastEngagementMs, intentUri, season, episode, leftMs)
 
 private fun WatchNextItem.toRow() =
-    WatchNextRow(key, packageName, title, subtitle, pictureUri, shape, progress, lastEngagementMs, intentUri)
+    WatchNextRow(key, packageName, title, subtitle, pictureUri, shape, progress, lastEngagementMs, intentUri, season, episode, leftMs)
 
 /** The TV provider's Watch Next table (Android's own TvContract names: some of tvprovider's are restricted). */
 class ProviderWatchNext(private val context: Context) : WatchNextSource {
@@ -172,10 +172,13 @@ internal fun Cursor.toItem(sortColumn: String = WatchNextPrograms.COLUMN_LAST_EN
     if (long(WatchNextPrograms.COLUMN_BROWSABLE) == 0L) return null
     val packageName = string(WatchNextPrograms.COLUMN_PACKAGE_NAME) ?: return null
     val title = string(WatchNextPrograms.COLUMN_TITLE)?.takeIf { it.isNotBlank() } ?: return null
+    val position = long(WatchNextPrograms.COLUMN_LAST_PLAYBACK_POSITION_MILLIS)
+    val duration = long(WatchNextPrograms.COLUMN_DURATION_MILLIS)
     val (picture, shape) = WatchNext.picture(
         string(WatchNextPrograms.COLUMN_POSTER_ART_URI),
         long(WatchNextPrograms.COLUMN_POSTER_ART_ASPECT_RATIO)?.toInt(),
-        string(WatchNextPrograms.COLUMN_THUMBNAIL_URI)
+        string(WatchNextPrograms.COLUMN_THUMBNAIL_URI),
+        long(WatchNextPrograms.COLUMN_TYPE)?.toInt()
     )
     return WatchNextItem(
         key = WatchNext.key(packageName, string(WatchNextPrograms.COLUMN_INTERNAL_PROVIDER_ID), long(BaseColumns._ID) ?: 0),
@@ -184,11 +187,11 @@ internal fun Cursor.toItem(sortColumn: String = WatchNextPrograms.COLUMN_LAST_EN
         subtitle = string(WatchNextPrograms.COLUMN_EPISODE_TITLE),
         pictureUri = picture,
         shape = shape,
-        progress = WatchNext.progress(
-            long(WatchNextPrograms.COLUMN_LAST_PLAYBACK_POSITION_MILLIS),
-            long(WatchNextPrograms.COLUMN_DURATION_MILLIS)
-        ),
+        progress = WatchNext.progress(position, duration),
         lastEngagementMs = long(sortColumn) ?: 0,
-        intentUri = string(WatchNextPrograms.COLUMN_INTENT_URI)
+        intentUri = string(WatchNextPrograms.COLUMN_INTENT_URI),
+        season = string(WatchNextPrograms.COLUMN_SEASON_DISPLAY_NUMBER)?.takeIf { it.isNotBlank() },
+        episode = string(WatchNextPrograms.COLUMN_EPISODE_DISPLAY_NUMBER)?.takeIf { it.isNotBlank() },
+        leftMs = WatchNext.left(position, duration)
     )
 }

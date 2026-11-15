@@ -34,6 +34,12 @@
     <string name="check_adb">If the TV does not ask, give the permission from a computer with this command:</string>
 
     <string name="home_continue_watching">Continue watching</string>
+    <!-- A Continue watching card's season and episode, short: "S1E2" (the app's own numbers). -->
+    <string name="home_episode_code">S%1$sE%2$s</string>
+    <!-- The time left to watch, short, as a card has room for: "22m", "1h", "1h 5m". -->
+    <string name="home_left_m">%1$dm</string>
+    <string name="home_left_h">%1$dh</string>
+    <string name="home_left_h_m">%1$dh %2$dm</string>
     <string name="home_allow_watch_next">Allow Continue watching</string>
     <string name="home_allow_watch_next_help">Select to let the launcher read other apps’ Continue watching items</string>
     <string name="item_open_app">Open %1$s</string>

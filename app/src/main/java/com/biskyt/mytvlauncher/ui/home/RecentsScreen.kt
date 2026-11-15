@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -80,7 +81,13 @@ fun RecentsScreen() {
             is Recents.Apps -> if (r.packageNames.isEmpty()) {
                 Muted(stringResource(R.string.recents_none))
             } else {
-                LazyRow(contentPadding = PaddingValues(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                // Room on every side for the tile with focus to grow and glow into (the row cuts off what is outside
+                // it), moved left by as much, so that the first tile stays in line with the text above.
+                LazyRow(
+                    Modifier.offset(x = -GLOW_ROOM),
+                    contentPadding = PaddingValues(GLOW_ROOM),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
                     itemsIndexed(r.packageNames, key = { _, name -> name }) { i, name ->
                         AppTile(name, labels[name] ?: name, modifier = if (i == 0) Modifier.focusOn(first) else Modifier)
                     }

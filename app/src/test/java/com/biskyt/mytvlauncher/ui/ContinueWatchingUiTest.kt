@@ -61,6 +61,22 @@ class ContinueWatchingUiTest {
     }
 
     @Test
+    fun `a card shows the season, episode and time left in place of the episode's name`() {
+        FakeWatchNext.items = listOf(
+            // 21 minutes 10 seconds left: rounded up.
+            FakeWatchNext.episode.copy(season = "1", episode = "2", leftMs = 21 * 60_000L + 10_000),
+            FakeWatchNext.film.copy(subtitle = "Director's cut", leftMs = 65 * 60_000L),
+            FakeWatchNext.film.copy(key = "plain", title = "Cosmos Laundromat", subtitle = "Pilot")
+        )
+        runBlocking { rule.activity.container.watchNext.read() }
+        rule.waitForText("S1E2 22m")
+        rule.waitForText("1h 5m")
+        rule.waitForText("Pilot")
+        assertTrue(rule.onAllNodes(hasText("Part 2")).fetchSemanticsNodes().isEmpty())
+        assertTrue(rule.onAllNodes(hasText("Director's cut")).fetchSemanticsNodes().isEmpty())
+    }
+
+    @Test
     fun `Menu on an item opens its options, and Hide this item takes it off the row`() {
         rule.waitAdvancingClock { runCatching { rule.onNodeWithContentDescription(FakeWatchNext.film.title).assertIsFocused() }.isSuccess }
         rule.sendKey(KeyEvent.KEYCODE_MENU, KeyEvent.ACTION_DOWN)
