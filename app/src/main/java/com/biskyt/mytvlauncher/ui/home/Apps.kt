@@ -3,6 +3,7 @@ package com.biskyt.mytvlauncher.ui.home
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -70,30 +72,35 @@ fun AppTile(
         Modifier.raiseOnFocus().width(TILE + 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TvCard(
-            onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
-            onLongClick = onOptions,
-            modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
-                contentDescription = label
-            },
-            shape = TileShape,
-            // The glow shows the focus (see focusGlow), in place of the ring.
-            ring = false
-        ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (icon != null) {
-                    Image(icon, contentDescription = null, modifier = Modifier.size(ICON))
-                } else {
-                    Text(label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
+        // The heart is outside the card, over the circle's top right, so that the round card does not cut it off.
+        Box {
+            TvCard(
+                onClick = onClick ?: { context.openOrSay(notOpened, Toast.LENGTH_SHORT) { openApp(packageName) } },
+                onLongClick = onOptions,
+                modifier = modifier.focusGlow(TileShape, LocalAccent.current.color).then(ring).size(TILE).semantics {
+                    contentDescription = label
+                },
+                shape = TileShape,
+                // The glow shows the focus (see focusGlow), in place of the ring.
+                ring = false
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    if (icon != null) {
+                        // The icon fills the round card (the owner, 2026-11-15).
+                        Image(icon, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    } else {
+                        Text(label.take(1).uppercase(), style = MaterialTheme.typography.headlineMedium, color = Palette.textDim)
+                    }
                 }
-                if (onHome) {
-                    Icon(
-                        LauncherIcons.Heart,
-                        contentDescription = stringResource(R.string.all_apps_on_home),
-                        tint = LocalAccent.current.color,
-                        modifier = Modifier.align(Alignment.TopEnd).padding(6.dp).size(HEART)
-                    )
-                }
+            }
+            if (onHome) {
+                Icon(
+                    LauncherIcons.Heart,
+                    contentDescription = stringResource(R.string.all_apps_on_home),
+                    tint = LocalAccent.current.color,
+                    // On a dark disc, so that it shows on any icon.
+                    modifier = Modifier.align(Alignment.TopEnd).size(HEART).background(Palette.background, CircleShape).padding(4.dp)
+                )
             }
         }
         TileLabel(label)
@@ -191,7 +198,7 @@ fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.ap
 fun ScreenTitle(text: String, modifier: Modifier = Modifier) =
     Text(text, style = MaterialTheme.typography.headlineLarge, modifier = modifier.padding(top = 40.dp))
 
-private val TileShape = RoundedCornerShape(18.dp)
+/** App cards are round (the owner, 2026-11-15: "Option B"). */
+private val TileShape = CircleShape
 private val TILE = 84.dp
-private val ICON = 56.dp
-private val HEART = 16.dp
+private val HEART = 24.dp

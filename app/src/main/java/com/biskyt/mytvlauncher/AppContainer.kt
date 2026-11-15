@@ -147,8 +147,8 @@ class AppContainer(
     }
 
     private companion object {
-        /** Home shows icons this wide on its 1280-wide canvas (see LauncherTheme). */
-        const val ICON_UNITS = 56
+        /** Home shows icons this wide on its 1280-wide canvas (see LauncherTheme): the whole round app card (`TILE`). */
+        const val ICON_UNITS = 84
         const val CANVAS_WIDTH = 1280
 
         /**

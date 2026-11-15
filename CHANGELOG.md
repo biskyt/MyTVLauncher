@@ -1,6 +1,7 @@
 # Changelog
 
 ## 1.0.0
+- App icons fill round cards.
 - Video thumbnails fill their cards, with no bars.
 - All apps shows a heart on your favourite apps, the ones on Home.
 - Hold OK on an app to add it to or remove it from favourite apps.

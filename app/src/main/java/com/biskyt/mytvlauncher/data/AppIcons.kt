@@ -2,6 +2,10 @@ package com.biskyt.mytvlauncher.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.Drawable
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -22,7 +26,7 @@ class AppIcons(private val context: Context, private val sizePx: Int) {
     /** The icon, read now if it is not in memory; null if the app has gone. */
     suspend fun load(packageName: String): ImageBitmap? = cached(packageName) ?: withContext(Dispatchers.IO) {
         try {
-            context.packageManager.getApplicationIcon(packageName).toBitmap(sizePx, sizePx).asImageBitmap()
+            iconBitmap(context.packageManager.getApplicationIcon(packageName), sizePx).asImageBitmap()
                 .also { cache.put(packageName, it) }
         } catch (_: PackageManager.NameNotFoundException) {
             null
@@ -32,4 +36,22 @@ class AppIcons(private val context: Context, private val sizePx: Int) {
     private companion object {
         const val MAX_ICONS = 100
     }
+}
+
+/**
+ * An app's icon as a [sizePx] square that the round app card fills (the owner, 2026-11-15). An adaptive icon (most
+ * current apps') is drawn as its layers with no shape mask, its safe zone (the middle 72 of its 108 units) filling the
+ * square, so its background reaches every edge of the circle. Any other icon is drawn as it is.
+ */
+internal fun iconBitmap(drawable: Drawable, sizePx: Int): Bitmap {
+    if (drawable !is AdaptiveIconDrawable) return drawable.toBitmap(sizePx, sizePx)
+    val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    // The layers are 108 units with the safe zone in the middle 72: a quarter of the square more on each side.
+    val extra = sizePx / 4
+    listOfNotNull(drawable.background, drawable.foreground).forEach { layer ->
+        layer.setBounds(-extra, -extra, sizePx + extra, sizePx + extra)
+        layer.draw(canvas)
+    }
+    return bitmap
 }
