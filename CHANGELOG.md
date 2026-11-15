@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+- Left and Right no longer leave a row for the top bar.
+
 ## 1.1.0
 - Home's background shows a soft, blurred copy of the selected card's picture.
 - App icons and cards without a picture tint the background with their colours.
