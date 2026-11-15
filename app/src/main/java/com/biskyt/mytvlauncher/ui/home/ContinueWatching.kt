@@ -175,13 +175,24 @@ private fun WatchNextCard(item: WatchNextItem, size: CardSize, onOptions: () -> 
                 } else {
                     Picture(item.pictureUri, width, height, placeholder)
                 }
+                // The bar and the badge follow the card's own size (a poster's or a wide card's). With progress, the
+                // app's icon sits above the bar, not on it.
+                val inset = BAR_INSET * scale
+                val barHeight = BAR_HEIGHT * scale.coerceAtLeast(BAR_MIN_SCALE)
+                val badgeBottom = if (item.progress != null) inset + barHeight + 6.dp * scale else 12.dp * scale
                 AppBadge(
                     item.packageName,
-                    Modifier.align(Alignment.BottomStart).padding(start = 8.dp * size.scale, bottom = 12.dp * size.scale).size(
-                        24.dp * size.scale
-                    )
+                    Modifier.align(Alignment.BottomStart).padding(start = inset, bottom = badgeBottom).size(24.dp * size.scale)
                 )
-                item.progress?.let { ProgressLine(it, Modifier.align(Alignment.BottomCenter), height = 4.dp) }
+                // As MyTVPlayer's cards (the owner, 2026-11-15): a bar inset from the card's edges, clear of its rounded
+                // corners, on its track.
+                item.progress?.let {
+                    ProgressLine(
+                        it,
+                        Modifier.align(Alignment.BottomCenter).padding(start = inset, end = inset, bottom = inset),
+                        height = barHeight
+                    )
+                }
             }
         }
         Text(
@@ -309,6 +320,13 @@ fun ItemOptions(choice: ItemChoice, onDismiss: () -> Unit) {
 }
 
 private val CardShape10 = RoundedCornerShape(10.dp)
+
+/** The progress bar on a full size card: its height, and how far in it is from the card's sides and bottom. */
+private val BAR_HEIGHT = 5.dp
+private val BAR_INSET = 8.dp
+
+/** A half size card's bar is no thinner than this part of a full size card's. */
+private const val BAR_MIN_SCALE = 0.7f
 
 /**
  * Whether a picture of [pictureAspect] (width over height) is shown whole on a card of [cardAspect], not cropped: when

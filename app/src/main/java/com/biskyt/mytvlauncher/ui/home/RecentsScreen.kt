@@ -12,8 +12,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,9 +26,12 @@ import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.core.recents.AppUse
 import com.biskyt.mytvlauncher.core.recents.RecentApps
+import com.biskyt.mytvlauncher.data.AppEntry
 import com.biskyt.mytvlauncher.data.UsageStatsRecents
 import com.biskyt.mytvlauncher.openOrSay
 import com.biskyt.mytvlauncher.openUsageAccess
+import com.biskyt.mytvlauncher.ui.Navigator
+import com.biskyt.mytvlauncher.ui.Screen
 import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SettingRow
 import kotlinx.coroutines.Dispatchers
@@ -44,13 +49,17 @@ private sealed interface Recents {
 
 /**
  * The recent apps, opened by pressing Home twice (the owner, 2026-11-14). Read from Android's usage stats in the
- * background each time it opens. Without usage access, it says how to give it. Back goes to Home.
+ * background each time it opens. Without usage access, it says how to give it. Under the apps, a tile opens All apps
+ * (the owner, 2026-11-15). Back goes to Home.
  */
 @Composable
-fun RecentsScreen() {
+fun RecentsScreen(nav: Navigator) {
     val context = LocalContext.current
     val container = context.container
     val labels by container.appLabels.collectAsState()
+    val apps by container.allApps.collectAsState()
+    // The app that the remote held OK (or Menu) on (the owner, 2026-11-15): its options, as on Home but with no Move.
+    var options by remember { mutableStateOf<AppEntry?>(null) }
     // Read in the background each time the screen comes to the front (usage access may have been given meanwhile); the
     // list is filtered again as the apps change.
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -89,10 +98,21 @@ fun RecentsScreen() {
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     itemsIndexed(r.packageNames, key = { _, name -> name }) { i, name ->
-                        AppTile(name, labels[name] ?: name, modifier = if (i == 0) Modifier.focusOn(first) else Modifier)
+                        AppTile(
+                            name,
+                            labels[name] ?: name,
+                            modifier = if (i == 0) Modifier.focusOn(first) else Modifier,
+                            onOptions = { options = apps?.firstOrNull { it.packageName == name } }
+                        )
                     }
                 }
             }
         }
+        if (recents != null) {
+            // The first focus when there is no recent app to give it to.
+            val noApps = recents is Recents.Apps && recents.packageNames.isEmpty()
+            AllAppsTile({ nav.open(Screen.ALL_APPS) }, if (noApps) Modifier.focusOn(first) else Modifier)
+        }
     }
+    options?.let { app -> AppOptions(app, onMove = null) { options = null } }
 }

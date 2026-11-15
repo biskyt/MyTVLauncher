@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.2
+- The card with focus now fills its glow, which is brighter.
+- Progress bars sit inside the card, as in MyTVPlayer.
+- Hold OK on a recent app to show its options.
+- A tile under the recent apps opens All apps.
+- The light card behind dark channel logos is a little darker.
+
 ## 0.8.1
 - Continue watching cards show the episode and time left, such as "S1E2 22m".
 - Channel logos are the same size, clear of the card's edges.

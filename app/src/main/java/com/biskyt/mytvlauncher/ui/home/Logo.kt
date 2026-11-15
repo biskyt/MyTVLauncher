@@ -125,5 +125,5 @@ private const val MARGIN = 0.14f
 private const val AREA = 0.3f
 private const val LOGOS_KEPT = 512
 
-/** The card behind a dark logo: light enough for black text, a little softer than white. */
-private val LIGHT_CARD = Color(0xFFE6E8EB)
+/** The card behind a dark logo: light enough for black text, softer than white (the owner, 2026-11-15: 15% darker). */
+private val LIGHT_CARD = Color(0xFFC4C5C8)

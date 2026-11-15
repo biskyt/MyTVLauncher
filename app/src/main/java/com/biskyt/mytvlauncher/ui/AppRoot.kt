@@ -68,7 +68,7 @@ private fun Screens(nav: Navigator) {
                 Screen.BACKUP -> BackupScreen()
                 Screen.SPEAKER_WAKE -> SpeakerWakeScreen()
                 Screen.ALL_APPS -> AllAppsScreen()
-                Screen.RECENTS -> RecentsScreen()
+                Screen.RECENTS -> RecentsScreen(nav)
             }
         }
     }
