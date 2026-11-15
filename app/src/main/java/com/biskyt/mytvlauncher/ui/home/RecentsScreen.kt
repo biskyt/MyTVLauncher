@@ -93,7 +93,7 @@ fun RecentsScreen(nav: Navigator) {
                 // Room on every side for the tile with focus to grow and glow into (the row cuts off what is outside
                 // it), moved left by as much, so that the first tile stays in line with the text above.
                 LazyRow(
-                    Modifier.offset(x = -GLOW_ROOM),
+                    Modifier.offset(x = -GLOW_ROOM).staysInRow(),
                     contentPadding = PaddingValues(GLOW_ROOM),
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {

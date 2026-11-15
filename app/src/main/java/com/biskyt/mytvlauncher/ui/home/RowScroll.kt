@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher.ui.home
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.scrollBy
@@ -15,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -85,7 +88,7 @@ class RowBack internal constructor(private val list: LazyListState, private val 
     /** Whether an item after the first has focus: read by Back, so that a move along the row recomposes nothing. */
     internal val pastFirst by derivedStateOf { focused > 0 }
 
-    val row: Modifier = Modifier.onFocusChanged { if (!it.hasFocus) focused = -1 }
+    val row: Modifier = Modifier.staysInRow().onFocusChanged { if (!it.hasFocus) focused = -1 }
 
     fun item(index: Int, modifier: Modifier = Modifier): Modifier =
         (if (index == 0) modifier.focusRequester(first) else modifier).onFocusChanged { if (it.isFocused) focused = index }
@@ -106,3 +109,13 @@ fun rememberRowBack(list: LazyListState, enabled: Boolean = true): RowBack {
     BackHandler(enabled = enabled && back.pastFirst) { back.toStart() }
     return back
 }
+
+/**
+ * Left and Right never leave a row (the owner, 2026-11-15): off a row's end the focus stays on its last item, where
+ * it went up to the top bar before. Up and Down still move between the rows. Put it on the row's list.
+ */
+fun Modifier.staysInRow(): Modifier = focusProperties {
+    onExit = {
+        if (requestedFocusDirection == FocusDirection.Left || requestedFocusDirection == FocusDirection.Right) cancelFocusChange()
+    }
+}.focusGroup()
