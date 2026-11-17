@@ -15,16 +15,21 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import com.biskyt.mytvlauncher.core.keys.HomePressLog
 import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.ui.AppRoot
 import com.biskyt.mytvlauncher.ui.Navigator
+import com.biskyt.mytvlauncher.ui.Screen
 import com.biskyt.mytvlauncher.ui.common.hasTouchScreen
 import com.biskyt.mytvlauncher.ui.common.isActing
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** The home screen. It is the TV's home app when chosen as one (see RELEASING.md). */
 class MainActivity : ComponentActivity() {
-    private val nav = Navigator()
+    @VisibleForTesting
+    internal val nav = Navigator()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,9 +100,26 @@ class MainActivity : ComponentActivity() {
     internal fun takeIntent(intent: Intent) {
         takeOpenedFile(intent)
         if (!intent.hasCategory(Intent.CATEGORY_HOME)) return
-        container.homePressed(inFront = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+        val inFront = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        val onHome = inFront && nav.top == Screen.HOME
+        container.homePressed(inFront)
+        val presses = container.homePresses.value
+        val press = presses.first()
         // Two presses within half a second: the recent apps (the owner's test: a double press reaches the launcher).
-        if (HomePressLog.isDouble(container.homePresses.value)) nav.recents() else nav.home()
+        if (HomePressLog.isDouble(presses)) {
+            nav.recents()
+            return
+        }
+        nav.home()
+        // One press on Home: Home goes back to its start, once no second press has come to make it a double press
+        // (and while Home is still in front: no app opened in the meantime).
+        if (onHome) {
+            lifecycleScope.launch {
+                delay(HomePressLog.DOUBLE_PRESS_MS)
+                val stillHome = nav.top == Screen.HOME && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                if (container.homePresses.value.firstOrNull() === press && stillHome) nav.resetHome()
+            }
+        }
     }
 }
 

@@ -8,12 +8,17 @@ import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -119,3 +124,23 @@ fun Modifier.staysInRow(): Modifier = focusProperties {
         if (requestedFocusDirection == FocusDirection.Left || requestedFocusDirection == FocusDirection.Right) cancelFocusChange()
     }
 }.focusGroup()
+
+/** When Home was last reset (see Navigator.homeReset): 0 outside Home, and on Home until the first reset. */
+val LocalHomeReset = compositionLocalOf { 0L }
+
+/**
+ * A row's list state on Home that goes back to its first item at a reset of Home (see LocalHomeReset): when the reset
+ * comes, or when the row comes into view after one.
+ */
+@Composable
+fun rememberHomeRowState(): LazyListState {
+    val state = rememberLazyListState()
+    val reset = LocalHomeReset.current
+    var seen by rememberSaveable { mutableLongStateOf(reset) }
+    LaunchedEffect(reset) {
+        if (reset <= seen) return@LaunchedEffect
+        seen = reset
+        state.scrollToItem(0)
+    }
+    return state
+}

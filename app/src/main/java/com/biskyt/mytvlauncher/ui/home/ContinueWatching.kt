@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -106,12 +104,12 @@ private fun CardRow(
                 Muted(subtitle, Modifier.padding(bottom = 14.dp))
             }
         }
-        val list = rememberLazyListState()
+        val list = rememberHomeRowState()
         val back = rememberRowBack(list)
         LazyRow(
             back.row,
             state = list,
-            contentPadding = PaddingValues(horizontal = ROW_PAD, vertical = GLOW_ROOM),
+            contentPadding = ROW_ROOM,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             itemsIndexed(items, key = { _, item -> item.key }) { i, item ->

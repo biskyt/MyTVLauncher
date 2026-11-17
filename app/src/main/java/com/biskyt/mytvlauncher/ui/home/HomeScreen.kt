@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,6 +29,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -127,6 +129,10 @@ fun HomeScreen(nav: Navigator) {
     val margin = rememberRowPadPx()
     var pressed by rememberSaveable { mutableStateOf(false) }
     FocusNewTop(top.takeIf { ready }, pressed, first)
+    val reset = nav.homeReset
+    val appsFocus = remember { FocusRequester() }
+    val column = rememberLazyListState()
+    ResetHome(reset, column, appsFocus, first) { options = null }
     // The background follows the card with focus (see AmbientBackground).
     val ambience = remember { Ambience() }
     AmbientBackground(ambience)
@@ -141,8 +147,12 @@ fun HomeScreen(nav: Navigator) {
             if (!ready) return@Column
             // Twice the margin: a row's name above its cards stays in view as the remote moves up onto it.
             val spec = remember(margin) { KeepInViewSpec(2 * margin) }
-            CompositionLocalProvider(LocalBringIntoViewSpec provides spec) {
-                LazyColumn(contentPadding = PaddingValues(top = 22.dp, bottom = 40.dp), verticalArrangement = Arrangement.spacedBy(28.dp)) {
+            CompositionLocalProvider(LocalBringIntoViewSpec provides spec, LocalHomeReset provides reset) {
+                LazyColumn(
+                    state = column,
+                    contentPadding = PaddingValues(top = 10.dp, bottom = 40.dp),
+                    verticalArrangement = Arrangement.spacedBy(ROW_GAP)
+                ) {
                     order.forEach { key ->
                         val focus = if (key == top) first else null
                         item(key = key) {
@@ -152,7 +162,7 @@ fun HomeScreen(nav: Navigator) {
                                 } else {
                                     ContinueWatchingRow(watch.orEmpty(), focus) { options = ItemChoice(it) }
                                 }
-                                RowOrder.APPS -> AppsRow(appList.orEmpty(), focus) { nav.open(Screen.ALL_APPS) }
+                                RowOrder.APPS -> AppsRow(appList.orEmpty(), focus, appsFocus) { nav.open(Screen.ALL_APPS) }
                                 else -> channelByKey[key]?.let { channel ->
                                     ChannelRow(channel, focus) { options = ItemChoice(it, channel.id) }
                                 }
@@ -171,15 +181,20 @@ fun HomeScreen(nav: Navigator) {
  * an app opens its options; Move lifts it, and Left and Right move it until OK or Back, when the order is saved.
  */
 @Composable
-private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps: () -> Unit) {
+private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, resetFocus: FocusRequester, onAllApps: () -> Unit) {
     val container = LocalContext.current.container
     var options by remember { mutableStateOf<AppEntry?>(null) }
     val byName = remember(apps) { apps.associateBy { it.packageName } }
-    val listState = rememberLazyListState()
+    val listState = rememberHomeRowState()
     val margin = rememberRowPadPx()
     val move = rememberListMove(apps, container.apps::saveOrder) { name, index -> listState.keepInView(name, index, margin) }
     val moving = move.moving
     val back = rememberRowBack(listState, enabled = moving == null)
+    // Home pressed on Home during a move: the move ends there, saved, as with OK.
+    val reset = LocalHomeReset.current
+    LaunchedEffect(reset) { if (move.moving != null) move.end() }
+    // The row's first item (the All apps tile when the row has no apps): the first focus, and the focus after a reset.
+    val firstApp = Modifier.focusOn(firstFocus).focusRequester(resetFocus)
     Column {
         SectionTitle(stringResource(R.string.home_apps), Modifier.padding(horizontal = ROW_PAD))
         moving?.let { name ->
@@ -188,13 +203,13 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps
         LazyRow(
             back.row,
             state = listState,
-            contentPadding = PaddingValues(horizontal = ROW_PAD, vertical = GLOW_ROOM),
+            contentPadding = ROW_ROOM,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             val shown = move.shown(apps, byName)
             itemsIndexed(shown, key = { _, app -> app.packageName }) { i, app ->
                 val isMoving = moving == app.packageName
-                val focus = back.item(i, if (i == 0) Modifier.focusOn(firstFocus) else Modifier)
+                val focus = back.item(i, if (i == 0) firstApp else Modifier)
                 AppTile(
                     app.packageName,
                     app.label,
@@ -212,8 +227,8 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, onAllApps
                     onOptions = if (moving == null) ({ options = app }) else null
                 )
             }
-            val allAppsFocus = if (apps.isEmpty()) firstFocus else null
-            if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, back.item(shown.size, Modifier.focusOn(allAppsFocus))) }
+            val allAppsFocus = if (apps.isEmpty()) firstApp else Modifier
+            if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, back.item(shown.size, allAppsFocus)) }
         }
     }
     options?.let { app -> AppOptions(app, onMove = { move.start(apps.map { it.packageName }, app.packageName) }) { options = null } }
@@ -317,12 +332,38 @@ private fun FocusNewTop(top: String?, pressed: Boolean, first: FocusRequester) {
         val before = shown
         shown = top
         if (top == null || before == null || pressed) return@LaunchedEffect
-        settleFor { runCatching { first.requestFocus() }.getOrDefault(false) }
+        first.settleFocus()
     }
 }
 
 /** The rows' side padding, as MyPlexPlayer's Home rows. */
 internal val ROW_PAD = 56.dp
+
+/** The space between Home's rows (the owner, 2026-11-17: less than the 28 dp before, so more of the third row shows). */
+private val ROW_GAP = 12.dp
+
+/**
+ * The room in a row of Home for the card with focus to grow and glow. It is less than [GLOW_ROOM]: a row draws up to
+ * 15 dp past its top and bottom (Compose's clip for a scrolling list), and under each card is its name.
+ */
+internal val ROW_ROOM = PaddingValues(start = ROW_PAD, end = ROW_PAD, top = 8.dp, bottom = 4.dp)
+
+/**
+ * A reset of Home ([reset], see Navigator.resetHome) made while it shows: [onReset] runs, the list of rows goes back to
+ * its top (each row goes back to its first item itself: see rememberHomeRowState), and the first app has focus. When
+ * the apps row is not near the top (Settings › Home rows › Row order), the top row's first item ([top]) has it.
+ */
+@Composable
+private fun ResetHome(reset: Long, column: LazyListState, apps: FocusRequester, top: FocusRequester, onReset: () -> Unit) {
+    var done by remember { mutableLongStateOf(reset) }
+    LaunchedEffect(reset) {
+        if (reset <= done) return@LaunchedEffect
+        done = reset
+        onReset()
+        column.scrollToItem(0)
+        if (!apps.settleFocus()) top.settleFocus()
+    }
+}
 
 /**
  * A requester that the screen gives focus to once a visit, when [ready]: not again when its item is composed again (a
@@ -341,10 +382,14 @@ fun rememberOnceFocus(ready: Boolean): FocusRequester {
             return@LaunchedEffect
         }
         // The item is laid out within a frame or two of its list.
-        done = settleFor { runCatching { requester.requestFocus(FocusDirection.Enter) }.getOrDefault(false) }
+        done = requester.settleFocus(FocusDirection.Enter)
     }
     return requester
 }
+
+/** Gives this requester focus once its item is laid out (within a few frames); whether it took focus. */
+private suspend fun FocusRequester.settleFocus(direction: FocusDirection = FocusDirection.Enter) =
+    settleFor { runCatching { requestFocus(direction) }.getOrDefault(false) }
 
 /** Attaches [requester], when there is one. */
 fun Modifier.focusOn(requester: FocusRequester?): Modifier = if (requester == null) this else focusRequester(requester)

@@ -22,7 +22,7 @@ A light home screen for Android TV and Google TV, with no ads, no tracking and n
   the same size, and a dark logo shows on a light card.
 - **Your rows, your order:** turn each row on or off, choose which apps' items show, and move the rows up and down.
 - **All apps:** every app on the TV. A heart marks your favourite apps.
-- **Recent apps:** press Home twice to see the apps you used last.
+- **Recent apps:** press Home twice to see the apps you used last. Press Home once on Home to go back to its start.
 - **TV guide button:** opens the TV's own guide, MyTVPlayer's or MyPlexPlayer's. The remote's Guide key does the same.
 - **Notifications:** an optional bell in the top bar shows the TV's notifications.
 - **Speaker wake:** optionally wakes a soundbar or receiver that sleeps when the TV wakes.
