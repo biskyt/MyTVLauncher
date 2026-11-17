@@ -172,9 +172,10 @@ See also:
   and the rows follow. MyTVPlayer's receiver is on only while its sync or its home screen rows are on. Android has no such request of its own. MyTVPlayer runs no scheduled sync for it (the owner,
   2026-11-15: it is used only with this launcher).
 - **Home on Home** (1.1.5, the owner, 2026-11-17): one Home press while Home is in front resets it
-  (`Navigator.resetHome`): `HomeScreen` makes its rows again (`key(reset)`), so the list is at its top and each row at
-  its first card, and the first app takes focus. `MainActivity.takeIntent` waits `DOUBLE_PRESS_MS` first, so a double
-  press opens the recent apps and does not reset Home.
+  (`Navigator.resetHome`, a time: `homeReset`). The rows are not made again: `ResetHome` scrolls the list to its top and
+  gives the first app focus, and each row's `rememberHomeRowState` scrolls back to its first card when the reset comes
+  or when it next comes into view (`LocalHomeReset`). A move in progress ends, saved. `MainActivity.takeIntent` waits
+  `DOUBLE_PRESS_MS` first (so a double press opens the recent apps), and resets only if Home is still in front.
 - **Row spacing** (1.1.5): Home's rows use `ROW_ROOM` (8 dp above the cards, 4 dp below), not `GLOW_ROOM`. A row
   draws up to 15 dp past its own top and bottom (Compose's clip for a scrolling list), so the glow still has room.
 - **Notifications** (0.8.0, `data/Notifications.kt`): `LauncherNotificationListener` is off in the manifest and turned
