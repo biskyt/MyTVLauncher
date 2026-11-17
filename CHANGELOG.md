@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+- Press Home on Home to go back to the start of Home.
+- Less space between Home's rows, so more of the third row shows.
+
 ## 1.1.4
 - MyPlexPlayer's rows on Home also update when the TV wakes and Home opens.
 
