@@ -67,21 +67,3 @@ A release reaches testers once Google has reviewed it, usually within a few hour
 (or the app's page) makes it check for the update.
 
 Moving a release from closed testing to production is done in Play Console.
-
-## Make MyTVLauncher the home app
-Android sends the Home button to the home app. A TV that has more than one home app can ask which one to use, or show
-the choice in Android settings (MyTVLauncher's Settings › Home app opens it, where the TV has one). Some TVs give no
-choice. On those, turn off the TV's own launcher with adb from a computer on the same network.
-
-1. On the TV, turn on Developer options and USB or network debugging, then connect: `adb connect <TV address>`.
-2. Install MyTVLauncher, and open it once from the TV's app list.
-3. Find the TV's own launcher: `adb shell cmd package resolve-activity -c android.intent.category.HOME -a android.intent.action.MAIN`.
-4. Turn it off. These are the usual names:
-   - **Android TV (the Philips TV):** `adb shell pm disable-user --user 0 com.google.android.tvlauncher`
-   - **Google TV (the Chromecast):** `adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx`
-     and `adb shell pm disable-user --user 0 com.google.android.tungsten.setupwraith`
-5. Press Home. If the TV asks which app to use, select MyTVLauncher and "Always". Where the TV allows it, this also
-   works: `adb shell cmd package set-home-activity com.biskyt.mytvlauncher/.MainActivity`.
-
-**To go back** to the TV's own launcher, turn it on again: `adb shell pm enable com.google.android.tvlauncher` (or the
-Google TV names above). MyTVLauncher always shows every app and Android settings, so you can also open them from it.
