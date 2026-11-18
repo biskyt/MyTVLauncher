@@ -73,6 +73,8 @@ android {
             // A test JVM per two cores, up to 4 (each needs about 1 GB).
             it.maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceIn(1, 4)
             it.systemProperty("robolectric.graphicsMode", "NATIVE")
+            // The store graphics and screenshots (StoreAssetsTest) are made only when asked for: -PstoreAssets
+            if (!project.hasProperty("storeAssets")) it.filter.excludeTestsMatching("*StoreAssetsTest")
         }
     }
 

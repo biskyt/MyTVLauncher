@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyTVLauncher privacy policy</title>
+<style>
+  :root { --bg: #ffffff; --text: #1d2026; --muted: #5b6270; --accent: #0f7a6c; --line: #e3e6ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0f1114; --text: #f1f3f6; --muted: #a9b0bb; --accent: #2bc4b0; --line: #262a31; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; }
+  h2 { font-size: 20px; margin: 36px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .muted { color: var(--muted); }
+  a { color: var(--accent); }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>MyTVLauncher privacy policy</h1>
+  <p class="muted">Last updated: 18 November 2026</p>
+
+  <p>MyTVLauncher is a home screen (launcher) for Android TV and Google TV. This policy tells you what information the
+    app uses and where it goes. In short: the app has no account, no analytics, no advertising and no crash reporting.
+    It never sends your information to the developer or to anyone else. Its only internet use is to load the pictures
+    that your other apps give to the TV's home screen.</p>
+
+  <h2>What the app reads on your device</h2>
+  <ul>
+    <li><strong>Your installed apps:</strong> their names and icons, so that Home and All apps can show them and open
+      them.</li>
+    <li><strong>Continue watching and app channels:</strong> the items that your other apps put on the TV's home screen
+      (titles, pictures, progress and episode numbers), from the TV's own list of programmes. The app reads them only
+      when you give it the TV listings permission, and only while those rows are on.</li>
+    <li><strong>Recent apps</strong> (optional): which apps you used last, from Android's usage access, to show the
+      recent apps panel when you press Home twice. The app reads this only if you give it usage access.</li>
+    <li><strong>Notifications</strong> (optional, off by default): the TV's notifications, to show them in the app's top
+      bar. The app reads them only while Settings › Show notifications is on and you gave it notification access. It
+      keeps them in memory only, and never saves them.</li>
+    <li><strong>The network status:</strong> whether the TV is on Wi-Fi or Ethernet, and whether a VPN is connected,
+      for the icons in the top bar.</li>
+  </ul>
+
+  <h2>What the app stores on your device</h2>
+  <ul>
+    <li><strong>Your choices:</strong> the app's settings, the order of your apps, the apps you added to or removed from
+      Home, and the rows and items you hid.</li>
+    <li><strong>A copy of Home's rows:</strong> the last Continue watching items and channel rows it read, so that Home
+      shows straight away when the TV starts.</li>
+  </ul>
+  <p>This information stays in the app's private storage on your device. The app does not upload it, and Android's
+    automatic cloud backup does not include it.</p>
+
+  <h2>Who the app connects to</h2>
+  <p>The app connects only to the servers named by your other apps' home screen items, to load their pictures (posters,
+    thumbnails and channel logos). Some of these servers can be on your own home network, such as a media server. Like
+    any internet connection, these servers receive your device's IP address and the technical details of the request.
+    What they do with them is covered by the privacy policies of the apps that gave the pictures.</p>
+  <p>The app also sends a request, inside your TV only, to MyTVPlayer and MyPlexPlayer, if they are installed, to ask
+    them to bring their home screen rows up to date. This request holds no information about you.</p>
+
+  <h2>Backups</h2>
+  <p>Settings › Backup &amp; restore can save your settings and your Home to a file on your device. The app makes the
+    file only when you ask. The file does not include your other apps' items.</p>
+
+  <h2>What the developer receives</h2>
+  <p>Nothing. The app has no server of its own, no user accounts, no analytics, no advertising and no crash reporting.
+    The developer does not sell or share any information, and does not use any information for tracking.</p>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><strong>Internet:</strong> to load the pictures for Continue watching and app channels.</li>
+    <li><strong>Network state:</strong> for the network icon and the VPN badge in the top bar.</li>
+    <li><strong>Read TV listings:</strong> to show Continue watching and your apps' channels. The app asks for it.</li>
+    <li><strong>Usage access</strong> (optional): for the recent apps panel. You give it in Android settings.</li>
+    <li><strong>Notification access</strong> (optional): for the notifications in the top bar. You give it in Android
+      settings.</li>
+    <li><strong>Storage</strong> (Android 9 only): to save and open backup files, only when you ask.</li>
+    <li><strong>Package visibility:</strong> the app finds the apps that can open from a TV or phone home screen, so it
+      can list and open them.</li>
+  </ul>
+
+  <h2>Deleting your information</h2>
+  <p>Clearing the app's storage, or uninstalling the app, deletes everything that it stored. Backup files that you made
+    stay where you saved them until you delete them. Turning off a permission in Android settings stops the app from
+    reading that information.</p>
+
+  <h2>Children</h2>
+  <p>The app is not directed at children, and it does not knowingly collect information from anyone.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, this page will show the new version with a new date.</p>
+
+  <h2>Contact</h2>
+  <p>For questions about this policy, open an issue at
+    <a href="https://github.com/biskyt/MyTVLauncher/issues">github.com/biskyt/MyTVLauncher/issues</a>.</p>
+</main>
+</body>
+</html>
