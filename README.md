@@ -7,27 +7,24 @@ A light home screen for Android TV and Google TV, with no ads, no tracking and n
 
 ## Why MyTVLauncher
 - **No ads, no tracking:** no analytics, no account and no sponsored rows. Open source (GPL-3.0).
-- **Light and quick:** Home shows straight away from what it saved last time. It reads other apps' rows in the
-  background, and it loads pictures only for the rows that are on.
-- **Made for the remote:** every screen works with the D-pad. The card with focus grows and glows in your accent
-  colour.
-- **Always a way out:** every app and Android settings open from MyTVLauncher, so you can change back to another home
-  app at any time.
+- **Light and quick:** Built to start-up instantly, even on low-power devices
+- **Made for the TV remote:** every screen works with the D-pad. Supports options key and TV Guide key (for use with optional guide override)
+- **Simple, uncomplicated user experience:** No complex options, just install and go
+- **Supports standard Android TV features:** Supports _Next up_ and home channels for any app that provides these features (e.g, MyTVPlayer, MyPlexPlayer, Plezy, My5, etc)
 
 ## Features
 - **Continue watching:** other apps' Watch Next items, up to 20. Each card shows a poster or a wide picture, a progress
   bar, the episode and the time left (for example "S1E2 22m"), and its app's icon.
 - **Favourite apps:** round app icons on Home. Hold OK on an app to move it or to remove it from favourite apps.
-- **App channels:** the rows that apps give the TV, such as MyTVPlayer's favourite channels. TV channel logos are all
-  the same size, and a dark logo shows on a light card.
+- **App channels:** the rows that apps give the TV, such as MyTVPlayer's favourite channels. Turn these on in Settings->Home rows
 - **Your rows, your order:** turn each row on or off, choose which apps' items show, and move the rows up and down.
 - **All apps:** every app on the TV. A heart marks your favourite apps.
-- **Recent apps:** press Home twice to see the apps you used last. Press Home once on Home to go back to its start.
-- **TV guide button:** opens the TV's own guide, MyTVPlayer's or MyPlexPlayer's. The remote's Guide key does the same.
-- **Notifications:** an optional bell in the top bar shows the TV's notifications.
-- **Speaker wake:** optionally wakes a soundbar or receiver that sleeps when the TV wakes.
-- **Backup and restore:** your Home and choices in one file.
-- **Accent colour** and a clock, the network status and a VPN badge in the top bar.
+- **Recent apps:** Double-click the Home button on your remote to see the apps you used last.
+- **TV guide button:** opens the TV's own guide, MyTVPlayer's or MyPlexPlayer's.
+- **Notifications:** an optional bell in the top bar shows the TV's notifications. Requires notifications permission, off by default
+- **Speaker wake:** optionally wakes a soundbar or receiver from sleep when the TV wakes, by playing a short silent tone.
+- **Backup and restore:** Export your settings to a file and restore them later (or copy to another TV).
+- **Accent colour** Choose your preferred colour for menu and highlight accents.
 - **Languages:** English, Spanish, Portuguese (Brazil) and French.
 
 ![The channel rows](docs/screenshots/2-channels.png)
