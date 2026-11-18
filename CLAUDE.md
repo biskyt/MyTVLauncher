@@ -240,3 +240,5 @@ See also:
   held one does not. Two presses within about 500 ms open the launcher's own recent apps panel. All apps opens from a
   top bar button and a tile at the end of the apps row. No accessibility service (see ROADMAP.md).
 - **Backup** (0.5.0) as MyPlexPlayer's. **Speaker wake** (0.6.0) is low priority.
+- **TV only on Google Play** (the owner, 2026-11-18, 1.1.6): the manifest requires `android.software.leanback`, so
+  Play offers the app only to TVs. The touch support stays for sideloaded use.

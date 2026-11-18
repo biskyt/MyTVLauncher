@@ -14,7 +14,9 @@
     <!-- Android 9 only: saving the backup to Download/MyTVLauncher (later versions need no permission for it). -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
-    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <!-- A TV-only app (the owner, 2026-11-18): Google Play offers it only to Android TV and Google TV devices. A
+         sideloaded APK still installs anywhere. -->
+    <uses-feature android:name="android.software.leanback" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <!-- Android 11 and later show an app only the apps it asks for: the apps a launcher can open. -->

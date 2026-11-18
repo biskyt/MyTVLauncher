@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.6
+- Google Play offers MyTVLauncher on TVs only.
+
 ## 1.1.5
 - Press Home on Home to go back to the start of Home.
 - Less space between Home's rows, so more of the third row shows.
