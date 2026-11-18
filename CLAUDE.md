@@ -17,6 +17,9 @@ See also:
 - `ROADMAP.md`: what's planned, release by release.
 - `RELEASING.md`: signing, releases, and how to make MyTVLauncher the TV's home app.
 - `CHANGELOG.md`: what changed in each version.
+- `store/README.md`: the Google Play listing's text, graphics and form answers. The privacy policy is
+  `docs/privacy.html` (GitHub Pages, https://biskyt.github.io/MyTVLauncher/privacy.html): change it, with a new date,
+  when the app starts to use a new kind of information, permission or connection.
 
 ## Standing instructions from the owner
 - **Write in plain English.** Use the `plain-english` skill (`.claude/skills/plain-english/SKILL.md`) for all
