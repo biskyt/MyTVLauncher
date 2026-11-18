@@ -41,13 +41,13 @@ A light home screen for Android TV and Google TV, with no ads, no tracking and n
 The screenshots use stand-in apps and pictures.
 
 ## Install
-Download the APK from [Releases](https://github.com/biskyt/MyTVLauncher/releases) and sideload it. To make it the TV's
-home app, see [RELEASING.md › Make MyTVLauncher the home app](RELEASING.md#make-mytvlauncher-the-home-app).
+Download the APK from [Releases](https://github.com/biskyt/MyTVLauncher/releases) and sideload it. 
 
-Some features need a permission that a TV often has no screen for. MyTVLauncher shows the `adb` command for each one:
-- Continue watching and app channels need the TV listings permission. MyTVLauncher asks for it.
-- Recent apps need usage access.
-- Notifications need notification access. MyTVLauncher asks for it when you turn the bell on.
+## Permisions
+Some features need a permission MyTVLauncher will ask for these permissions only when you first use the feature:
+- Continue watching and app channels need the TV listings permission
+- Recent apps need usage access is needed for showing Recent Apps.
+- Notifications need notification access
 
 ## Privacy
 MyTVLauncher sends nothing about you anywhere. Its only network use is to load the pictures that other apps give to
@@ -59,3 +59,34 @@ Watch Next and their channels. It reads other apps' Watch Next items only with y
 
 ## Licence
 GPL-3.0. See [LICENSE](LICENSE).
+
+# Make MyTVLauncher the default launcher
+Some TVs will ask you to choose a default launcher the first time you press the home button after installing a new launcher application. But many are locked down by their manufacturers to force you to use their default launcher, filled with ads that they get paid for. Fear not, it is still possible to change the launcher in most cases. There are many methods, but the below is my tried and tested ones:
+
+## AndroidTV and Google TV
+- IMPORTANT: First, install MyTVLauncher and run it for the first time. You must have a new launcher configured before you disable the old one!
+- On the TV, turn on Developer options and USB or network debugging. Thre are plenty of guides to enable developer options, look them up. The short version is goto Settings->About and click on the build numbner 7 times
+- In Developer options, enable ADB debugging (USB or network debugging)
+- From the play store, download [ADB TV: App Manager](https://play.google.com/store/apps/details?id=com.cybercat.adbappcontrol.tv) from Cyber.cat.
+- Open ADB TV: App manager and allow its permissions
+- **For Android TV:**
+  - Find `com.google.android.tvlauncher` in the apps list (it may also be listed as Android TV Home)
+  - - Select disable to disable it
+- **For Google TV**
+  - Find `com.google.android.apps.tv.launcherx`
+  - Select disable to disable it
+  - Find `com.google.android.tungsten.setupwraith`
+  - Select disable to disable it
+- Press the home button
+- Either: MyTVLauncher will open, or you will be prompted to select your default home app. In which case choose MyTVLauncher and Always
+
+### ADB commands (Alternative to the above)
+- **Android TV**: `adb shell pm disable-user --user 0 com.google.android.tvlauncher`
+- **Google TV**: `adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx` and `adb shell pm disable-user --user 0 com.google.android.tungsten.setupwraith`
+- Press Home. If the TV asks which app to use, select MyTVLauncher and "Always". Where the TV allows it, this also works: `adb shell cmd package set-home-activity com.biskyt.mytvlauncher/.MainActivity`.
+
+## Amazon Fire TV and Fire TV sticks
+- You will need to root your Fire TV device first. Search google for instructions for your specific device and version, as the instructions change regularly
+
+## Restoring the default launcher
+- To restore the default launcher, you can re-enable the packages that you disabled and press the home button
