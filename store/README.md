@@ -105,9 +105,12 @@ Write it in English (United Kingdom), the listing's default language. Keep the f
     Play's declaration form for it does not apply.
   - Usage access (`PACKAGE_USAGE_STATS`) and notification access are special access that the user gives in Android
     settings. They are optional, and the privacy policy describes them.
-- **Android TV:**
-  - The app declares `LEANBACK_LAUNCHER`, a TV banner and a home screen activity (`HOME`), and it doesn't need a
-    touchscreen.
+- **Android TV only** (1.1.6):
+  - The app requires `android.software.leanback`, so Play offers it only to Android TV and Google TV devices. It also
+    declares `LEANBACK_LAUNCHER`, a TV banner and a home screen activity (`HOME`), and it doesn't need a touchscreen.
+  - After a bundle from 1.1.6 or later is uploaded, Play Console's *Device catalog* shows phones and tablets as not
+    supported.
+  - If Play Console still asks for phone screenshots, the TV screenshots fit there too (16:9, 1920 × 1080).
   - Opt in to Android TV under *Test and release › Setup › Advanced settings › Form factors*.
   - Add the TV screenshots and the banner under the store listing's *Android TV* section. Play reviews a TV app for
     TV quality before it shows it on TVs.
