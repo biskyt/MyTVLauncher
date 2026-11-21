@@ -38,7 +38,13 @@ A light home screen for Android TV and Google TV, with no ads, no tracking and n
 The screenshots use stand-in apps and pictures.
 
 ## Install
-Download the APK from [Releases](https://github.com/biskyt/MyTVLauncher/releases) and sideload it. 
+Download the APK from [Releases](https://github.com/biskyt/MyTVLauncher/releases) and sideload it.
+
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/5b4c45ca-ab6d-4a9b-8f7e-cee1de27d438" ><a href="https://play.google.com/store/apps/details?id=com.biskyt.mytvlauncher" /></img>
+
+MyTVLauncher is currently in closed testing on Google Play. You need to join the google group to get access to it in the play store:
+
+1. [Join the group](https://groups.google.com/g/biskyt-apps-beta) → 2. [Accept the test](https://play.google.com/apps/testing/com.biskyt.mytvlauncher) → 3. [Install from Play](https://play.google.com/store/apps/details?id=com.biskyt.mytvlauncher)
 
 ## Permisions
 Some features need a permission MyTVLauncher will ask for these permissions only when you first use the feature:
