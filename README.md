@@ -60,22 +60,42 @@ GPL-3.0. See [LICENSE](LICENSE).
 # Make MyTVLauncher the default launcher
 Some TVs will ask you to choose a default launcher the first time you press the home button after installing a new launcher application. But many are locked down by their manufacturers to force you to use their default launcher, filled with ads that they get paid for. Fear not, it is still possible to change the launcher in most cases. There are many methods, but the below is my tried and tested ones:
 
+**A NOTE ON GOOGLE TV**: Changing the default launcher on Google TV may break the follwoing
+- Disables Chromecast support. This is because the `setupwraith` app controls part of the chromecast service
+- Disconnect from WiFi
+  - But you can just go to network connections and reconnect. This repairs it permanently
+
 ## AndroidTV and Google TV
-- IMPORTANT: First, install MyTVLauncher and run it for the first time. You must have a new launcher configured before you disable the old one!
+- **IMPORTANT**: First, install MyTVLauncher and run it for the first time. You must have a new launcher configured before you disable the old one!
 - On the TV, turn on Developer options and USB or network debugging. Thre are plenty of guides to enable developer options, look them up. The short version is goto Settings->About and click on the build numbner 7 times
 - In Developer options, enable ADB debugging (USB or network debugging)
-- From the play store, download [ADB TV: App Manager](https://play.google.com/store/apps/details?id=com.cybercat.adbappcontrol.tv) from Cyber.cat.
-- Open ADB TV: App manager and allow its permissions
-- **For Android TV:**
-  - Find `com.google.android.tvlauncher` in the apps list (it may also be listed as Android TV Home)
-  - - Select disable to disable it
-- **For Google TV**
-  - Find `com.google.android.apps.tv.launcherx`
-  - Select disable to disable it
-  - Find `com.google.android.tungsten.setupwraith`
-  - Select disable to disable it
+- **For older androind versions (tested on Android 11, 12 may also work)**
+  - From the play store, download [ADB TV: App Manager](https://play.google.com/store/apps/details?id=com.cybercat.adbappcontrol.tv) from Cyber.cat.
+  - Open ADB TV: App manager and allow its permissions
+  - **For Android TV (tested on Android 11, local ADB may be blocked on newer versions:**
+    - Find `com.google.android.tvlauncher` in the apps list (it may also be listed as Android TV Home)
+      - Select disable to disable it
+  - **For Google TV**
+    - Find `com.google.android.apps.tv.launcherx`
+    - Select disable to disable it
+    - Find `com.google.android.tungsten.setupwraith`
+    - Select disable to disable it
+- **For newer android versions (Tested on Android 14)**
+  - Install [Tellyscope](https://github.com/man15h/tellyscope) on your phone
+  - Ensure your phone is on the same network
+  - Connect to your TV using Tellyscope
+  - In Tellyscope:
+    - Click the 3 dots in the top-right to open the menu
+    - Select "Advanced monitor"
+    - At the top of the page, click the "Shell" button to open and ADB shell
+    - Paste the following into the shell and execute:
+      - **For Android TV**
+        - `pm disable-user --user 0 com.google.android.tvlauncher`
+      - **For Google TV**
+        - `pm disable-user --user 0 com.google.android.apps.tv.launcherx`
+        - `pm disable-user --user 0 com.google.android.tungsten.setupwraith`
 - Press the home button
-- Either: MyTVLauncher will open, or you will be prompted to select your default home app. In which case choose MyTVLauncher and Always
+- Either: MyTVLauncher will open, or you will be prompted to select your default home app. In which case choose MyTVLauncher and "Always"
 
 ### ADB commands (Alternative to the above)
 - **Android TV**: `adb shell pm disable-user --user 0 com.google.android.tvlauncher`
@@ -86,4 +106,4 @@ Some TVs will ask you to choose a default launcher the first time you press the 
 - You will need to root your Fire TV device first. Search google for instructions for your specific device and version, as the instructions change regularly
 
 ## Restoring the default launcher
-- To restore the default launcher, you can re-enable the packages that you disabled and press the home button
+- To restore the default launcher, you can re-enable the packages that you disabled and press the home button. If all else fails, you can factory reset
