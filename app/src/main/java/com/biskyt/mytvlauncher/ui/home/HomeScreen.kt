@@ -76,7 +76,6 @@ import com.biskyt.mytvlauncher.ui.common.Muted
 import com.biskyt.mytvlauncher.ui.common.SectionTitle
 import com.biskyt.mytvlauncher.ui.common.TvCard
 import com.biskyt.mytvlauncher.ui.common.cardColor
-import com.biskyt.mytvlauncher.ui.common.settleFor
 import com.biskyt.mytvlauncher.ui.theme.LocalAccent
 import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
@@ -195,6 +194,9 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, resetFocu
     LaunchedEffect(reset) { if (move.moving != null) move.end() }
     // The row's first item (the All apps tile when the row has no apps): the first focus, and the focus after a reset.
     val firstApp = Modifier.focusOn(firstFocus).focusRequester(resetFocus)
+    // An app removed from Home (the owner, 2026-11-22): the card that takes its place has the focus, not another row.
+    val names = remember(apps) { apps.map { it.packageName } }
+    val removed = rememberRemovedFocus(names)
     Column {
         SectionTitle(stringResource(R.string.home_apps), Modifier.padding(horizontal = ROW_PAD))
         moving?.let { name ->
@@ -209,7 +211,7 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, resetFocu
             val shown = move.shown(apps, byName)
             itemsIndexed(shown, key = { _, app -> app.packageName }) { i, app ->
                 val isMoving = moving == app.packageName
-                val focus = back.item(i, if (i == 0) firstApp else Modifier)
+                val focus = back.item(i, (if (i == 0) firstApp else Modifier).then(removed.at(i)))
                 AppTile(
                     app.packageName,
                     app.label,
@@ -227,11 +229,17 @@ private fun AppsRow(apps: List<AppEntry>, firstFocus: FocusRequester?, resetFocu
                     onOptions = if (moving == null) ({ options = app }) else null
                 )
             }
-            val allAppsFocus = if (apps.isEmpty()) firstApp else Modifier
+            val allAppsFocus = (if (apps.isEmpty()) firstApp else Modifier).then(removed.at(shown.size))
             if (moving == null) item(key = "all-apps") { AllAppsTile(onAllApps, back.item(shown.size, allAppsFocus)) }
         }
     }
-    options?.let { app -> AppOptions(app, onMove = { move.start(apps.map { it.packageName }, app.packageName) }) { options = null } }
+    options?.let { app ->
+        AppOptions(
+            app,
+            onMove = { move.start(names, app.packageName) },
+            onRemoved = { removed.removing(app.packageName, names.indexOf(app.packageName)) }
+        ) { options = null }
+    }
 }
 
 /**
@@ -386,10 +394,6 @@ fun rememberOnceFocus(ready: Boolean): FocusRequester {
     }
     return requester
 }
-
-/** Gives this requester focus once its item is laid out (within a few frames); whether it took focus. */
-private suspend fun FocusRequester.settleFocus(direction: FocusDirection = FocusDirection.Enter) =
-    settleFor { runCatching { requestFocus(direction) }.getOrDefault(false) }
 
 /** Attaches [requester], when there is one. */
 fun Modifier.focusOn(requester: FocusRequester?): Modifier = if (requester == null) this else focusRequester(requester)

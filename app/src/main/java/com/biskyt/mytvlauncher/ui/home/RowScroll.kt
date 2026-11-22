@@ -16,6 +16,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -101,7 +102,7 @@ class RowBack internal constructor(private val list: LazyListState, private val 
     internal fun toStart() {
         scope.launch {
             list.scrollToItem(0)
-            settleFor { runCatching { first.requestFocus() }.getOrDefault(false) }
+            first.settleFocus()
         }
     }
 }
@@ -144,3 +145,41 @@ fun rememberHomeRowState(): LazyListState {
     }
     return state
 }
+
+/**
+ * Where the focus goes when an item leaves a row (an app removed from Home): to the item that takes its place, or to
+ * the item before it when it was the last. Put [at] on each item, and call [removing] when the item is about to go.
+ */
+class RemovedFocus internal constructor() {
+    private val requester = FocusRequester()
+    internal var gone by mutableStateOf<String?>(null)
+    internal var index by mutableIntStateOf(-1)
+
+    /** The item with [key], at [at], is about to leave the row. */
+    fun removing(key: String, at: Int) {
+        gone = key
+        index = at
+    }
+
+    /** The modifier for the item at [i]. */
+    fun at(i: Int): Modifier = if (gone != null && i == index) Modifier.focusRequester(requester) else Modifier
+
+    internal suspend fun focus() = requester.settleFocus()
+}
+
+/** A [RemovedFocus] for a row of the items with [keys]: once the removed one is no longer there, the focus moves. */
+@Composable
+fun rememberRemovedFocus(keys: List<String>): RemovedFocus {
+    val removed = remember { RemovedFocus() }
+    LaunchedEffect(keys) {
+        val gone = removed.gone ?: return@LaunchedEffect
+        if (gone in keys) return@LaunchedEffect
+        removed.focus()
+        removed.gone = null
+    }
+    return removed
+}
+
+/** Gives this requester focus once its item is laid out (within a few frames); whether it took focus. */
+internal suspend fun FocusRequester.settleFocus(direction: FocusDirection = FocusDirection.Enter) =
+    settleFor { runCatching { requestFocus(direction) }.getOrDefault(false) }

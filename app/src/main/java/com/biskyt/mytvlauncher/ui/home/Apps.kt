@@ -162,7 +162,13 @@ fun Modifier.moveKeys(rowStep: () -> Int = { 0 }, onStep: (Int) -> Unit): Modifi
  * 2026-11-15), App info (Android's page for it), and Open in Play Store (the owner, 2026-11-15).
  */
 @Composable
-fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.app_move_help, onDismiss: () -> Unit) {
+fun AppOptions(
+    app: AppEntry,
+    onMove: (() -> Unit)?,
+    moveHelp: Int = R.string.app_move_help,
+    onRemoved: () -> Unit = {},
+    onDismiss: () -> Unit
+) {
     val context = LocalContext.current
     val container = context.container
     val noInfo = stringResource(R.string.app_info_missing)
@@ -181,6 +187,7 @@ fun AppOptions(app: AppEntry, onMove: (() -> Unit)?, moveHelp: Int = R.string.ap
             if (onMove == null) rememberFirstFocus() else Modifier
         ) {
             onDismiss()
+            if (!app.hidden) onRemoved()
             container.appScope.launch { container.apps.setHidden(app.packageName, !app.hidden) }
         }
         BoardOption(stringResource(R.string.app_info), stringResource(R.string.app_info_help)) {

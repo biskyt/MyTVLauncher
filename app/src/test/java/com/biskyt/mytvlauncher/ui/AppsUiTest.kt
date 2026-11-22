@@ -68,6 +68,33 @@ class AppsUiTest {
         rule.waitAdvancingClock { hearts() == 4 }
     }
 
+    private fun focused(description: String) = runCatching { rule.onNodeWithContentDescription(description).assertIsFocused() }.isSuccess
+
+    /** Removes the app with focus from Home, through its options. */
+    private fun removeFocusedApp(label: String) {
+        press(KeyEvent.KEYCODE_MENU)
+        rule.waitForText("Remove from favourite apps")
+        rule.onNode(hasText("Remove from favourite apps")).performClick()
+        rule.waitAdvancingClock { !shown(label) }
+    }
+
+    @Test
+    fun `an app removed from Home gives the focus to the next app, not to Continue watching`() {
+        // Continue watching above the apps: the focus went up there before (the owner, 2026-11-22).
+        rule.waitAdvancingClock { focused(FakeWatchNext.film.title) }
+        press(KeyEvent.KEYCODE_DPAD_DOWN)
+        press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        rule.waitAdvancingClock { focused("Music") }
+        removeFocusedApp("Music")
+        rule.waitAdvancingClock { focused("Settings") }
+        // The last app: the All apps tile after it takes the focus.
+        press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        rule.waitAdvancingClock { focused("Videos") }
+        removeFocusedApp("Videos")
+        rule.waitAdvancingClock { rule.onAllNodes(hasContentDescription("All apps")).fetchSemanticsNodes().size == 2 }
+        rule.waitAdvancingClock { runCatching { rule.onAllNodes(hasContentDescription("All apps"))[1].assertIsFocused() }.isSuccess }
+    }
+
     @Test
     fun `Move then Right moves the app one place, and OK saves the order`() {
         appsFirst()

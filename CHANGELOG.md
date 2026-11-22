@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.7
+- Notifications have Open and Dismiss buttons, and fill the panel.
+- Removing an app from Home moves the focus to the next app.
+
 ## 1.1.6
 - Google Play offers MyTVLauncher on TVs only.
 
