@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.8
+- A new or updated item scrolls its row back to the start.
+- If that row has the focus, the item takes it.
+
 ## 1.1.7
 - Notifications have Open and Dismiss buttons, and fill the panel.
 - Removing an app from Home moves the focus to the next app.
