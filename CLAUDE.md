@@ -186,6 +186,10 @@ See also:
   Access is checked again each time Home comes to the front. Tests use `FakeNotifications` (testutil/TestApp.kt).
   Since 1.1.7 each notification is a card with Open and Dismiss buttons. The panel is a window of its own, so a test
   reads its focus as the last part of `focusedText()`.
+- **New and changed items** (1.1.8, the owner, 2026-11-22): in Continue watching and the channel rows, a new item or
+  a changed one (new progress) scrolls its row to the start (`ChangedItemsToStart`, `RowBack.newItem`). The item takes
+  the focus only if its row had it (the row scrolls to an item too far along to be in view at the start). The items shown first, from saved data or when a row comes into view, are not new.
+  The apps row is left out: a new app goes at its end.
 - **Removing an app from Home** (1.1.7): `RemovedFocus` (ui/home/RowScroll.kt) gives the focus to the card that takes
   the removed app's place. Without it, the focus went to Continue watching.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next

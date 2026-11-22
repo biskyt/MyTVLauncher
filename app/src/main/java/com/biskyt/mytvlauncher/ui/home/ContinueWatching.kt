@@ -106,6 +106,7 @@ private fun CardRow(
         }
         val list = rememberHomeRowState()
         val back = rememberRowBack(list)
+        ChangedItemsToStart(items, WatchNextItem::key, back)
         LazyRow(
             back.row,
             state = list,

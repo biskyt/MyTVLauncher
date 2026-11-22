@@ -87,6 +87,10 @@ fun rememberRowPadPx(): Float = with(LocalDensity.current) { ROW_PAD.toPx() }
  */
 class RowBack internal constructor(private val list: LazyListState, private val scope: CoroutineScope) {
     private val first = FocusRequester()
+    private val added = FocusRequester()
+
+    /** The index of a new or changed item that takes the focus (see [newItem]), or -1. */
+    private var addedIndex by mutableIntStateOf(-1)
 
     /** The index of the row's item with focus, or -1 when the row has none. */
     private var focused by mutableIntStateOf(-1)
@@ -96,14 +100,52 @@ class RowBack internal constructor(private val list: LazyListState, private val 
 
     val row: Modifier = Modifier.staysInRow().onFocusChanged { if (!it.hasFocus) focused = -1 }
 
-    fun item(index: Int, modifier: Modifier = Modifier): Modifier =
-        (if (index == 0) modifier.focusRequester(first) else modifier).onFocusChanged { if (it.isFocused) focused = index }
+    fun item(index: Int, modifier: Modifier = Modifier): Modifier = (if (index == 0) modifier.focusRequester(first) else modifier)
+        .then(if (index == addedIndex) Modifier.focusRequester(added) else Modifier)
+        .onFocusChanged { if (it.isFocused) focused = index }
+
+    /**
+     * A new or changed item is at [index] (the owner, 2026-11-22): the row scrolls to its start, and if the row had the
+     * focus, that item takes it. The focus in another row stays where it is.
+     */
+    internal suspend fun newItem(index: Int) {
+        val hadFocus = focused >= 0
+        list.scrollToItem(0)
+        if (!hadFocus) return
+        addedIndex = index
+        try {
+            // An item too far along to be in view at the start: the row scrolls to it instead, so that it can take the focus.
+            if (!added.settleFocus()) {
+                list.scrollToItem(index)
+                added.settleFocus()
+            }
+        } finally {
+            addedIndex = -1
+        }
+    }
 
     internal fun toStart() {
         scope.launch {
             list.scrollToItem(0)
             first.settleFocus()
         }
+    }
+}
+
+/**
+ * Watches the row's [items] for new or changed ones, such as an item with new playback progress (see [RowBack.newItem]).
+ * The items shown first, from saved data or when the row comes into view, are not new. [key] is an item's key.
+ */
+@Composable
+fun <T : Any> ChangedItemsToStart(items: List<T>, key: (T) -> Any, back: RowBack) {
+    // Read only by the effect, so plain memory, not state.
+    val known = remember { arrayOf(items.associateBy(key)) }
+    LaunchedEffect(items) {
+        val before = known[0]
+        if (before.size == items.size && items.all { before[key(it)] == it }) return@LaunchedEffect
+        val index = items.indexOfFirst { before[key(it)] != it }
+        known[0] = items.associateBy(key)
+        if (index >= 0) back.newItem(index)
     }
 }
 
