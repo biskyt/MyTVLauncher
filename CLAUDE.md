@@ -184,6 +184,10 @@ See also:
 - **Notifications** (0.8.0, `data/Notifications.kt`): `LauncherNotificationListener` is off in the manifest and turned
   on only while Settings › Show notifications is on (`SystemNotifications.follow`), so Android binds it only then.
   Access is checked again each time Home comes to the front. Tests use `FakeNotifications` (testutil/TestApp.kt).
+  Since 1.1.7 each notification is a card with Open and Dismiss buttons. The panel is a window of its own, so a test
+  reads its focus as the last part of `focusedText()`.
+- **Removing an app from Home** (1.1.7): `RemovedFocus` (ui/home/RowScroll.kt) gives the focus to the card that takes
+  the removed app's place. Without it, the focus went to Continue watching.
 - **Start-up:** Home draws its first frame from saved data only: Room (`AppContainer.allApps` and `shownApps`, the saved Watch Next
   items) and the settings DataStore, which the accent colour needs first anyway. Reads of
   the installed apps and the TV provider run in the background, one at a time (`data/Refresher.kt`).

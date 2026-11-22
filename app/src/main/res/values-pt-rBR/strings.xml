@@ -135,6 +135,8 @@
     <string name="settings_backdrop_value">%1$d%%</string>
     <string name="guide_system">Sistema</string>
     <string name="notifications_title">Notificações</string>
+    <string name="notifications_open">Abrir</string>
+    <string name="notifications_dismiss">Dispensar</string>
     <string name="notifications_not_opened">Esta notificação não tem nada para abrir</string>
     <string name="notifications_setting">Mostrar notificações</string>
     <string name="notifications_setting_help">Um sino na barra superior com as notificações da TV</string>

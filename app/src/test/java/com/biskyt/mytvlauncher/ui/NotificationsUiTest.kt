@@ -11,6 +11,7 @@ import com.biskyt.mytvlauncher.MainActivity
 import com.biskyt.mytvlauncher.container
 import com.biskyt.mytvlauncher.testutil.FakeNotifications
 import com.biskyt.mytvlauncher.testutil.createUiComposeRule
+import com.biskyt.mytvlauncher.testutil.focusedText
 import com.biskyt.mytvlauncher.testutil.sendKey
 import com.biskyt.mytvlauncher.testutil.waitAdvancingClock
 import com.biskyt.mytvlauncher.testutil.waitForText
@@ -52,17 +53,30 @@ class NotificationsUiTest {
     }
 
     @Test
-    fun `the bell counts the notifications, and its panel opens and dismisses them`() {
+    fun `the bell counts the notifications, and its panel's buttons open and dismiss them`() {
         runBlocking { rule.activity.container.settings.setNotificationsShown(true) }
         rule.waitAdvancingClock { shown("2 notifications") }
         rule.onNodeWithContentDescription("2 notifications").performClick()
         rule.waitForText("Download done")
-        // Newest first: the panel's first row has focus. Menu dismisses it.
-        rule.sendKey(KeyEvent.KEYCODE_MENU, KeyEvent.ACTION_DOWN)
-        rule.sendKey(KeyEvent.KEYCODE_MENU, KeyEvent.ACTION_UP)
+        // Newest first: the first card's Open has focus. Right, then OK: its Dismiss.
+        rule.waitAdvancingClock { panelFocus() == "Open" }
+        press(KeyEvent.KEYCODE_DPAD_RIGHT)
+        rule.waitAdvancingClock { panelFocus() == "Dismiss" }
+        press(KeyEvent.KEYCODE_DPAD_CENTER)
         rule.waitAdvancingClock { FakeNotifications.all.value.none { it.key == FakeNotifications.download.key } }
-        rule.onNode(hasText("Now playing")).performClick()
+        // The card that took its place has the focus, on its Open: OK opens it.
+        rule.waitAdvancingClock { rule.onAllNodes(hasText("Download done")).fetchSemanticsNodes().isEmpty() }
+        rule.waitAdvancingClock { panelFocus() == "Open" }
+        press(KeyEvent.KEYCODE_DPAD_CENTER)
         rule.waitAdvancingClock { FakeNotifications.opened == FakeNotifications.playing.key }
         assertTrue(shown("1 notification"))
+    }
+
+    /** The item with focus in the panel, which is a window of its own (the main window keeps a focused item too). */
+    private fun panelFocus() = rule.focusedText().substringAfterLast(" | ")
+
+    private fun press(code: Int) {
+        rule.sendKey(code, KeyEvent.ACTION_DOWN)
+        rule.sendKey(code, KeyEvent.ACTION_UP)
     }
 }
