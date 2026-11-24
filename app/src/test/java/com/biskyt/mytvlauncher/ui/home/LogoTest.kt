@@ -7,7 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import coil3.size.Size as CoilSize
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,18 +37,13 @@ class LogoTest {
     }
 
     @Test
-    fun `the transparent border is cut off, and black text on it is dark`() {
+    fun `the transparent border is cut off`() {
         val bitmap = Bitmap.createBitmap(40, 20, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.TRANSPARENT)
-            // Black letters: strokes with gaps between them, as text has.
-            for (x in 10 until 30) for (y in 5 until 15) if (x % 3 != 2 || x == 29) setPixel(x, y, Color.BLACK)
+            for (x in 10 until 30) for (y in 5 until 15) setPixel(x, y, Color.BLACK)
         }
-        val trimmed = runBlocking { LogoTrim("dark").transform(bitmap, CoilSize.ORIGINAL) }
+        val trimmed = runBlocking { LogoTrim.transform(bitmap, CoilSize.ORIGINAL) }
         assertEquals(20, trimmed.width)
         assertEquals(10, trimmed.height)
-        assertEquals(true, LogoTrim.isDark("dark"))
-        assertNull(LogoTrim.isDark("not seen"))
-        // Looked at again, as after Coil's memory cache gave it and the note was dropped.
-        assertTrue(LogoTrim.look("again", trimmed))
     }
 }

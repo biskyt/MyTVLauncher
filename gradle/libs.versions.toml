@@ -1,9 +1,9 @@
 [versions]
 # The app's minSdk. Core's Animal Sniffer signature (gummy-bears-api-<minSdk>) uses it too.
 minSdk = "28"
-agp = "8.11.1"
-kotlin = "2.2.0"
-ksp = "2.2.0-2.0.2"
+agp = "8.13.2"
+kotlin = "2.3.21"
+ksp = "2.3.14"
 coroutines = "1.10.2"
 composeBom = "2025.07.00"
 tvMaterial = "1.0.1"
@@ -19,8 +19,8 @@ androidxTest = "1.7.0"
 androidxTestJunit = "1.3.0"
 roborazzi = "1.46.1"
 detekt = "1.23.8"
-ktlint = "13.0.0"
-kover = "0.9.1"
+ktlint = "14.2.0"
+kover = "0.9.11"
 
 animalsniffer = "2.0.1"
 # Android API signatures for Animal Sniffer (core's check against minSdk).

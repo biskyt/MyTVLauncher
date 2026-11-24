@@ -2,6 +2,7 @@
 
 MyTVLauncher is a light home screen (launcher) for Android TV and Google TV, with no ads, no tracking and no
 analytics. It is written in Kotlin with Compose for TV and Room.
+- Kotlin 2.3.21 with AGP 8.13.2 (1.1.9, as MyTVPlayer). Gradle stays 8.14.3: AGP 8.x does not work on Gradle 9.6 or later.
 - Modules: `app` (Android) and `core` (pure Kotlin: app order, Watch Next and channel rules, recent apps, the Home press
   log, the accent palette).
 - The repo is `biskyt/MyTVLauncher` on GitHub.
@@ -148,8 +149,8 @@ See also:
   channel pictures from a server on the home network. Pictures are the launcher's only network use.
 - **Pictures of another shape** (`fitsWhole`) are scaled to fit the card, not cropped.
 - **TV channel logos** (0.8.1, `ui/home/Logo.kt`): an item of `TYPE_CHANNEL` is a `CardShape.LOGO` card. Its logo's
-  transparent border is cut off, every logo gets the same area inside a margin (`LogoFit`), and a dark logo on a
-  transparent background goes on a light card (`LogoLook`, in core).
+  transparent border is cut off (`LogoLook`, in core), and every logo gets the same area inside a margin (`LogoFit`).
+  Since 1.1.9 every logo is on the light card (the owner, 2026-11-24): the choice by the logo's colours did a poor job.
 - **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0; 0.8.1: larger, with a glowing edge) grows the card with focus by
   a tenth and draws a blurred accent edge under it, in one scale of the card's drawing (no layout). In 0.8.1 the card
   grew in a layer and the glow by its own transform, and on the TV the card did not fill the glow. Home's cards turn off `TvCard`'s

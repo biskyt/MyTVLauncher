@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.9
+- Every TV channel logo now shows on a light card.
+- Built with Kotlin 2.3.21.
+
 ## 1.1.8
 - A new or updated item scrolls its row back to the start.
 - If that row has the focus, the item takes it.
