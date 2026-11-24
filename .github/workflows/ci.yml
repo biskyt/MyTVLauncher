@@ -1,7 +1,8 @@
 name: CI
 
 # On pull requests only, not on main after a merge (the owner, 2026-11-14): a merge commit has the code that its PR
-# tested, and the Release run after each merge tests it again. Branch pushes without a PR run nothing. Also by hand from
+# tested. The Release run does not test it again (the owner, 2026-11-24): it checks that its PR's runs passed. Branch
+# pushes without a PR run nothing. Also by hand from
 # the Actions tab. The Release runs on main keep the Gradle and Robolectric caches that these runs read.
 on:
   pull_request:
