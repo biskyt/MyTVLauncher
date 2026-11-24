@@ -37,7 +37,7 @@ class LogoTest {
     }
 
     @Test
-    fun `the transparent border is cut off`() {
+    fun `the transparent border is cut off, and a black logo shows white`() {
         val bitmap = Bitmap.createBitmap(40, 20, Bitmap.Config.ARGB_8888).apply {
             eraseColor(Color.TRANSPARENT)
             for (x in 10 until 30) for (y in 5 until 15) setPixel(x, y, Color.BLACK)
@@ -45,5 +45,17 @@ class LogoTest {
         val trimmed = runBlocking { LogoTrim.transform(bitmap, CoilSize.ORIGINAL) }
         assertEquals(20, trimmed.width)
         assertEquals(10, trimmed.height)
+        // Black on a transparent background would be lost on the dark card: it is white, as opaque as it was.
+        assertEquals(Color.WHITE, trimmed.getPixel(5, 5))
+    }
+
+    @Test
+    fun `a coloured logo keeps its colours`() {
+        val bitmap = Bitmap.createBitmap(40, 20, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(Color.TRANSPARENT)
+            for (x in 10 until 30) for (y in 5 until 15) setPixel(x, y, Color.YELLOW)
+        }
+        val trimmed = runBlocking { LogoTrim.transform(bitmap, CoilSize.ORIGINAL) }
+        assertEquals(Color.YELLOW, trimmed.getPixel(5, 5))
     }
 }

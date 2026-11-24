@@ -161,8 +161,9 @@ fun AmbientBackground(ambience: Ambience) {
 private fun AmbientLight(source: AmbientSource?, visible: Boolean, scale: Float) {
     val context = LocalContext.current
     val accent = LocalAccent.current.color
-    val tones by produceState<List<Color?>?>(null, source) {
-        value = source?.let { s -> withContext(Dispatchers.Default) { tones(context, s) } }
+    // Read only while the glows show: none of the work while a backdrop shows or the setting is Off (as MyTVPlayer).
+    val tones by produceState<List<Color?>?>(null, source, visible) {
+        if (visible) value = source?.let { s -> withContext(Dispatchers.Default) { tones(context, s) } }
     }
     val a by animateColorAsState(tones?.getOrNull(0) ?: accent, tween(FADE_MS), label = "glow1")
     val b by animateColorAsState(tones?.getOrNull(1) ?: accent, tween(FADE_MS), label = "glow2")
