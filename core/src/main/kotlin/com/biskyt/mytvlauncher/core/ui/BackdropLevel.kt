@@ -12,10 +12,13 @@ object BackdropLevel {
     val CHOICES = (0..40 step 5).toList()
     const val DEFAULT = 20
 
-    /** The choice [step] places from [percent] (Left -1, Right or OK 1), held at the first and the last. */
+    /**
+     * The choice [step] places from [percent] (Left -1, Right or OK 1), going round: after 40 comes Off again. OK and a
+     * tap only step forward, so without this, touch users could not lower it (as MyTVPlayer 1.36.0).
+     */
     fun step(percent: Int, step: Int): Int {
         val i = CHOICES.indexOfLast { it <= percent }.coerceAtLeast(0)
-        return CHOICES[(i + step).coerceIn(0, CHOICES.lastIndex)]
+        return CHOICES[(i + step).mod(CHOICES.size)]
     }
 
     /** How much of the dark background lies over the backdrop at [percent] (1: all of it, so none of the picture). */

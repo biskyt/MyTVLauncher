@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.10
+- TV channel logos show on a dark see-through card, as in MyTVPlayer.
+- Black logo text shows white, so every logo stays readable.
+- Background brightness goes round from 40% back to Off.
+
 ## 1.1.9
 - Every TV channel logo now shows on a light card.
 - Built with Kotlin 2.3.21.

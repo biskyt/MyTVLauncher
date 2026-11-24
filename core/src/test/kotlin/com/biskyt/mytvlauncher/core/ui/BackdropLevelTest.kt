@@ -5,11 +5,11 @@ import org.junit.Test
 
 class BackdropLevelTest {
     @Test
-    fun `Left and Right step by 5 and stop at 0 and 40`() {
+    fun `Left and Right step by 5, and go round from 40 to Off and back`() {
         assertEquals(25, BackdropLevel.step(20, 1))
         assertEquals(15, BackdropLevel.step(20, -1))
-        assertEquals(0, BackdropLevel.step(0, -1))
-        assertEquals(40, BackdropLevel.step(40, 1))
+        assertEquals(40, BackdropLevel.step(0, -1))
+        assertEquals(0, BackdropLevel.step(40, 1))
     }
 
     @Test

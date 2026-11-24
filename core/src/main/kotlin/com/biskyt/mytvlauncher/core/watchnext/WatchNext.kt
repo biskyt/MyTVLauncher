@@ -2,7 +2,7 @@ package com.biskyt.mytvlauncher.core.watchnext
 
 /**
  * The shape of a card: a 2:3 poster, or a wide 16:9 picture (the owner, 2026-11-14). A [LOGO] card is wide, with a TV
- * channel's logo in it, on a light card.
+ * channel's logo in it, on a dark see-through card.
  */
 enum class CardShape { POSTER, WIDE, LOGO }
 

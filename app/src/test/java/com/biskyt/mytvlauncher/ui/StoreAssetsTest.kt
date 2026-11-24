@@ -203,13 +203,13 @@ class StoreAssetsTest {
         return file(name, bitmap)
     }
 
-    /** A stand-in TV channel logo: a mark and dark text on a transparent ground, as on its light card. */
-    private fun logo(name: String, text: String, colour: Int): String {
+    /** A stand-in TV channel logo: a mark and text on a transparent ground; [dark]: black text, which shows white. */
+    private fun logo(name: String, text: String, colour: Int, dark: Boolean = false): String {
         val bitmap = Bitmap.createBitmap(400, 160, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawRoundRect(10f, 30f, 110f, 130f, 20f, 20f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colour })
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = 0xFF111111.toInt()
+            color = if (dark) 0xFF111111.toInt() else TEXT
             textSize = 64f
             typeface = Typeface.DEFAULT_BOLD
         }
@@ -262,7 +262,7 @@ class StoreAssetsTest {
                     WatchNextItem("c1", v, "News 24", null, logo("l1", "NEWS 24", 0xFFC62828.toInt()), CardShape.LOGO, null, 4, null),
                     WatchNextItem("c2", v, "Sport One", null, logo("l2", "SPORT 1", 0xFF2E7D32.toInt()), CardShape.LOGO, null, 3, null),
                     WatchNextItem(
-                        "c3", v, "Kids Club", null, logo("l3", "KIDS", 0xFFFFB300.toInt()), CardShape.LOGO, null, 2, null
+                        "c3", v, "Kids Club", null, logo("l3", "KIDS", 0xFFFFB300.toInt(), dark = true), CardShape.LOGO, null, 2, null
                     ),
                     WatchNextItem("c4", v, "Movies+", null, logo("l4", "MOVIES+", 0xFF6A1B9A.toInt()), CardShape.LOGO, null, 1, null),
                 )

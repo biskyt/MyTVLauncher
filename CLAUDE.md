@@ -150,7 +150,9 @@ See also:
 - **Pictures of another shape** (`fitsWhole`) are scaled to fit the card, not cropped.
 - **TV channel logos** (0.8.1, `ui/home/Logo.kt`): an item of `TYPE_CHANNEL` is a `CardShape.LOGO` card. Its logo's
   transparent border is cut off (`LogoLook`, in core), and every logo gets the same area inside a margin (`LogoFit`).
-  Since 1.1.9 every logo is on the light card (the owner, 2026-11-24): the choice by the logo's colours did a poor job.
+  Since 1.1.10 (the owner, 2026-11-24, as MyTVPlayer 1.36.0) every logo is on one dark, see-through card (`LOGO_TILE`),
+  and a dark logo's dark parts are made white (`LogoLook.lighten`). 1.1.9's light card hid white logos, and the
+  earlier mix of light and dark cards looked bad. Logos are decoded at twice the card's size, to stay sharp.
 - **The focus glow** (`ui/home/FocusGlow.kt`, 0.7.0; 0.8.1: larger, with a glowing edge) grows the card with focus by
   a tenth and draws a blurred accent edge under it, in one scale of the card's drawing (no layout). In 0.8.1 the card
   grew in a layer and the glow by its own transform, and on the TV the card did not fill the glow. Home's cards turn off `TvCard`'s
@@ -162,7 +164,8 @@ See also:
   picture, gives soft radial glows in its colours (`tonesOf`). It changes only after the focus rests for 250 ms and
   fades over 600 ms, so it does no work while the remote moves along a row. A test of its change needs
   `waitAdvancingClock(stepMs > 0)` for the settle delay. Settings › Background brightness (1.1.2, `BackdropLevel`, 0
-  to 40%, default 20%, 0 is off) sets the backdrop's share and the glows' strength; the card glow is not part of it.
+  to 40%, default 20%, 0 is off; since 1.1.10 it goes round from 40 to Off) sets the backdrop's share and the glows'
+  strength; the card glow is not part of it.
   `ambientSource` also updates the background when a card's source changes while it has focus: a card shown from
   saved data at start-up gets its picture later (a flaky `AmbientUiTest` found this).
 - **The TV guide** (`data/GuideApp.kt`, 0.7.0): the sister apps open their guide with `<package>.action.TV_GUIDE`

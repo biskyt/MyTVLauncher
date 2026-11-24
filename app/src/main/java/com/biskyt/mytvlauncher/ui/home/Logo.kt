@@ -28,22 +28,24 @@ import kotlin.math.sqrt
 
 /**
  * A TV channel's logo on its card (the owner, 2026-11-15: logos touched the card's edges and were of many sizes). The
- * logo's transparent border is cut off ([LogoTrim]), and every logo gets about the same area inside a margin
- * ([LogoFit]). Every logo is on a light card (the owner, 2026-11-24): a choice between a light and a dark card by the
- * logo's colours did a poor job. The work is done once for each picture, off the main thread, and Coil keeps the result.
+ * logo's transparent border is cut off, a dark logo's dark parts are made white ([LogoTrim]), and every logo gets
+ * about the same area inside a margin ([LogoFit]). Every logo is on one dark, see-through card ([LOGO_TILE]; the
+ * owner, 2026-11-24, as MyTVPlayer 1.36.0): a light card hid white logos, and a mix of light and dark cards looked bad.
+ * The work is done once for each picture, off the main thread, and Coil keeps the result.
  */
 @Composable
 fun LogoPicture(uri: String?, width: Dp, height: Dp, placeholder: @Composable () -> Unit) {
     var loaded by remember(uri) { mutableStateOf(false) }
-    Box(Modifier.fillMaxSize().background(LIGHT_CARD)) {
+    Box(Modifier.fillMaxSize().background(LOGO_TILE)) {
         if (!loaded) placeholder()
         if (uri == null) return@Box
         val context = LocalContext.current
         val density = LocalDensity.current
         val request = remember(uri, width, height) {
             with(density) {
-                // Decoded at the card's size, not the app's full size. Not RGB 565, which has no transparency.
-                ImageRequest.Builder(context).data(uri).size(width.roundToPx(), height.roundToPx())
+                // Decoded at twice the card's size, so that a trimmed logo stays sharp when LogoFit scales it up. Not
+                // RGB 565, which has no transparency.
+                ImageRequest.Builder(context).data(uri).size(2 * width.roundToPx(), 2 * height.roundToPx())
                     .transformations(LogoTrim).build()
             }
         }
@@ -57,17 +59,24 @@ fun LogoPicture(uri: String?, width: Dp, height: Dp, placeholder: @Composable ()
     }
 }
 
-/** Cuts off a logo's transparent border (see [LogoLook]). */
+/** Cuts off a logo's transparent border, and makes a dark logo's dark parts white (see [LogoLook]). */
 internal object LogoTrim : Transformation() {
-    override val cacheKey = "logo-trim-2"
+    override val cacheKey = "logo-trim-3"
 
     override suspend fun transform(input: Bitmap, size: CoilSize): Bitmap {
+        // A picture with no transparency has no border to cut, and its own background: left as it is.
         if (!input.hasAlpha()) return input
         val pixels = IntArray(input.width * input.height)
         input.getPixels(pixels, 0, input.width, 0, 0, input.width, input.height)
         val look = LogoLook.of(pixels, input.width, input.height) ?: return input
-        if (look.width == input.width && look.height == input.height) return input
-        return Bitmap.createBitmap(input, look.left, look.top, look.width, look.height)
+        if (!look.dark) {
+            val whole = look.width == input.width && look.height == input.height
+            return if (whole) input else Bitmap.createBitmap(input, look.left, look.top, look.width, look.height)
+        }
+        LogoLook.lighten(pixels)
+        val out = Bitmap.createBitmap(look.width, look.height, Bitmap.Config.ARGB_8888)
+        out.setPixels(pixels, look.top * input.width + look.left, input.width, 0, 0, look.width, look.height)
+        return out
     }
 }
 
@@ -85,8 +94,8 @@ internal object LogoFit : ContentScale {
     }
 }
 
-private const val MARGIN = 0.14f
-private const val AREA = 0.3f
+private const val MARGIN = 0.1f
+private const val AREA = 0.4f
 
-/** The card behind every logo: light enough for black text, softer than white (the owner, 2026-11-15: 15% darker). */
-private val LIGHT_CARD = Color(0xFFC4C5C8)
+/** The card behind every logo: black, a little see-through, so it is darker than what is behind it and tinted by it. */
+internal val LOGO_TILE = Color.Black.copy(alpha = 0.4f)
