@@ -246,8 +246,9 @@ See also:
 - **No ads, no tracking, no analytics.** The only network use is pictures that other apps give to Watch Next.
 - **Layout B** of the mockups: Continue watching first, then the apps as square icons with names, then channel rows.
   No hero area.
-- **Watch Next:** up to 20 items. A poster card for a 2:3 picture, else a wide 16:9 card. Settings turn the row off
-  (then nothing is read) and choose its apps. The same for app channels.
+- **Watch Next:** up to 30 items (1.1.11, the owner, 2026-11-25; it was 20), set from 10 to 40 in Settings › Home
+  rows › Most items (`WatchNext.LIMITS`). A poster card for a 2:3 picture, else a wide 16:9 card. Settings turn the
+  row off (then nothing is read) and choose its apps. The same for app channels.
 - **No effect on start-up time** from Watch Next or channels.
 - **Always a way out:** every app and Android settings open from MyTVLauncher, so the owner can change back to another
   launcher. Settings › Home app opens Android's choice of home app.

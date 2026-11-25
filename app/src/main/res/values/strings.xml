@@ -49,6 +49,8 @@
     <string name="settings_home_rows">Home rows</string>
     <string name="settings_home_rows_help">Continue watching, and the apps in it</string>
     <string name="rows_continue_watching_help">Other apps’ items to carry on with. When it is off, the launcher reads none.</string>
+    <string name="rows_limit">Most items</string>
+    <string name="rows_limit_help">How many items Continue watching shows, newest first</string>
     <string name="rows_apps">Apps in Continue watching</string>
     <string name="rows_no_apps">No app has Continue watching items yet.</string>
     <string name="rows_hidden_items">Hidden items: %1$d</string>

@@ -5,6 +5,7 @@ import com.biskyt.mytvlauncher.core.apps.AppPlace
 import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import com.biskyt.mytvlauncher.core.ui.BackdropLevel
+import com.biskyt.mytvlauncher.core.watchnext.WatchNext
 import com.biskyt.mytvlauncher.data.db.AppPlaceRow
 import com.biskyt.mytvlauncher.data.db.HiddenRow
 import com.biskyt.mytvlauncher.data.db.LauncherDatabase
@@ -41,6 +42,7 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                 .put("guideApp", settings.guideApp.key)
                 .put("notificationsShown", settings.notificationsShown)
                 .put("backdropLevel", settings.backdropLevel)
+                .put("watchNextLimit", settings.watchNextLimit)
         )
         .put(
             "apps",
@@ -87,7 +89,9 @@ data class Backup(val createdAt: Long, val settings: SavedSettings, val places: 
                         // Since 0.8.0: an older backup restores notifications as off.
                         notificationsShown = settings.optBoolean("notificationsShown", false),
                         // Since 1.1.2: an older backup restores the default.
-                        backdropLevel = BackdropLevel.valid(settings.optInt("backdropLevel", BackdropLevel.DEFAULT))
+                        backdropLevel = BackdropLevel.valid(settings.optInt("backdropLevel", BackdropLevel.DEFAULT)),
+                        // Since 1.1.11: an older backup restores the default.
+                        watchNextLimit = WatchNext.validLimit(settings.optInt("watchNextLimit", WatchNext.LIMIT))
                     ),
                     places = root.getJSONArray("apps").objects().map {
                         AppPlace(it.getString("packageName"), it.getInt("position"), it.getBoolean("hidden"))

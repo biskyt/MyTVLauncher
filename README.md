@@ -13,8 +13,8 @@ A light home screen for Android TV and Google TV, with no ads, no tracking and n
 - **Supports standard Android TV features:** Supports _Next up_ and home channels for any app that provides these features (e.g, MyTVPlayer, MyPlexPlayer, Plezy, My5, etc)
 
 ## Features
-- **Continue watching:** other apps' Watch Next items, up to 20. Each card shows a poster or a wide picture, a progress
-  bar, the episode and the time left (for example "S1E2 22m"), and its app's icon.
+- **Continue watching:** other apps' Watch Next items, up to 30 (10 to 40 in Settings › Home rows). Each card shows a
+  poster or a wide picture, a progress bar, the episode and the time left (for example "S1E2 22m"), and its app's icon.
 - **Favourite apps:** round app icons on Home. Hold OK on an app to move it or to remove it from favourite apps.
 - **App channels:** the rows that apps give the TV, such as MyTVPlayer's favourite channels. Turn these on in Settings->Home rows
 - **Your rows, your order:** turn each row on or off, choose which apps' items show, and move the rows up and down.

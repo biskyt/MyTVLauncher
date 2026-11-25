@@ -10,11 +10,29 @@ class WatchNextTest {
 
     @Test
     fun `newest first, at most the limit`() {
-        val items = (1L..25L).map { item("k$it", at = it) }
+        val items = (1L..35L).map { item("k$it", at = it) }
         val shown = WatchNext.select(items, emptySet(), emptySet())
-        assertEquals(20, shown.size)
-        assertEquals("k25", shown.first().key)
+        assertEquals(30, shown.size)
+        assertEquals("k35", shown.first().key)
         assertEquals("k6", shown.last().key)
+        assertEquals(10, WatchNext.select(items, emptySet(), emptySet(), limit = 10).size)
+    }
+
+    @Test
+    fun `the limit steps by 5 from 10 to 40, and goes round`() {
+        assertEquals(35, WatchNext.stepLimit(30, 1))
+        assertEquals(25, WatchNext.stepLimit(30, -1))
+        assertEquals(10, WatchNext.stepLimit(40, 1))
+        assertEquals(40, WatchNext.stepLimit(10, -1))
+        // A saved value that is not a choice shows as the default, so a step goes from there.
+        assertEquals(35, WatchNext.stepLimit(7, 1))
+    }
+
+    @Test
+    fun `a limit that is not a choice gives the default`() {
+        assertEquals(30, WatchNext.validLimit(7))
+        assertEquals(30, WatchNext.validLimit(20 + 1))
+        assertEquals(15, WatchNext.validLimit(15))
     }
 
     @Test

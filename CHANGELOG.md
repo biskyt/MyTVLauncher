@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.11
+- Continue watching now shows up to 30 items.
+- Settings › Home rows › Most items sets the number, from 10 to 40.
+
 ## 1.1.10
 - TV channel logos show on a dark see-through card, as in MyTVPlayer.
 - Black logo text shows white, so every logo stays readable.

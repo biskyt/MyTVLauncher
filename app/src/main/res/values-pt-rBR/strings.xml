@@ -41,6 +41,8 @@
     <string name="settings_home_rows">Linhas do início</string>
     <string name="settings_home_rows_help">Continuar assistindo e os apps nele</string>
     <string name="rows_continue_watching_help">Itens de outros apps para continuar. Desativado, o launcher não lê nenhum.</string>
+    <string name="rows_limit">Máximo de itens</string>
+    <string name="rows_limit_help">Quantos itens Continuar assistindo mostra, os mais recentes primeiro</string>
     <string name="rows_apps">Apps em Continuar assistindo</string>
     <string name="rows_no_apps">Nenhum app tem itens em Continuar assistindo ainda.</string>
     <string name="rows_hidden_items">Itens ocultos: %1$d</string>

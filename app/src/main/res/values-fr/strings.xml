@@ -41,6 +41,8 @@
     <string name="settings_home_rows">Rangées de l’accueil</string>
     <string name="settings_home_rows_help">Reprendre la lecture et ses applications</string>
     <string name="rows_continue_watching_help">Les éléments des autres applications à reprendre. Désactivé, le lanceur n’en lit aucun.</string>
+    <string name="rows_limit">Nombre maximal d’éléments</string>
+    <string name="rows_limit_help">Combien d’éléments Reprendre la lecture affiche, les plus récents en premier</string>
     <string name="rows_apps">Applications dans Reprendre la lecture</string>
     <string name="rows_no_apps">Aucune application n’a encore d’éléments à reprendre.</string>
     <string name="rows_hidden_items">Éléments masqués : %1$d</string>

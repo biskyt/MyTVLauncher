@@ -9,6 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.biskyt.mytvlauncher.core.speaker.WakeDelay
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
 import com.biskyt.mytvlauncher.core.ui.BackdropLevel
+import com.biskyt.mytvlauncher.core.watchnext.WatchNext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -26,7 +27,8 @@ data class SavedSettings(
     val speakerWakeDelay: Int = WakeDelay.DEFAULT,
     val guideApp: GuideApp = GuideApp.SYSTEM,
     val notificationsShown: Boolean = false,
-    val backdropLevel: Int = BackdropLevel.DEFAULT
+    val backdropLevel: Int = BackdropLevel.DEFAULT,
+    val watchNextLimit: Int = WatchNext.LIMIT
 )
 
 /** The launcher's settings: the accent colour (saved as its ARGB value, as MyPlexPlayer saves it) and the rows shown. */
@@ -99,6 +101,15 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.edit { it[BACKDROP_LEVEL] = BackdropLevel.step(it[BACKDROP_LEVEL] ?: BackdropLevel.DEFAULT, step) }
     }
 
+    /** The most items Continue watching shows (Settings › Home rows, see WatchNext.LIMITS). */
+    val watchNextLimit: Flow<Int> =
+        context.dataStore.data.map { WatchNext.validLimit(it[WATCH_NEXT_LIMIT] ?: WatchNext.LIMIT) }.distinctUntilChanged()
+
+    /** Steps the limit from its saved value in one change, so that quick presses each count. */
+    suspend fun stepWatchNextLimit(step: Int) {
+        context.dataStore.edit { it[WATCH_NEXT_LIMIT] = WatchNext.stepLimit(it[WATCH_NEXT_LIMIT] ?: WatchNext.LIMIT, step) }
+    }
+
     suspend fun setSpeakerWake(on: Boolean) {
         context.dataStore.edit { it[SPEAKER_WAKE] = on }
     }
@@ -117,7 +128,8 @@ class SettingsRepository(private val context: Context) {
         speakerWakeDelay.first(),
         guideApp.first(),
         notificationsShown.first(),
-        backdropLevel.first()
+        backdropLevel.first(),
+        watchNextLimit.first()
     )
 
     /**
@@ -135,6 +147,7 @@ class SettingsRepository(private val context: Context) {
             it[GUIDE_APP] = saved.guideApp.key
             it[NOTIFICATIONS_SHOWN] = saved.notificationsShown
             it[BACKDROP_LEVEL] = saved.backdropLevel
+            it[WATCH_NEXT_LIMIT] = saved.watchNextLimit
             it[SYSTEM_PHONE_APPS_HIDDEN] = true
         }
     }
@@ -155,5 +168,6 @@ class SettingsRepository(private val context: Context) {
         val GUIDE_APP = stringPreferencesKey("guide_app")
         val NOTIFICATIONS_SHOWN = booleanPreferencesKey("notifications_shown")
         val BACKDROP_LEVEL = intPreferencesKey("backdrop_level")
+        val WATCH_NEXT_LIMIT = intPreferencesKey("watch_next_limit")
     }
 }
