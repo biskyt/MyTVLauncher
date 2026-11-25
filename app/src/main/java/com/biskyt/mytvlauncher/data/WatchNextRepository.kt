@@ -62,11 +62,12 @@ class WatchNextRepository(
     private val hiddenKeys = hidden.observe(HiddenKind.WATCH_NEXT_ITEM)
 
     /**
-     * The items the row shows, after the user's choices: the newest [WatchNext.LIMIT]. Home also leaves the row out
-     * while it is off; the saved items are deleted then too.
+     * The items the row shows, after the user's choices: the newest, as many as the user's limit
+     * ([SettingsRepository.watchNextLimit]). Home also leaves the row out while it is off, and the launcher deletes the
+     * saved items.
      */
-    val items: Flow<List<WatchNextItem>> = combine(rows, hiddenApps, hiddenKeys) { rows, apps, keys ->
-        WatchNext.select(rows.map { it.toItem() }, apps.toSet(), keys.toSet())
+    val items: Flow<List<WatchNextItem>> = combine(rows, hiddenApps, hiddenKeys, settings.watchNextLimit) { rows, apps, keys, limit ->
+        WatchNext.select(rows.map { it.toItem() }, apps.toSet(), keys.toSet(), limit)
     }
 
     /**

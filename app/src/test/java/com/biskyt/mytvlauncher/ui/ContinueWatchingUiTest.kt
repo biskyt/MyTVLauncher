@@ -115,6 +115,23 @@ class ContinueWatchingUiTest {
     }
 
     @Test
+    fun `the row shows 30 items, and Most items in Home rows changes that`() {
+        val container = rule.activity.container
+        FakeWatchNext.items =
+            (0 until 45).map { FakeWatchNext.film.copy(key = "film/$it", title = "Film $it", lastEngagementMs = 100L - it) }
+        runBlocking { container.watchNext.read() }
+        rule.waitAdvancingClock { container.watchNextItems.value?.size == 30 }
+        rule.onNodeWithContentDescription("Launcher settings").performClick()
+        rule.waitForText("Home rows")
+        rule.onNode(hasText("Home rows")).performClick()
+        rule.waitForText("◀ 30 ▶")
+        rule.onNode(hasText("Most items")).performClick()
+        rule.waitForText("◀ 35 ▶")
+        rule.waitAdvancingClock { container.watchNextItems.value?.size == 35 }
+        assertEquals("Film 34", container.watchNextItems.value?.last()?.title)
+    }
+
+    @Test
     fun `without the permission, the row asks for it`() {
         FakeWatchNext.allowed = false
         rule.activityRule.scenario.recreate()

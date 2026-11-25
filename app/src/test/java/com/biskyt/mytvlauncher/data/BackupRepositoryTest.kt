@@ -6,6 +6,7 @@ import com.biskyt.mytvlauncher.LauncherApp
 import com.biskyt.mytvlauncher.core.apps.InstalledApp
 import com.biskyt.mytvlauncher.core.rows.RowOrder
 import com.biskyt.mytvlauncher.core.ui.AccentPalette
+import com.biskyt.mytvlauncher.core.watchnext.WatchNext
 import com.biskyt.mytvlauncher.data.db.HiddenKind
 import com.biskyt.mytvlauncher.data.db.HiddenRow
 import com.biskyt.mytvlauncher.testutil.FakeApps
@@ -36,6 +37,7 @@ class BackupRepositoryTest {
         container.settings.setSpeakerWake(true)
         container.settings.setSpeakerWakeDelay(5)
         container.settings.setBackdropLevel(35)
+        container.settings.stepWatchNextLimit(-1)
         val saved = container.backup.export()
 
         // Everything changed after the backup.
@@ -54,11 +56,23 @@ class BackupRepositoryTest {
         assertEquals(true, settings.speakerWake)
         assertEquals(5, settings.speakerWakeDelay)
         assertEquals(35, settings.backdropLevel)
+        assertEquals(25, settings.watchNextLimit)
         assertEquals(listOf("Videos", "Music", "Settings"), shownApps())
         assertEquals(
             setOf(HiddenRow(HiddenKind.WATCH_NEXT_ITEM, "k1"), HiddenRow(HiddenKind.CHANNEL_ON, "8")),
             container.db.hidden().all().toSet()
         )
+    }
+
+    @Test
+    fun `an older backup, or one with a limit that is not a choice, restores the default limit`() {
+        fun limitIn(extra: String) = Backup.parse(
+            """{"app":"MyTVLauncher","version":1,"settings":{"accent":0,"watchNextShown":true,"channelsShown":true$extra},""" +
+                """"apps":[],"hidden":[]}"""
+        ).settings.watchNextLimit
+        assertEquals(WatchNext.LIMIT, limitIn(""))
+        assertEquals(WatchNext.LIMIT, limitIn(",\"watchNextLimit\":21"))
+        assertEquals(15, limitIn(",\"watchNextLimit\":15"))
     }
 
     @Test

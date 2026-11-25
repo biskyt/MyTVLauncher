@@ -1,5 +1,7 @@
 package com.biskyt.mytvlauncher.core.watchnext
 
+import com.biskyt.mytvlauncher.core.ui.cycle
+
 /**
  * The shape of a card: a 2:3 poster, or a wide 16:9 picture (the owner, 2026-11-14). A [LOGO] card is wide, with a TV
  * channel's logo in it, on a dark see-through card.
@@ -28,8 +30,18 @@ data class WatchNextItem(
 
 /** The rules of the Continue watching row. */
 object WatchNext {
-    /** The most items the row shows (the owner, 2026-11-14). */
-    const val LIMIT = 20
+    /**
+     * The most items the row shows, a choice in Settings › Home rows (the owner, 2026-11-25: 30 by default, from 10 to
+     * 40; it was 20).
+     */
+    val LIMITS = (10..40 step 5).toList()
+    const val LIMIT = 30
+
+    /** The choice [step] places from [limit] (Left -1, Right or OK 1), going round, as WakeDelay.step does. */
+    fun stepLimit(limit: Int, step: Int): Int = LIMITS.cycle(validLimit(limit), step)
+
+    /** A saved or restored limit as a choice: one that is not a choice gives the default. */
+    fun validLimit(limit: Int): Int = limit.takeIf { it in LIMITS } ?: LIMIT
 
     // TvContractCompat's aspect ratio values (TvContract.PreviewPrograms.ASPECT_RATIO_*), kept here so core has no Android.
     private const val ASPECT_RATIO_2_3 = 4

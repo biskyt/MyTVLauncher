@@ -25,9 +25,10 @@ import com.biskyt.mytvlauncher.ui.theme.Palette
 import kotlinx.coroutines.launch
 
 /**
- * Settings › Home rows (the owner, 2026-11-14). Row order first, then Continue watching on or off, each app that has items with its own
- * switch, and the items hidden one by one, to show again. Then the apps' channel rows on or off, and each channel's
- * switch. When a row is off, the launcher reads nothing for it from the TV provider.
+ * Settings › Home rows (the owner, 2026-11-14). Row order first, then Continue watching on or off, the most items it
+ * shows, each app that has items with its own switch, and the items hidden one by one, to show again. Then the apps'
+ * channel rows on or off, and each channel's switch. When a row is off, the launcher reads nothing for it from the TV
+ * provider.
  */
 @Composable
 fun HomeRowsScreen(nav: Navigator) {
@@ -38,7 +39,9 @@ fun HomeRowsScreen(nav: Navigator) {
     val hiddenItems by watchNext.hiddenItems.collectAsState(initial = 0)
     val channelsOn by container.channelsShown.collectAsState()
     val channelSwitches by remember { container.channels.switches(container.appLabels) }.collectAsState(initial = emptyList())
+    val mostItems by remember { container.settings.watchNextLimit }.collectAsState(initial = null)
     val watch = watchOn ?: return
+    val most = mostItems ?: return
     val channels = channelsOn ?: return
     fun later(block: suspend () -> Unit) {
         container.appScope.launch { block() }
@@ -61,6 +64,14 @@ fun HomeRowsScreen(nav: Navigator) {
             ) { Toggle(watch) }
         }
         if (watch) {
+            item {
+                CycleSettingRow(
+                    stringResource(R.string.rows_limit),
+                    stringResource(R.string.rows_limit_help),
+                    most.toString(),
+                    { d -> later { container.settings.stepWatchNextLimit(d) } }
+                )
+            }
             heading(R.string.rows_apps)
             if (appSwitches.isEmpty()) item { Muted(stringResource(R.string.rows_no_apps)) }
             items(appSwitches, key = { "app-${it.packageName}" }) { app ->

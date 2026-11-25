@@ -41,6 +41,8 @@
     <string name="settings_home_rows">Filas de inicio</string>
     <string name="settings_home_rows_help">Seguir viendo y sus aplicaciones</string>
     <string name="rows_continue_watching_help">Elementos de otras aplicaciones para continuar. Si está desactivado, el launcher no lee ninguno.</string>
+    <string name="rows_limit">Máximo de elementos</string>
+    <string name="rows_limit_help">Cuántos elementos muestra Seguir viendo, los más recientes primero</string>
     <string name="rows_apps">Aplicaciones en Seguir viendo</string>
     <string name="rows_no_apps">Ninguna aplicación tiene elementos en Seguir viendo todavía.</string>
     <string name="rows_hidden_items">Elementos ocultos: %1$d</string>
