@@ -24,18 +24,18 @@ import kotlinx.coroutines.withContext
  * permission for that, and file managers can copy it elsewhere. Files the app did not write (copied in, or from before a
  * reinstall) are not visible to it, so those are opened through the system file picker instead.
  *
- * Android 9 has no MediaStore downloads: there the file is written directly, which needs the storage permission
+ * Android 9 and earlier have no MediaStore downloads: there the file is written directly, which needs the storage permission
  * ([needsPermission]). With it, the app sees the file whoever wrote it (for example, an install before a reinstall), and
  * [write] replaces it: callers check [find] first so a backup the user has not seen is not lost.
  */
 class BackupFile(private val context: Context) {
     private val legacy = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
-    /** Android 9 only: the storage permission is needed (and not granted yet) to read or write the file. */
+    /** Android 9 and earlier: the storage permission is needed (and not granted yet) to read or write the file. */
     val needsPermission: Boolean
         get() = legacy && ContextCompat.checkSelfPermission(context, STORAGE_PERMISSION) != PackageManager.PERMISSION_GRANTED
 
-    @Suppress("DEPRECATION") // the only way on Android 9, the one version that uses it
+    @Suppress("DEPRECATION") // the only way on Android 9 and earlier, the versions that use it
     private val legacyFile get() = File(Environment.getExternalStorageDirectory(), FOLDER + NAME)
 
     data class Saved(val uri: Uri, val name: String, val modifiedAt: Long) {
@@ -88,7 +88,7 @@ class BackupFile(private val context: Context) {
     }
 
     /**
-     * Android 9: written beside the file first, then put in its place, so a failed write never leaves half a backup;
+     * Android 9 and earlier: written beside the file first, then put in its place, so a failed write never leaves half a backup;
      * then shown to the media index, so file managers and a computer over USB see it.
      */
     private fun writeLegacy(bytes: ByteArray): Saved {
@@ -140,7 +140,7 @@ class BackupFile(private val context: Context) {
         const val FOLDER = "Download/MyTVLauncher/"
         const val NAME = "mytvlauncher-backup.json"
 
-        /** Asked for on Android 9 only (the manifest limits it to that). */
+        /** Asked for on Android 9 and earlier only (the manifest limits it to them). */
         const val STORAGE_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE
 
         /** Where the file picker opens, so the backup is one press away. */

@@ -2,6 +2,7 @@ package com.biskyt.mytvlauncher.ui.home
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
 import android.util.LruCache
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
@@ -257,7 +258,8 @@ private suspend fun tones(context: Context, source: AmbientSource): List<Color?>
  * gives a glow. Transparent pixels (an icon's corners) do not count; a part with none gives null (the accent).
  */
 internal fun tonesOf(bitmap: Bitmap): List<Color?> {
-    val source = if (bitmap.config == Bitmap.Config.HARDWARE) bitmap.copy(Bitmap.Config.ARGB_8888, false) else bitmap
+    val hardware = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && bitmap.config == Bitmap.Config.HARDWARE
+    val source = if (hardware) bitmap.copy(Bitmap.Config.ARGB_8888, false) else bitmap
     val small = Bitmap.createScaledBitmap(source, TONE_PX, TONE_PX, true)
     val h = TONE_PX / 2
     return listOf(average(small, 0, 0, h, h), average(small, h, 0, TONE_PX, h), average(small, 0, h, TONE_PX, TONE_PX))

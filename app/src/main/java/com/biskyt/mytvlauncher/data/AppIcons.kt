@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -44,7 +45,7 @@ class AppIcons(private val context: Context, private val sizePx: Int) {
  * square, so its background reaches every edge of the circle. Any other icon is drawn as it is.
  */
 internal fun iconBitmap(drawable: Drawable, sizePx: Int): Bitmap {
-    if (drawable !is AdaptiveIconDrawable) return drawable.toBitmap(sizePx, sizePx)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || drawable !is AdaptiveIconDrawable) return drawable.toBitmap(sizePx, sizePx)
     val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     // The layers are 108 units with the safe zone in the middle 72: a quarter of the square more on each side.

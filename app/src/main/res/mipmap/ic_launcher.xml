@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The icon on Android 7 (Fire OS 6), which has no adaptive icons: the same picture on a rounded square. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <!-- The foreground is drawn for a 72 dp safe zone in 108 dp: the inset makes the safe zone fill the icon. -->
+    <item
+        android:bottom="-18dp"
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:left="-18dp"
+        android:right="-18dp"
+        android:top="-18dp" />
+</layer-list>

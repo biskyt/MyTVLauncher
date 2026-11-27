@@ -3,9 +3,13 @@ package com.biskyt.mytvlauncher.data
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.BaseColumns
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.tvprovider.media.tv.TvContractCompat
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /** How many rows a table gave, or why it gave none ([error]); [count] is null when the TV has no such table. */
@@ -65,3 +69,30 @@ class TvListings(private val context: Context) {
 
 /** Whether the launcher may read other apps' Watch Next items and channels (the READ_TV_LISTINGS permission). */
 fun Context.mayReadTvListings(): Boolean = checkSelfPermission(TvListings.PERMISSION) == PackageManager.PERMISSION_GRANTED
+
+/**
+ * Whether the TV has Watch Next and app channels: Android 8 and later. Android 7 (Fire OS 6) has neither, so the
+ * launcher then shows no Continue watching or channel rows, asks for no permission and reads nothing.
+ */
+@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
+fun hasTvRows(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+
+/** A row's setting, off on a TV with no such rows (see [hasTvRows]). */
+fun Flow<Boolean>.onlyWithTvRows(): Flow<Boolean> = map { it && hasTvRows() }
+
+/** The source of both rows on a TV that has neither (see [hasTvRows]): nothing to read or follow. */
+object NoTvRows : WatchNextSource, ChannelSource {
+    override fun allowed() = false
+
+    override fun watch(onChange: () -> Unit) = false
+
+    override fun stopWatching() = Unit
+
+    override fun read() = emptyList<Nothing>()
+}
+
+/** The TV provider's Watch Next table, or [NoTvRows] where the TV has none. */
+fun watchNextSourceFor(context: Context): WatchNextSource = if (hasTvRows()) ProviderWatchNext(context) else NoTvRows
+
+/** The TV provider's app channels, or [NoTvRows] where the TV has none. */
+fun channelSourceFor(context: Context): ChannelSource = if (hasTvRows()) ProviderChannels(context) else NoTvRows

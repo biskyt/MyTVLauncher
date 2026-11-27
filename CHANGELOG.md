@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+- MyTVLauncher now runs on Android 7.1, as on Fire OS 6.
+- On Android 7, Home shows only the apps.
+
 ## 1.1.11
 - Continue watching now shows up to 30 items.
 - Settings › Home rows › Most items sets the number, from 10 to 40.
