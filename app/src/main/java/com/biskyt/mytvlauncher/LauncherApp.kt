@@ -9,13 +9,13 @@ import com.biskyt.mytvlauncher.data.ChannelSource
 import com.biskyt.mytvlauncher.data.InstalledApps
 import com.biskyt.mytvlauncher.data.NotificationSource
 import com.biskyt.mytvlauncher.data.PackageManagerApps
-import com.biskyt.mytvlauncher.data.ProviderChannels
-import com.biskyt.mytvlauncher.data.ProviderWatchNext
 import com.biskyt.mytvlauncher.data.RecentsSource
 import com.biskyt.mytvlauncher.data.SpeakerOutput
 import com.biskyt.mytvlauncher.data.SystemNotifications
 import com.biskyt.mytvlauncher.data.UsageStatsRecents
 import com.biskyt.mytvlauncher.data.WatchNextSource
+import com.biskyt.mytvlauncher.data.channelSourceFor
+import com.biskyt.mytvlauncher.data.watchNextSourceFor
 
 open class LauncherApp : Application() {
     lateinit var container: AppContainer
@@ -49,10 +49,10 @@ open class LauncherApp : Application() {
     protected open fun installedApps(): InstalledApps = PackageManagerApps(this)
 
     /** Where Watch Next items come from: the TV provider (a fake one in tests). */
-    protected open fun watchNextSource(): WatchNextSource = ProviderWatchNext(this)
+    protected open fun watchNextSource(): WatchNextSource = watchNextSourceFor(this)
 
     /** Where the apps' channels come from: the TV provider (a fake one in tests). */
-    protected open fun channelSource(): ChannelSource = ProviderChannels(this)
+    protected open fun channelSource(): ChannelSource = channelSourceFor(this)
 
     /** Where the recent apps come from: Android's usage stats (a fake in tests). */
     protected open fun recentsSource(): RecentsSource = UsageStatsRecents(this)

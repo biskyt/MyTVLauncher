@@ -11,7 +11,7 @@
     <!-- The recent apps panel (a double Home press): usage access, given once in Android settings or with adb. -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
 
-    <!-- Android 9 only: saving the backup to Download/MyTVLauncher (later versions need no permission for it). -->
+    <!-- Android 9 and earlier: saving the backup to Download/MyTVLauncher (later versions need no permission for it). -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <!-- A TV-only app (the owner, 2026-11-18): Google Play offers it only to Android TV and Google TV devices. A

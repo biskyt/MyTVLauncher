@@ -115,6 +115,7 @@ Some TVs will ask you to choose a default launcher the first time you press the 
 - Press Home. If the TV asks which app to use, select MyTVLauncher and "Always". Where the TV allows it, this also works: `adb shell cmd package set-home-activity com.biskyt.mytvlauncher/.MainActivity`.
 
 ## Amazon Fire TV and Fire TV sticks
+- MyTVLauncher runs on Fire OS 6 (Android 7.1) and later. Fire OS 6 has no Continue watching or channel rows, so Home shows only the apps.
 - You will need to root your Fire TV device first. Search google for instructions for your specific device and version, as the instructions change regularly
 
 ## Restoring the default launcher

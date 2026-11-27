@@ -15,6 +15,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.biskyt.mytvlauncher.R
 import com.biskyt.mytvlauncher.container
+import com.biskyt.mytvlauncher.data.hasTvRows
 import com.biskyt.mytvlauncher.ui.Navigator
 import com.biskyt.mytvlauncher.ui.Screen
 import com.biskyt.mytvlauncher.ui.common.Muted
@@ -55,6 +56,8 @@ fun HomeRowsScreen(nav: Navigator) {
                 rememberFirstFocus(once = true)
             )
         }
+        // Settings does not open this page on Android 7 (Fire OS 6), which has no such rows: see hasTvRows.
+        if (!hasTvRows()) return@SettingsPage
         item {
             SettingRow(
                 stringResource(R.string.home_continue_watching),

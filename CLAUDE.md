@@ -2,6 +2,7 @@
 
 MyTVLauncher is a light home screen (launcher) for Android TV and Google TV, with no ads, no tracking and no
 analytics. It is written in Kotlin with Compose for TV and Room.
+- minSdk 25 (1.2.0, the owner, 2026-11-27: Fire OS 6 is Android 7.1). It was 28.
 - Kotlin 2.3.21 with AGP 8.13.2 (1.1.9, as MyTVPlayer). Gradle stays 8.14.3: AGP 8.x does not work on Gradle 9.6 or later.
 - Modules: `app` (Android) and `core` (pure Kotlin: app order, Watch Next and channel rules, recent apps, the Home press
   log, the accent palette).
@@ -129,6 +130,10 @@ See also:
   launcher does not show (the owner, 2026-11-14).
 - **Recent apps** (a double Home press) need usage access (`PACKAGE_USAGE_STATS`, an app op). TVs often have no screen
   for it: `adb shell appops set com.biskyt.mytvlauncher GET_USAGE_STATS allow`.
+- **Android 7 (Fire OS 6)** has no Watch Next and no app channels (Android 8 added them). `hasTvRows()`
+  (data/TvListings.kt) turns both rows off there: no reads, no permission question, and no Settings › Home rows. The saved settings stay as they are, so a backup keeps them for another TV. The provider classes are
+  `@RequiresApi(O)`, and `NoTvRows` takes their place (`watchNextSourceFor`, `channelSourceFor`). The icon has a plain fallback (`res/mipmap/ic_launcher.xml`),
+  as Android 7 has no adaptive icons. `AndroidSevenUiTest` runs on Robolectric's SDK 25.
 - **The TV provider:** query `WatchNextPrograms` and `Channels` with no selection and no sort order. Android 9 refuses
   both from an app without `ACCESS_ALL_EPG_DATA` (system apps only). Filter and sort in core.
 - **TV provider rows** (Continue watching, app channels) follow `data/ProviderFollower.kt`: the row's setting, the
@@ -143,7 +148,7 @@ See also:
 - **Home's row order** is a list of keys in the settings (`RowOrder`, Settings › Home rows › Row order). A row not
   in the list keeps its usual place after the saved ones.
 - **Backup** (0.5.0, as MyPlexPlayer's): `data/BackupFile.kt` is MyPlexPlayer's file code (Download/MyTVLauncher,
-  MediaStore, or a direct write with the storage permission on Android 9 only). The JSON is Android's own `org.json`
+  MediaStore, or a direct write with the storage permission on Android 9 and earlier). The JSON is Android's own `org.json`
   (`Backup.toJson` and `Backup.parse`), not a new library. It holds the settings, the app places and the `hidden` rows,
   not other apps' items. A file opened with the launcher (Open with, Share) goes to `AppContainer.openedFile`, and
   `AppRoot` opens Backup & restore for it.

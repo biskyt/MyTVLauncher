@@ -4,7 +4,9 @@ import android.content.Context
 import android.database.Cursor
 import android.media.tv.TvContract.Channels as TvChannels
 import android.media.tv.TvContract.PreviewPrograms
+import android.os.Build
 import android.provider.BaseColumns
+import androidx.annotation.RequiresApi
 import com.biskyt.mytvlauncher.core.channels.AppChannel
 import com.biskyt.mytvlauncher.core.channels.Channels
 import com.biskyt.mytvlauncher.core.watchnext.WatchNextItem
@@ -46,10 +48,13 @@ class ChannelRepository(
     scope: CoroutineScope,
     reads: Mutex
 ) {
-    private val follower = ProviderFollower(source, settings.channelsShown, scope, reads, clear = { dao.deleteAll() }) {
+    /** The row's setting, off where the TV has no such rows (see hasTvRows). */
+    val shown = settings.channelsShown.onlyWithTvRows()
+
+    private val follower = ProviderFollower(source, shown, scope, reads, clear = { dao.deleteAll() }) {
         val rows = source.read().toRows()
         // Still on: the row may have been turned off while the read went.
-        if (settings.channelsShown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
+        if (shown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
     }
 
     val allowed: StateFlow<Boolean> get() = follower.allowed
@@ -140,7 +145,8 @@ private fun List<ChannelItemRow>.toChannels(): List<AppChannel> = groupBy { it.c
     )
 }
 
-/** The TV provider's preview channels and programs (Android's own TvContract names). */
+/** The TV provider's preview channels and programs, on Android 8 and later (Android's own TvContract names). */
+@RequiresApi(Build.VERSION_CODES.O)
 class ProviderChannels(private val context: Context) : ChannelSource {
     private val watcher = ProviderWatcher(context, TvChannels.CONTENT_URI, PreviewPrograms.CONTENT_URI)
 

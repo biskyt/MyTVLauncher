@@ -33,6 +33,7 @@ import com.biskyt.mytvlauncher.core.ui.BackdropLevel
 import com.biskyt.mytvlauncher.core.ui.cycle
 import com.biskyt.mytvlauncher.data.GuideApp
 import com.biskyt.mytvlauncher.data.SystemNotifications
+import com.biskyt.mytvlauncher.data.hasTvRows
 import com.biskyt.mytvlauncher.openAndroidSettings
 import com.biskyt.mytvlauncher.openHomeAppChoice
 import com.biskyt.mytvlauncher.openNotificationAccess
@@ -63,10 +64,13 @@ fun SettingsScreen(nav: Navigator) {
                 rememberFirstFocus(once = true)
             ) { Box(Modifier.size(26.dp).clip(CircleShape).background(accent)) }
         }
-        item {
-            SettingRow(stringResource(R.string.settings_home_rows), stringResource(R.string.settings_home_rows_help), {
-                nav.open(Screen.HOME_ROWS)
-            })
+        // Android 7 (Fire OS 6) has only the apps row, so there is nothing to set.
+        if (hasTvRows()) {
+            item {
+                SettingRow(stringResource(R.string.settings_home_rows), stringResource(R.string.settings_home_rows_help), {
+                    nav.open(Screen.HOME_ROWS)
+                })
+            }
         }
         item {
             val guide by context.container.guideApp.collectAsState()

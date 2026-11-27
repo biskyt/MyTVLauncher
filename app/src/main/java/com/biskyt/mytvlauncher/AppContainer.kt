@@ -97,11 +97,11 @@ class AppContainer(
     val appLabels: StateFlow<Map<String, String>> = allApps.map { all -> all.orEmpty().associate { it.packageName to it.label } }
         .stateIn(appScope, SharingStarted.Eagerly, emptyMap())
 
-    /** Whether Home shows Continue watching (Settings › Home rows). */
-    val watchNextShown: StateFlow<Boolean?> = settings.watchNextShown.stateIn(appScope, SharingStarted.Eagerly, null)
+    /** Whether Home shows Continue watching (Settings › Home rows; never on Android 7, see hasTvRows). */
+    val watchNextShown: StateFlow<Boolean?> = watchNext.shown.stateIn(appScope, SharingStarted.Eagerly, null)
 
-    /** Whether Home shows the apps' channel rows (Settings › Home rows). */
-    val channelsShown: StateFlow<Boolean?> = settings.channelsShown.stateIn(appScope, SharingStarted.Eagerly, null)
+    /** Whether Home shows the apps' channel rows (Settings › Home rows; never on Android 7). */
+    val channelsShown: StateFlow<Boolean?> = channels.shown.stateIn(appScope, SharingStarted.Eagerly, null)
 
     /** The apps' channel rows, from the saved items (see ChannelRepository). */
     val channelRows: StateFlow<List<AppChannel>?> = channels.channels.stateIn(appScope, SharingStarted.Eagerly, null)

@@ -5,7 +5,9 @@ import android.database.ContentObserver
 import android.database.Cursor
 import android.media.tv.TvContract.WatchNextPrograms
 import android.net.Uri
+import android.os.Build
 import android.provider.BaseColumns
+import androidx.annotation.RequiresApi
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import com.biskyt.mytvlauncher.core.watchnext.WatchNext
@@ -47,11 +49,14 @@ class WatchNextRepository(
     scope: CoroutineScope,
     reads: Mutex
 ) {
-    private val follower = ProviderFollower(source, settings.watchNextShown, scope, reads, clear = { dao.deleteAll() }) {
+    /** The row's setting, off where the TV has no such rows (see hasTvRows). */
+    val shown = settings.watchNextShown.onlyWithTvRows()
+
+    private val follower = ProviderFollower(source, shown, scope, reads, clear = { dao.deleteAll() }) {
         // An app can write two rows with one id of its own (an episode both to carry on with and next): one is kept.
         val rows = source.read().map { it.toRow() }.distinctBy { it.key }
         // Still on: the row may have been turned off while the read went.
-        if (settings.watchNextShown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
+        if (shown.first() && rows.toSet() != dao.all().toSet()) dao.replace(rows)
     }
 
     /** Whether the launcher may read the items (see [ProviderFollower.allowed]). */
@@ -111,7 +116,8 @@ private fun WatchNextRow.toItem() =
 private fun WatchNextItem.toRow() =
     WatchNextRow(key, packageName, title, subtitle, pictureUri, shape, progress, lastEngagementMs, intentUri, season, episode, leftMs)
 
-/** The TV provider's Watch Next table (Android's own TvContract names: some of tvprovider's are restricted). */
+/** The TV provider's Watch Next table, on Android 8 and later (Android's own TvContract names: some of tvprovider's are restricted). */
+@RequiresApi(Build.VERSION_CODES.O)
 class ProviderWatchNext(private val context: Context) : WatchNextSource {
     private val watcher = ProviderWatcher(context, WatchNextPrograms.CONTENT_URI)
 
